@@ -21,7 +21,7 @@ export async function fetchJson<T>(
   init: RequestInit | undefined,
   opts?: { timeoutMs?: number; retries?: number },
 ): Promise<T> {
-  const timeoutMs = opts?.timeoutMs ?? 12_000;
+  const timeoutMs = opts?.timeoutMs ?? 25_000;
   const retries = opts?.retries ?? 0;
 
   // Keep minimal request diagnostics in dev; in release this is stripped by Metro.

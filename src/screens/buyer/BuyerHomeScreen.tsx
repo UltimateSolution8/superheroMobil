@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import * as Location from 'expo-location';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { TaskUrgency } from '../../api/types';
 import * as api from '../../api/client';
@@ -32,6 +33,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
   const { withAuth, signOut } = useAuth();
   const { t } = useI18n();
   const online = useIsOnline();
+  const insets = useSafeAreaInsets();
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -222,7 +224,10 @@ export function BuyerHomeScreen({ navigation }: Props) {
 
   return (
     <Screen style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: theme.space.xl * 2 + insets.bottom }]}
+        keyboardShouldPersistTaps="handled"
+      >
         <View style={styles.topBar}>
           <Text style={styles.h1}>{t('buyer.create_task')}</Text>
           <View style={styles.topLinks}>
