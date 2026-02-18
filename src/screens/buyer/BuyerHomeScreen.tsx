@@ -305,7 +305,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
             placeholder={t('buyer.address_placeholder')}
           />
 
-          <View style={styles.actionsRow}>
+          <View style={[styles.actionsRow, { paddingBottom: Math.max(insets.bottom, theme.space.md) }]}>
             <PrimaryButton label={t('buyer.refresh_location')} onPress={refreshLocation} variant="ghost" style={styles.half} />
             <PrimaryButton label={t('buyer.create_task_btn')} onPress={onCreate} disabled={!canCreate} loading={busy} style={styles.half} />
           </View>
