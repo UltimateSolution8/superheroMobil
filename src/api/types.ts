@@ -7,6 +7,15 @@ export type AuthUser = {
   displayName?: string | null;
 };
 
+export type MeProfile = {
+  id: string;
+  role: UserRole;
+  phone?: string | null;
+  email?: string | null;
+  displayName?: string | null;
+  demoBalancePaise?: number | null;
+};
+
 export type AuthResponse = {
   accessToken: string;
   refreshToken: string;
@@ -55,6 +64,8 @@ export type Task = {
   addressText?: string | null;
   status: TaskStatus;
   assignedHelperId?: string | null;
+  arrivalOtp?: string | null;
+  completionOtp?: string | null;
   arrivalSelfieUrl?: string | null;
   arrivalSelfieLat?: number | null;
   arrivalSelfieLng?: number | null;

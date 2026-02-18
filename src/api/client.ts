@@ -12,6 +12,7 @@ import type {
   SupportTicketDetail,
   Task,
   TaskStatus,
+  MeProfile,
   UserRole,
 } from './types';
 import { ApiError } from './http';
@@ -154,11 +155,12 @@ export async function updateTaskStatus(
   accessToken: string,
   taskId: string,
   status: TaskStatus,
+  otp?: string | null,
 ): Promise<Task> {
   return fetchJson(url(`/api/v1/tasks/${taskId}/status`), {
     method: 'POST',
     headers: authHeaders(accessToken),
-    body: JSON.stringify({ status }),
+    body: JSON.stringify({ status, otp: otp ?? null }),
   });
 }
 
@@ -206,6 +208,28 @@ export async function getTask(accessToken: string, taskId: string): Promise<Task
   return fetchJson(url(`/api/v1/tasks/${taskId}`), {
     method: 'GET',
     headers: authHeaders(accessToken),
+  });
+}
+
+export async function listMyTasks(accessToken: string): Promise<Task[]> {
+  return fetchJson(url('/api/v1/tasks/mine'), {
+    method: 'GET',
+    headers: authHeaders(accessToken),
+  });
+}
+
+export async function getMe(accessToken: string): Promise<MeProfile> {
+  return fetchJson(url('/api/v1/me'), {
+    method: 'GET',
+    headers: authHeaders(accessToken),
+  });
+}
+
+export async function updateMe(accessToken: string, displayName: string): Promise<MeProfile> {
+  return fetchJson(url('/api/v1/me'), {
+    method: 'PUT',
+    headers: authHeaders(accessToken),
+    body: JSON.stringify({ displayName }),
   });
 }
 

@@ -21,9 +21,9 @@ export function SplashScreen({ navigation }: Props) {
     <View style={styles.root}>
       <View style={[styles.header, { paddingTop: Math.max(insets.top, 12) }]} />
       <View style={styles.center}>
-        <Image source={require('../assets/superlogo.png')} style={styles.logo} />
+        <Image source={require('../assets/superheroo-logo.png')} style={styles.logo} />
         <Text style={styles.title}>Superheroo</Text>
-        <Text style={styles.tagline}>No Skill. No Problem.</Text>
+        <Text style={styles.tagline}>Tap. Create. Relax.</Text>
       </View>
       <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 12) }]} />
     </View>
@@ -32,9 +32,9 @@ export function SplashScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: theme.colors.bg },
-  header: { height: 90, backgroundColor: theme.colors.primaryDark },
+  header: { height: 90, backgroundColor: theme.colors.primary },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
-  logo: { width: 128, height: 128, borderRadius: 32 },
+  logo: { width: 180, height: 180, borderRadius: 48 },
   title: { fontSize: 26, fontWeight: '900', color: theme.colors.text },
   tagline: { color: theme.colors.muted, fontWeight: '700' },
   footer: { height: 40 },

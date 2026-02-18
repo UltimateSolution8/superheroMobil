@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { useAuth } from '../auth/AuthContext';
@@ -41,6 +41,14 @@ export function EmailLoginScreen({ navigation }: Props) {
     }
   }, [busy, canLogin, email, loginWithPassword, password]);
 
+  const onSignup = useCallback(() => {
+    Alert.alert('Sign up', 'Choose account type', [
+      { text: 'Buyer', onPress: () => navigation.navigate('BuyerSignup') },
+      { text: 'Helper', onPress: () => navigation.navigate('HelperSignup') },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
+  }, [navigation]);
+
   return (
     <Screen>
       <KeyboardAvoidingView behavior={Platform.select({ ios: 'padding', android: undefined })} style={styles.kav}>
@@ -49,8 +57,6 @@ export function EmailLoginScreen({ navigation }: Props) {
           <Text style={styles.sub}>{t('email.subtitle')}</Text>
           <Text onPress={() => navigation.goBack()} style={styles.link}>{t('email.back')}</Text>
         </View>
-
-        <Notice kind="warning" text="Demo creds: buyer1@helpinminutes.app / Buyer@12345, helper.approved@helpinminutes.app / Helper@12345" />
 
         <TextField
           label="Email"
@@ -72,12 +78,7 @@ export function EmailLoginScreen({ navigation }: Props) {
 
         <PrimaryButton label={t('email.sign_in')} onPress={onLogin} disabled={!canLogin} loading={busy} />
         <View style={styles.signupRow}>
-          <Text onPress={() => navigation.navigate('BuyerSignup')} style={styles.link}>
-            {t('login.create_account_buyer')}
-          </Text>
-          <Text onPress={() => navigation.navigate('HelperSignup')} style={styles.link}>
-            {t('login.create_account_helper')}
-          </Text>
+          <PrimaryButton label={t('login.sign_up')} variant="ghost" onPress={onSignup} />
         </View>
       </KeyboardAvoidingView>
     </Screen>

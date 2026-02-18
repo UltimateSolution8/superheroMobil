@@ -1,5 +1,6 @@
 import React from 'react';
-import { SafeAreaView, StyleSheet, View, type ViewStyle } from 'react-native';
+import { StyleSheet, View, type ViewStyle } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { theme } from './theme';
 
@@ -10,9 +11,12 @@ export function Screen({
   children: React.ReactNode;
   style?: ViewStyle;
 }) {
+  const insets = useSafeAreaInsets();
   return (
     <SafeAreaView style={styles.safe}>
-      <View style={[styles.inner, style]}>{children}</View>
+      <View style={[styles.inner, style, { paddingBottom: theme.space.lg + insets.bottom }]}>
+        {children}
+      </View>
     </SafeAreaView>
   );
 }

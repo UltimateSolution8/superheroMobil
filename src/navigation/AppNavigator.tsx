@@ -20,6 +20,11 @@ import { HelperTaskScreen } from '../screens/helper/HelperTaskScreen';
 import { SupportTicketsScreen } from '../screens/support/SupportTicketsScreen';
 import { SupportNewTicketScreen } from '../screens/support/SupportNewTicketScreen';
 import { SupportTicketScreen } from '../screens/support/SupportTicketScreen';
+import { MenuScreen } from '../screens/common/MenuScreen';
+import { ProfileScreen } from '../screens/common/ProfileScreen';
+import { HistoryScreen } from '../screens/common/HistoryScreen';
+import { PaymentsScreen } from '../screens/common/PaymentsScreen';
+import { SettingsScreen } from '../screens/common/SettingsScreen';
 import type { AuthStackParamList, BuyerStackParamList, HelperStackParamList } from './types';
 import { theme } from '../ui/theme';
 
@@ -57,6 +62,11 @@ export function AppNavigator() {
             <BuyerStack.Navigator screenOptions={{ headerShown: false }}>
               <BuyerStack.Screen name="BuyerHome" component={BuyerHomeScreen} />
               <BuyerStack.Screen name="BuyerTask" component={BuyerTaskScreen} />
+              <BuyerStack.Screen name="Menu" component={MenuScreen} />
+              <BuyerStack.Screen name="Profile" component={ProfileScreen} />
+              <BuyerStack.Screen name="History" component={HistoryScreen} />
+              <BuyerStack.Screen name="Payments" component={PaymentsScreen} />
+              <BuyerStack.Screen name="Settings" component={SettingsScreen} />
               <BuyerStack.Screen name="SupportTickets" component={SupportTicketsScreen} />
               <BuyerStack.Screen name="SupportNewTicket" component={SupportNewTicketScreen} />
               <BuyerStack.Screen name="SupportTicket" component={SupportTicketScreen} />
@@ -66,6 +76,11 @@ export function AppNavigator() {
               <HelperStack.Screen name="HelperHome" component={HelperHomeScreen} />
               <HelperStack.Screen name="HelperKyc" component={HelperKycScreen} />
               <HelperStack.Screen name="HelperTask" component={HelperTaskScreen} />
+              <HelperStack.Screen name="Menu" component={MenuScreen} />
+              <HelperStack.Screen name="Profile" component={ProfileScreen} />
+              <HelperStack.Screen name="History" component={HistoryScreen} />
+              <HelperStack.Screen name="Payments" component={PaymentsScreen} />
+              <HelperStack.Screen name="Settings" component={SettingsScreen} />
               <HelperStack.Screen name="SupportTickets" component={SupportTicketsScreen} />
               <HelperStack.Screen name="SupportNewTicket" component={SupportNewTicketScreen} />
               <HelperStack.Screen name="SupportTicket" component={SupportTicketScreen} />

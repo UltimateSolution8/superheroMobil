@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useFocusEffect } from '@react-navigation/native';
 
 import * as api from '../../api/client';
 import type { SupportTicket } from '../../api/types';
@@ -52,6 +53,13 @@ export function SupportTicketsScreen({ navigation }: Props) {
   useEffect(() => {
     load();
   }, [load]);
+
+  useFocusEffect(
+    useCallback(() => {
+      load();
+      return undefined;
+    }, [load]),
+  );
 
   const onOpen = useCallback(
     (id: string) => {
@@ -127,4 +135,3 @@ const styles = StyleSheet.create({
   },
   bottomCta: { marginTop: 6 },
 });
-

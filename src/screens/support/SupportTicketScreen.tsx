@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useFocusEffect } from '@react-navigation/native';
 
 import * as api from '../../api/client';
 import type { SupportMessage, SupportTicketDetail } from '../../api/types';
@@ -57,6 +58,13 @@ export function SupportTicketScreen({ navigation, route }: Props) {
   useEffect(() => {
     load();
   }, [load]);
+
+  useFocusEffect(
+    useCallback(() => {
+      load();
+      return undefined;
+    }, [load]),
+  );
 
   const canSend = useMemo(() => online && reply.trim().length >= 2 && !sending, [online, reply, sending]);
 
@@ -158,4 +166,3 @@ const styles = StyleSheet.create({
     gap: theme.space.sm,
   },
 });
-

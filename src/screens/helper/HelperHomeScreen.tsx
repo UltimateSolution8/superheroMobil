@@ -295,6 +295,9 @@ export function HelperHomeScreen({ navigation }: Props) {
   return (
     <Screen style={styles.screen}>
       <View style={styles.topBar}>
+        <Text onPress={() => navigation.navigate('Menu')} style={styles.menu}>
+          ☰
+        </Text>
         <Text style={styles.h1}>Superheroo</Text>
         <View style={styles.topLinks}>
           <Text onPress={() => navigation.navigate('SupportTickets')} style={styles.link}>
@@ -356,6 +359,7 @@ const styles = StyleSheet.create({
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   topLinks: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   h1: { color: theme.colors.text, fontSize: 20, fontWeight: '900' },
+  menu: { color: theme.colors.primary, fontSize: 22, fontWeight: '900', paddingRight: 6 },
   link: { color: theme.colors.primary, fontWeight: '800' },
   card: {
     borderWidth: 1,

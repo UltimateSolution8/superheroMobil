@@ -39,7 +39,7 @@ export function LoginScreen({ navigation }: Props) {
     try {
       const p = normalizePhone(phone);
       const res = await startOtp(p, role);
-      navigation.navigate('Otp', { phone: p, role, devOtp: res.devOtp ?? res.otp ?? null });
+      navigation.navigate('Otp', { phone: p, role, devOtp: res.otp ?? null });
     } catch (e) {
       if (e instanceof ApiError) {
         setError(`Could not send OTP (${e.status}). Check your network and try again.`);
@@ -62,16 +62,6 @@ export function LoginScreen({ navigation }: Props) {
           contentContainerStyle={[styles.scroll, { paddingBottom: Math.max(insets.bottom, 12) + 16 }]}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={[styles.header, { paddingTop: Math.max(insets.top, 8) + 6 }]}>
-            <View style={styles.brandRow}>
-              <Image source={require('../assets/superlogo.png')} style={styles.logo} />
-              <View>
-                <Text style={styles.h1}>{t('app.name')}</Text>
-                <Text style={styles.sub}>{t('app.tagline')}</Text>
-              </View>
-            </View>
-          </View>
-
           <Segmented
             value={lang}
             onChange={(v) => setLang(v as 'en' | 'hi' | 'te')}
@@ -81,6 +71,16 @@ export function LoginScreen({ navigation }: Props) {
               { key: 'te', label: 'తెల' },
             ]}
           />
+
+          <View style={[styles.header, { paddingTop: Math.max(insets.top, 8) + 6 }]}>
+            <View style={styles.brandRow}>
+              <Image source={require('../assets/superheroo-logo.png')} style={styles.logo} />
+              <View>
+                <Text style={styles.h1}>{t('app.name')}</Text>
+                <Text style={styles.sub}>{t('app.tagline')}</Text>
+              </View>
+            </View>
+          </View>
 
           <Segmented
             value={role}
@@ -106,11 +106,9 @@ export function LoginScreen({ navigation }: Props) {
 
           <View style={styles.footer}>
             <PrimaryButton label={t('login.send_otp')} onPress={onSend} disabled={!canSend} loading={busy} />
+            <PrimaryButton label={t('login.sign_up')} onPress={onSignup} variant="ghost" />
             <Text onPress={() => navigation.navigate('EmailLogin')} style={styles.alt}>
               {t('login.use_email')}
-            </Text>
-            <Text onPress={onSignup} style={styles.alt}>
-              {role === 'BUYER' ? t('login.create_account_buyer') : t('login.create_account_helper')}
             </Text>
             <Text style={styles.legal}>{t('login.terms')}</Text>
           </View>

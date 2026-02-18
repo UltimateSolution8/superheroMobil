@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Platform, StyleSheet, Text, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import MapView, { AnimatedRegion, Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 
 import type { Task, TaskAssignedEvent, TaskStatusChangedEvent, TaskStatus } from '../../api/types';
 import * as api from '../../api/client';
@@ -85,14 +86,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
   const [routeEtaMin, setRouteEtaMin] = useState<number | null>(null);
 
   const lastRouteFetch = useRef(0);
-  const helperAnim = useRef(
-    new AnimatedRegion({
-      latitude: 12.9716,
-      longitude: 77.5946,
-      latitudeDelta: 0.02,
-      longitudeDelta: 0.02,
-    }),
-  ).current;
+  const helperMarkerRef = useRef<any>(null);
 
   const load = useCallback(async () => {
     setBusy(true);
@@ -110,6 +104,13 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
   useEffect(() => {
     load();
   }, [load]);
+
+  useFocusEffect(
+    useCallback(() => {
+      load();
+      return undefined;
+    }, [load]),
+  );
 
   useEffect(() => {
     if (!socket) return;
@@ -129,13 +130,14 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
 
     const onHelperLoc = (evt: { taskId: string; helperId: string; lat: number; lng: number; ts: number }) => {
       if (!evt || evt.taskId !== taskId) return;
-      setHelperLoc({ lat: evt.lat, lng: evt.lng, ts: evt.ts || Date.now() });
-      helperAnim.timing({
-        latitude: evt.lat,
-        longitude: evt.lng,
-        duration: 900,
-        useNativeDriver: false,
-      }).start();
+      const nextLat = Number(evt.lat);
+      const nextLng = Number(evt.lng);
+      if (!Number.isFinite(nextLat) || !Number.isFinite(nextLng)) return;
+      setHelperLoc({ lat: nextLat, lng: nextLng, ts: evt.ts || Date.now() });
+      const marker = helperMarkerRef.current;
+      if (marker && typeof marker.animateMarkerToCoordinate === 'function' && Platform.OS === 'android') {
+        marker.animateMarkerToCoordinate({ latitude: nextLat, longitude: nextLng }, 900);
+      }
     };
 
     socket.on('task_assigned', onAssigned);
@@ -200,13 +202,20 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
     const secs = Math.max(0, Math.floor((Date.now() - helperLoc.ts) / 1000));
     return secs;
   }, [helperLoc]);
+  const helperArrived = useMemo(() => {
+    if (helperDistance == null) return false;
+    return helperDistance <= 60;
+  }, [helperDistance]);
 
   return (
     <Screen style={styles.screen}>
       <View style={styles.topBar}>
+        <Text onPress={() => navigation.navigate('Menu')} style={styles.menu}>
+          ☰
+        </Text>
         <Text style={styles.h1}>Task</Text>
         <Text onPress={onBackHome} style={styles.link}>
-          New task
+          Back
         </Text>
       </View>
 
@@ -233,7 +242,13 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
           }
         >
           {task ? <Marker coordinate={{ latitude: task.lat, longitude: task.lng }} title="You" /> : null}
-          {helperLoc ? <Marker coordinate={helperAnim} title="Helper" /> : null}
+          {helperLoc ? (
+            <Marker
+              ref={helperMarkerRef}
+              coordinate={{ latitude: helperLoc.lat, longitude: helperLoc.lng }}
+              title="Helper"
+            />
+          ) : null}
           {routeCoords.length > 1 ? (
             <Polyline coordinates={routeCoords} strokeColor={theme.colors.primary} strokeWidth={4} />
           ) : null}
@@ -242,6 +257,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
 
       <View style={styles.card}>
         <Text style={styles.status}>{statusLabel(status)}</Text>
+        {helperArrived ? <Notice kind="success" text="Helper has arrived at your location." /> : null}
         <Text style={styles.muted}>Task ID: {taskId}</Text>
         {task?.title ? <Text style={styles.title}>{task.title}</Text> : null}
         {helperId ? <Text style={styles.muted}>Helper: {helperId}</Text> : null}
@@ -249,6 +265,8 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
         {task?.description ? <Text style={styles.desc}>{task.description}</Text> : null}
         <Text style={styles.muted}>Urgency: {task?.urgency ?? '-'} | ETA: {task?.timeMinutes ?? '-'} min</Text>
         <Text style={styles.muted}>Budget: INR {task ? (task.budgetPaise / 100).toFixed(0) : '-'}</Text>
+        {task?.arrivalOtp ? <Text style={styles.otp}>Arrival OTP: {task.arrivalOtp}</Text> : null}
+        {task?.completionOtp ? <Text style={styles.otp}>Completion OTP: {task.completionOtp}</Text> : null}
 
         <PrimaryButton label="Refresh" onPress={load} loading={busy} variant="ghost" />
       </View>
@@ -284,6 +302,7 @@ const styles = StyleSheet.create({
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   h1: { color: theme.colors.text, fontSize: 20, fontWeight: '900' },
   link: { color: theme.colors.primary, fontWeight: '800' },
+  menu: { color: theme.colors.primary, fontSize: 22, fontWeight: '900', paddingRight: 6 },
   card: {
     borderWidth: 1,
     borderColor: theme.colors.border,
@@ -297,6 +316,7 @@ const styles = StyleSheet.create({
   title: { color: theme.colors.text, fontSize: 15, fontWeight: '800' },
   muted: { color: theme.colors.muted, fontSize: 12, lineHeight: 18 },
   desc: { color: theme.colors.text, fontSize: 14, lineHeight: 20 },
+  otp: { color: theme.colors.primary, fontSize: 14, fontWeight: '800', marginTop: 4 },
   liveCard: {
     marginTop: theme.space.md,
     borderWidth: 1,

@@ -6,6 +6,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { AuthStackParamList } from '../navigation/types';
 import { PrimaryButton } from '../ui/PrimaryButton';
 import { theme } from '../ui/theme';
+import { Segmented } from '../ui/Segmented';
+import { useI18n } from '../i18n/I18nProvider';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'Onboarding'>;
 
@@ -32,7 +34,9 @@ export function OnboardingScreen({ navigation }: Props) {
   const scrollRef = useRef<ScrollView>(null);
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
-  const pageWidth = Math.min(width - 48, 360);
+  const pageWidth = width;
+  const cardWidth = Math.min(width - 48, 360);
+  const { lang, setLang } = useI18n();
 
   const ctaLabel = useMemo(() => (page === PAGES.length - 1 ? 'Get Started' : 'Next'), [page]);
 
@@ -49,8 +53,22 @@ export function OnboardingScreen({ navigation }: Props) {
   return (
     <View style={styles.root}>
       <View style={[styles.header, { paddingTop: Math.max(insets.top, 12) + 6 }]}>
-        <Image source={require('../assets/superlogo.png')} style={styles.logo} />
-        <Text style={styles.brand}>Superheroo</Text>
+        <Segmented
+          value={lang}
+          onChange={(v) => setLang(v as 'en' | 'hi' | 'te')}
+          options={[
+            { key: 'en', label: 'EN' },
+            { key: 'hi', label: 'हिं' },
+            { key: 'te', label: 'తెల' },
+          ]}
+        />
+        <View style={styles.brandRow}>
+          <Image source={require('../assets/superheroo-logo.png')} style={styles.logo} />
+          <View>
+            <Text style={styles.brand}>Superheroo</Text>
+            <Text style={styles.tagline}>Tap. Create. Relax.</Text>
+          </View>
+        </View>
         <Text style={styles.skip} onPress={() => navigation.replace('Login')}>
           Skip
         </Text>
@@ -61,19 +79,23 @@ export function OnboardingScreen({ navigation }: Props) {
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         ref={scrollRef}
+        snapToInterval={pageWidth}
+        decelerationRate="fast"
         onMomentumScrollEnd={(e) => {
           const next = Math.round(e.nativeEvent.contentOffset.x / pageWidth);
           setPage(Math.min(Math.max(next, 0), PAGES.length - 1));
         }}
       >
         {PAGES.map((item) => (
-          <View key={item.title} style={[styles.page, { width: pageWidth, marginHorizontal: (width - pageWidth) / 2 }]}>
-            <Image source={require('../assets/superlogo.png')} style={styles.pageLogo} />
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{item.badge}</Text>
+          <View key={item.title} style={[styles.page, { width: pageWidth }]}>
+            <View style={[styles.card, { width: cardWidth }]}>
+              <Image source={require('../assets/superheroo-logo.png')} style={styles.pageLogo} />
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{item.badge}</Text>
+              </View>
+              <Text style={styles.title}>{item.title}</Text>
+              <Text style={styles.subtitle}>{item.subtitle}</Text>
             </View>
-            <Text style={styles.title}>{item.title}</Text>
-            <Text style={styles.subtitle}>{item.subtitle}</Text>
           </View>
         ))}
       </ScrollView>
@@ -93,13 +115,19 @@ export function OnboardingScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: theme.colors.bg, paddingTop: 16 },
-  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, gap: 10 },
+  header: { paddingHorizontal: 20, gap: 12 },
+  brandRow: { flexDirection: 'row', alignItems: 'center', gap: 10, justifyContent: 'space-between' },
   logo: { width: 44, height: 44, borderRadius: 14 },
-  brand: { fontSize: 18, fontWeight: '800', color: theme.colors.text, flex: 1 },
+  brand: { fontSize: 18, fontWeight: '800', color: theme.colors.text },
+  tagline: { color: theme.colors.muted, fontSize: 12 },
   skip: { color: theme.colors.primary, fontWeight: '700' },
   page: {
+    marginTop: 70,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
+  card: {
     marginHorizontal: 24,
-    marginTop: 80,
     backgroundColor: theme.colors.card,
     borderRadius: theme.radius.lg,
     padding: 24,
@@ -115,7 +143,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  badgeText: { fontSize: 16, fontWeight: '800', color: theme.colors.primaryDark },
+  badgeText: { fontSize: 16, fontWeight: '800', color: theme.colors.primary },
   title: { fontSize: 22, fontWeight: '800', color: theme.colors.text },
   subtitle: { color: theme.colors.muted, lineHeight: 20 },
   dots: { flexDirection: 'row', justifyContent: 'center', gap: 8, marginTop: 24 },

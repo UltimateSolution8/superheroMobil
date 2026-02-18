@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import * as Location from 'expo-location';
+import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -156,6 +157,13 @@ export function BuyerHomeScreen({ navigation }: Props) {
     refreshLocation();
   }, [refreshLocation]);
 
+  useFocusEffect(
+    useCallback(() => {
+      refreshLocation();
+      return undefined;
+    }, [refreshLocation]),
+  );
+
   const searchLocation = useCallback(async () => {
     if (!searchQuery.trim()) return;
     if (!GOOGLE_MAPS_API_KEY) {
@@ -225,10 +233,13 @@ export function BuyerHomeScreen({ navigation }: Props) {
   return (
     <Screen style={styles.screen}>
       <ScrollView
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: theme.space.xl * 2 + insets.bottom }]}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: theme.space.xl * 3 + insets.bottom }]}
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.topBar}>
+          <Text onPress={() => navigation.navigate('Menu')} style={styles.menu}>
+            ☰
+          </Text>
           <Text style={styles.h1}>{t('buyer.create_task')}</Text>
           <View style={styles.topLinks}>
             <Text onPress={() => navigation.navigate('SupportTickets')} style={styles.link}>
@@ -305,7 +316,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
             placeholder={t('buyer.address_placeholder')}
           />
 
-          <View style={[styles.actionsRow, { paddingBottom: Math.max(insets.bottom, theme.space.md) }]}>
+          <View style={[styles.actionsRow, { paddingBottom: Math.max(insets.bottom + theme.space.md, theme.space.lg) }]}>
             <PrimaryButton label={t('buyer.refresh_location')} onPress={refreshLocation} variant="ghost" style={styles.half} />
             <PrimaryButton label={t('buyer.create_task_btn')} onPress={onCreate} disabled={!canCreate} loading={busy} style={styles.half} />
           </View>
@@ -320,6 +331,7 @@ const styles = StyleSheet.create({
   scrollContent: { padding: theme.space.lg, gap: theme.space.md, paddingBottom: theme.space.xl * 2 },
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   topLinks: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  menu: { color: theme.colors.primary, fontSize: 22, fontWeight: '900', paddingRight: 6 },
   h1: { color: theme.colors.text, fontSize: 20, fontWeight: '900' },
   link: { color: theme.colors.primary, fontWeight: '800' },
   card: {

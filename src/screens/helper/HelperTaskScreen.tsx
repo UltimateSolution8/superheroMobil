@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import * as DocumentPicker from 'expo-document-picker';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Alert, AppState, StyleSheet, Text, View } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
+import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import type { Task, TaskStatus, TaskStatusChangedEvent } from '../../api/types';
@@ -11,6 +12,7 @@ import { useSocket } from '../../realtime/SocketProvider';
 import { Screen } from '../../ui/Screen';
 import { PrimaryButton } from '../../ui/PrimaryButton';
 import { Notice } from '../../ui/Notice';
+import { TextField } from '../../ui/TextField';
 import { theme } from '../../ui/theme';
 import type { HelperStackParamList } from '../../navigation/types';
 
@@ -43,6 +45,11 @@ export function HelperTaskScreen({ route, navigation }: Props) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [arrivalOtp, setArrivalOtp] = useState('');
+  const [completionOtp, setCompletionOtp] = useState('');
+
+  const locationSub = useRef<Location.LocationSubscription | null>(null);
+  const lastEmitAt = useRef<number>(0);
 
   const load = useCallback(async () => {
     setBusy(true);
@@ -61,6 +68,13 @@ export function HelperTaskScreen({ route, navigation }: Props) {
     load();
   }, [load]);
 
+  useFocusEffect(
+    useCallback(() => {
+      load();
+      return undefined;
+    }, [load]),
+  );
+
   useEffect(() => {
     if (!socket) return;
     socket.emit('task.subscribe', { taskId });
@@ -78,19 +92,70 @@ export function HelperTaskScreen({ route, navigation }: Props) {
   const status = task?.status ?? 'ASSIGNED';
   const next = useMemo(() => nextStatus(status), [status]);
 
+  const pickSelfie = useCallback(async () => {
+    return new Promise<ImagePicker.ImagePickerAsset | null>((resolve) => {
+      Alert.alert(
+        'Selfie required',
+        'Take a selfie to verify arrival/completion.',
+        [
+          {
+            text: 'Take selfie',
+            onPress: async () => {
+              const cam = await ImagePicker.requestCameraPermissionsAsync();
+              if (cam.status !== 'granted') {
+                setError('Camera permission is required.');
+                resolve(null);
+                return;
+              }
+              const res = await ImagePicker.launchCameraAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                quality: 0.7,
+                allowsEditing: false,
+                cameraType: ImagePicker.CameraType.front,
+              });
+              if (res.canceled || !res.assets?.length) {
+                resolve(null);
+                return;
+              }
+              resolve(res.assets[0]);
+            },
+          },
+          {
+            text: 'Choose from gallery',
+            onPress: async () => {
+              const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+              if (perm.status !== 'granted') {
+                setError('Gallery permission is required.');
+                resolve(null);
+                return;
+              }
+              const res = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                quality: 0.7,
+                allowsEditing: false,
+              });
+              if (res.canceled || !res.assets?.length) {
+                resolve(null);
+                return;
+              }
+              resolve(res.assets[0]);
+            },
+          },
+          { text: 'Cancel', style: 'cancel', onPress: () => resolve(null) },
+        ],
+        { cancelable: true },
+      );
+    });
+  }, []);
+
   const uploadCheckpointSelfie = useCallback(
     async (stage: 'ARRIVAL' | 'COMPLETION') => {
-      const pick = await DocumentPicker.getDocumentAsync({
-        type: ['image/*'],
-        copyToCacheDirectory: true,
-        multiple: false,
-      });
-      if (pick.canceled || !pick.assets?.length) return false;
+      const a = await pickSelfie();
+      if (!a) return false;
 
-      const a = pick.assets[0];
       const selfie: PickedFile = {
         uri: a.uri,
-        name: a.name ?? `${stage.toLowerCase()}-selfie-${Date.now()}.jpg`,
+        name: a.fileName ?? `${stage.toLowerCase()}-selfie-${Date.now()}.jpg`,
         type: a.mimeType ?? 'image/jpeg',
       };
 
@@ -140,15 +205,28 @@ export function HelperTaskScreen({ route, navigation }: Props) {
           return;
         }
       }
+      if (next === 'STARTED') {
+        if (!arrivalOtp.trim()) {
+          setError('Arrival OTP is required to start work.');
+          setBusy(false);
+          return;
+        }
+      }
       if (next === 'COMPLETED') {
         const done = await uploadCheckpointSelfie('COMPLETION');
         if (!done) {
           setBusy(false);
           return;
         }
+        if (!completionOtp.trim()) {
+          setError('Completion OTP is required to finish work.');
+          setBusy(false);
+          return;
+        }
       }
 
-      const updated = await withAuth((at) => api.updateTaskStatus(at, taskId, next));
+      const otp = next === 'STARTED' ? arrivalOtp.trim() : next === 'COMPLETED' ? completionOtp.trim() : null;
+      const updated = await withAuth((at) => api.updateTaskStatus(at, taskId, next, otp));
       setTask(updated);
       setNotice(`Status updated: ${statusLabel(next)}`);
       setTimeout(() => setNotice(null), 1500);
@@ -157,13 +235,80 @@ export function HelperTaskScreen({ route, navigation }: Props) {
     } finally {
       setBusy(false);
     }
-  }, [busy, next, taskId, uploadCheckpointSelfie, withAuth]);
+  }, [arrivalOtp, busy, completionOtp, next, taskId, uploadCheckpointSelfie, withAuth]);
 
   const backHome = useCallback(() => navigation.popToTop(), [navigation]);
+
+  useEffect(() => {
+    if (!socket) return;
+    let cancelled = false;
+    let heartbeat: ReturnType<typeof setInterval> | null = null;
+
+    const start = async () => {
+      try {
+        locationSub.current?.remove();
+        locationSub.current = await Location.watchPositionAsync(
+          {
+            accuracy: Location.Accuracy.Balanced,
+            timeInterval: 10_000,
+            distanceInterval: 15,
+          },
+          (pos) => {
+            if (cancelled) return;
+            const now = Date.now();
+            if (now - lastEmitAt.current < 5_000) return;
+            lastEmitAt.current = now;
+            socket.emit('location.update', { lat: pos.coords.latitude, lng: pos.coords.longitude });
+          },
+        );
+      } catch {
+        // best effort
+      }
+    };
+
+    const startHeartbeat = () => {
+      if (heartbeat) return;
+      heartbeat = setInterval(() => {
+        if (cancelled) return;
+        const now = Date.now();
+        if (now - lastEmitAt.current < 12_000) return;
+        lastEmitAt.current = now;
+        // send a heartbeat using last known location from task coords if no live GPS
+        if (task?.lat && task?.lng) {
+          socket.emit('location.update', { lat: task.lat, lng: task.lng });
+        }
+      }, 12_000);
+    };
+
+    start();
+    startHeartbeat();
+    const appSub = AppState.addEventListener('change', (state) => {
+      if (state !== 'active') {
+        locationSub.current?.remove();
+        locationSub.current = null;
+        if (heartbeat) clearInterval(heartbeat);
+        heartbeat = null;
+      } else {
+        start();
+        startHeartbeat();
+      }
+    });
+
+    return () => {
+      cancelled = true;
+      appSub.remove();
+      if (heartbeat) clearInterval(heartbeat);
+      locationSub.current?.remove();
+      locationSub.current = null;
+    };
+  }, [socket, task?.lat, task?.lng]);
 
   return (
     <Screen>
       <View style={styles.topBar}>
+        <Text onPress={() => navigation.navigate('Menu')} style={styles.menu}>
+          ☰
+        </Text>
         <Text style={styles.h1}>Job</Text>
         <Text onPress={backHome} style={styles.link}>
           Back
@@ -179,6 +324,34 @@ export function HelperTaskScreen({ route, navigation }: Props) {
         {task?.title ? <Text style={styles.title}>{task.title}</Text> : null}
         {task?.addressText ? <Text style={styles.muted}>Address: {task.addressText}</Text> : null}
         {task?.description ? <Text style={styles.desc}>{task.description}</Text> : null}
+
+        {next === 'STARTED' ? (
+          <View>
+            <Text style={styles.muted}>Arrival OTP</Text>
+            <Text style={styles.otpHint}>Ask buyer for the arrival OTP to start work.</Text>
+            <TextField
+              label="Arrival OTP"
+              value={arrivalOtp}
+              onChangeText={setArrivalOtp}
+              placeholder="Enter arrival OTP"
+              keyboardType="number-pad"
+            />
+          </View>
+        ) : null}
+
+        {next === 'COMPLETED' ? (
+          <View>
+            <Text style={styles.muted}>Completion OTP</Text>
+            <Text style={styles.otpHint}>Ask buyer for the completion OTP to finish work.</Text>
+            <TextField
+              label="Completion OTP"
+              value={completionOtp}
+              onChangeText={setCompletionOtp}
+              placeholder="Enter completion OTP"
+              keyboardType="number-pad"
+            />
+          </View>
+        ) : null}
 
         <View style={styles.actions}>
           <PrimaryButton label="Refresh" onPress={load} variant="ghost" style={styles.half} />
@@ -199,6 +372,7 @@ const styles = StyleSheet.create({
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   h1: { color: theme.colors.text, fontSize: 20, fontWeight: '900' },
   link: { color: theme.colors.primary, fontWeight: '800' },
+  menu: { color: theme.colors.primary, fontSize: 22, fontWeight: '900', paddingRight: 6 },
   card: {
     borderWidth: 1,
     borderColor: theme.colors.border,
@@ -212,6 +386,7 @@ const styles = StyleSheet.create({
   title: { color: theme.colors.text, fontSize: 15, fontWeight: '800' },
   muted: { color: theme.colors.muted, fontSize: 12, lineHeight: 18 },
   desc: { color: theme.colors.text, fontSize: 14, lineHeight: 20 },
+  otpHint: { color: theme.colors.muted, fontSize: 12, marginBottom: 6 },
   actions: { flexDirection: 'row', gap: theme.space.sm, paddingTop: 8 },
   half: { flex: 1 },
 });
