@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { Image, KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native';
+import { Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useAuth } from '../auth/AuthContext';
 import { Screen } from '../ui/Screen';
@@ -11,7 +12,7 @@ import { Notice } from '../ui/Notice';
 import { theme } from '../ui/theme';
 import type { AuthStackParamList } from '../navigation/types';
 import { ApiError } from '../api/http';
-import { API_BASE_URL, DEV_SHOW_OTP } from '../config';
+import { DEV_SHOW_OTP } from '../config';
 import { useI18n } from '../i18n/I18nProvider';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'Login'>;
@@ -27,8 +28,7 @@ export function LoginScreen({ navigation }: Props) {
   const [phone, setPhone] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [health, setHealth] = useState<string | null>(null);
-  const [checking, setChecking] = useState(false);
+  const insets = useSafeAreaInsets();
 
   const canSend = useMemo(() => normalizePhone(phone).length === 10, [phone]);
 
@@ -51,30 +51,6 @@ export function LoginScreen({ navigation }: Props) {
     }
   }, [busy, canSend, navigation, phone, role, startOtp]);
 
-  const onCheckConnection = useCallback(async () => {
-    if (checking) return;
-    setChecking(true);
-    setHealth(null);
-    try {
-      const controller = new AbortController();
-      const t = setTimeout(() => controller.abort(), 6000);
-      const res = await fetch(`${API_BASE_URL.replace(/\/$/, '')}/actuator/health`, {
-        signal: controller.signal,
-      });
-      clearTimeout(t);
-      if (!res.ok) {
-        setHealth(`Health check failed (${res.status})`);
-        return;
-      }
-      const data = await res.json();
-      setHealth(data.status === 'UP' ? 'Backend reachable (UP)' : `Backend status: ${data.status}`);
-    } catch (_e) {
-      setHealth('Backend not reachable from this device');
-    } finally {
-      setChecking(false);
-    }
-  }, [checking]);
-
   const onSignup = useCallback(() => {
     navigation.navigate(role === 'BUYER' ? 'BuyerSignup' : 'HelperSignup');
   }, [navigation, role]);
@@ -82,76 +58,63 @@ export function LoginScreen({ navigation }: Props) {
   return (
     <Screen>
       <KeyboardAvoidingView behavior={Platform.select({ ios: 'padding', android: undefined })} style={styles.kav}>
-        <View style={styles.header}>
-          <View style={styles.brandRow}>
-            <Image source={require('../assets/superlogo.png')} style={styles.logo} />
-            <View>
-              <Text style={styles.h1}>{t('app.name')}</Text>
-              <Text style={styles.sub}>{t('app.tagline')}</Text>
+        <ScrollView
+          contentContainerStyle={[styles.scroll, { paddingBottom: Math.max(insets.bottom, 12) + 16 }]}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={[styles.header, { paddingTop: Math.max(insets.top, 8) + 6 }]}>
+            <View style={styles.brandRow}>
+              <Image source={require('../assets/superlogo.png')} style={styles.logo} />
+              <View>
+                <Text style={styles.h1}>{t('app.name')}</Text>
+                <Text style={styles.sub}>{t('app.tagline')}</Text>
+              </View>
             </View>
           </View>
-        </View>
 
-        <Segmented
-          value={lang}
-          onChange={(v) => setLang(v as 'en' | 'hi' | 'te')}
-          options={[
-            { key: 'en', label: 'EN' },
-            { key: 'hi', label: 'हिं' },
-            { key: 'te', label: 'తెల' },
-          ]}
-        />
-
-        <Segmented
-          value={role}
-          onChange={(v) => setRole(v as 'BUYER' | 'HELPER')}
-          options={[
-            { key: 'BUYER', label: t('login.need_help') },
-            { key: 'HELPER', label: t('login.can_help') },
-          ]}
-        />
-
-        <TextField
-          label={t('login.phone')}
-          value={phone}
-          onChangeText={setPhone}
-          placeholder={t('login.phone_placeholder')}
-          keyboardType="phone-pad"
-          autoFocus
-        />
-
-        {DEV_SHOW_OTP ? (
-          <Notice
-            kind="warning"
-            text="Dev demo numbers: Buyer=7777777777, Helper=8888888888, Admin=9999999999 (admin only works on web/admin tools)."
+          <Segmented
+            value={lang}
+            onChange={(v) => setLang(v as 'en' | 'hi' | 'te')}
+            options={[
+              { key: 'en', label: 'EN' },
+              { key: 'hi', label: 'हिं' },
+              { key: 'te', label: 'తెల' },
+            ]}
           />
-        ) : null}
 
-        <Notice
-          kind="info"
-          text={`API: ${API_BASE_URL}`}
-        />
+          <Segmented
+            value={role}
+            onChange={(v) => setRole(v as 'BUYER' | 'HELPER')}
+            options={[
+              { key: 'BUYER', label: t('login.need_help') },
+              { key: 'HELPER', label: t('login.can_help') },
+            ]}
+          />
 
-        <Text onPress={onCheckConnection} style={styles.alt}>
-          {checking ? t('login.backend_checking') : t('login.backend_test')}
-        </Text>
+          <TextField
+            label={t('login.phone')}
+            value={phone}
+            onChangeText={setPhone}
+            placeholder={t('login.phone_placeholder')}
+            keyboardType="phone-pad"
+            autoFocus
+          />
 
-        {health ? <Notice kind={health.includes('UP') ? 'success' : 'danger'} text={health} /> : null}
+          {DEV_SHOW_OTP ? <Notice kind="warning" text="Dev OTP is shown on the next screen." /> : null}
 
-        {error ? <Notice kind="danger" text={error} /> : null}
+          {error ? <Notice kind="danger" text={error} /> : null}
 
-        <View style={styles.footer}>
-          <PrimaryButton label={t('login.send_otp')} onPress={onSend} disabled={!canSend} loading={busy} />
-          <Text onPress={() => navigation.navigate('EmailLogin')} style={styles.alt}>
-            {t('login.use_email')}
-          </Text>
-          <Text onPress={onSignup} style={styles.alt}>
-            {role === 'BUYER' ? t('login.create_account_buyer') : t('login.create_account_helper')}
-          </Text>
-          <Text style={styles.legal}>
-            {t('login.terms')}
-          </Text>
-        </View>
+          <View style={styles.footer}>
+            <PrimaryButton label={t('login.send_otp')} onPress={onSend} disabled={!canSend} loading={busy} />
+            <Text onPress={() => navigation.navigate('EmailLogin')} style={styles.alt}>
+              {t('login.use_email')}
+            </Text>
+            <Text onPress={onSignup} style={styles.alt}>
+              {role === 'BUYER' ? t('login.create_account_buyer') : t('login.create_account_helper')}
+            </Text>
+            <Text style={styles.legal}>{t('login.terms')}</Text>
+          </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </Screen>
   );
@@ -159,12 +122,13 @@ export function LoginScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   kav: { flex: 1, justifyContent: 'space-between' },
-  header: { gap: 10, paddingTop: 8 },
+  scroll: { gap: theme.space.md },
+  header: { gap: 10 },
   brandRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  logo: { width: 44, height: 44, borderRadius: 14 },
+  logo: { width: 56, height: 56, borderRadius: 18 },
   h1: { color: theme.colors.text, fontSize: 30, fontWeight: '900', letterSpacing: 0.3 },
   sub: { color: theme.colors.muted, fontSize: 14, lineHeight: 20 },
-  footer: { gap: 12, paddingBottom: 6 },
+  footer: { gap: 12, marginTop: 8 },
   alt: { color: theme.colors.primary, fontWeight: '800', textAlign: 'center', paddingVertical: 4 },
   legal: { color: theme.colors.muted, fontSize: 12, lineHeight: 18 },
 });

@@ -1,6 +1,7 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { AuthStackParamList } from '../navigation/types';
 import { PrimaryButton } from '../ui/PrimaryButton';
@@ -29,6 +30,9 @@ const PAGES = [
 export function OnboardingScreen({ navigation }: Props) {
   const [page, setPage] = useState(0);
   const scrollRef = useRef<ScrollView>(null);
+  const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const pageWidth = Math.min(width - 48, 360);
 
   const ctaLabel = useMemo(() => (page === PAGES.length - 1 ? 'Get Started' : 'Next'), [page]);
 
@@ -36,7 +40,7 @@ export function OnboardingScreen({ navigation }: Props) {
     if (page < PAGES.length - 1) {
       const next = page + 1;
       setPage(next);
-      scrollRef.current?.scrollTo({ x: next * 320, animated: true });
+      scrollRef.current?.scrollTo({ x: next * pageWidth, animated: true });
     } else {
       navigation.replace('Login');
     }
@@ -44,7 +48,7 @@ export function OnboardingScreen({ navigation }: Props) {
 
   return (
     <View style={styles.root}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: Math.max(insets.top, 12) + 6 }]}>
         <Image source={require('../assets/superlogo.png')} style={styles.logo} />
         <Text style={styles.brand}>Superheroo</Text>
         <Text style={styles.skip} onPress={() => navigation.replace('Login')}>
@@ -58,12 +62,13 @@ export function OnboardingScreen({ navigation }: Props) {
         showsHorizontalScrollIndicator={false}
         ref={scrollRef}
         onMomentumScrollEnd={(e) => {
-          const next = Math.round(e.nativeEvent.contentOffset.x / 320);
+          const next = Math.round(e.nativeEvent.contentOffset.x / pageWidth);
           setPage(Math.min(Math.max(next, 0), PAGES.length - 1));
         }}
       >
         {PAGES.map((item) => (
-          <View key={item.title} style={styles.page}>
+          <View key={item.title} style={[styles.page, { width: pageWidth, marginHorizontal: (width - pageWidth) / 2 }]}>
+            <Image source={require('../assets/superlogo.png')} style={styles.pageLogo} />
             <View style={styles.badge}>
               <Text style={styles.badgeText}>{item.badge}</Text>
             </View>
@@ -79,7 +84,7 @@ export function OnboardingScreen({ navigation }: Props) {
         ))}
       </View>
 
-      <View style={styles.cta}>
+      <View style={[styles.cta, { paddingBottom: Math.max(insets.bottom, 12) + 10 }]}>
         <PrimaryButton label={ctaLabel} onPress={onNext} />
       </View>
     </View>
@@ -89,12 +94,11 @@ export function OnboardingScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: theme.colors.bg, paddingTop: 16 },
   header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, gap: 10 },
-  logo: { width: 38, height: 38, borderRadius: 12 },
+  logo: { width: 44, height: 44, borderRadius: 14 },
   brand: { fontSize: 18, fontWeight: '800', color: theme.colors.text, flex: 1 },
   skip: { color: theme.colors.primary, fontWeight: '700' },
   page: {
-    width: 320,
-    marginHorizontal: 35,
+    marginHorizontal: 24,
     marginTop: 80,
     backgroundColor: theme.colors.card,
     borderRadius: theme.radius.lg,
@@ -102,6 +106,7 @@ const styles = StyleSheet.create({
     gap: 10,
     ...theme.shadow.card,
   },
+  pageLogo: { width: 72, height: 72, borderRadius: 18, alignSelf: 'center' },
   badge: {
     width: 48,
     height: 48,
