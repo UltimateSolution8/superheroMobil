@@ -74,7 +74,7 @@ export function LoginScreen({ navigation }: Props) {
 
           <View style={[styles.header, { paddingTop: Math.max(insets.top, 8) + 6 }]}>
             <View style={styles.brandRow}>
-              <Image source={require('../assets/superheroo-logo.png')} style={styles.logo} />
+              <Image source={require('../../assets/superheroo-logo.png')} style={styles.logo} />
               <View>
                 <Text style={styles.h1}>{t('app.name')}</Text>
                 <Text style={styles.sub}>{t('app.tagline')}</Text>

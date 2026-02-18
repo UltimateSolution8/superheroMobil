@@ -63,7 +63,7 @@ export function OnboardingScreen({ navigation }: Props) {
           ]}
         />
         <View style={styles.brandRow}>
-          <Image source={require('../assets/superheroo-logo.png')} style={styles.logo} />
+          <Image source={require('../../assets/superheroo-logo.png')} style={styles.logo} />
           <View>
             <Text style={styles.brand}>Superheroo</Text>
             <Text style={styles.tagline}>Tap. Create. Relax.</Text>
@@ -89,7 +89,7 @@ export function OnboardingScreen({ navigation }: Props) {
         {PAGES.map((item) => (
           <View key={item.title} style={[styles.page, { width: pageWidth }]}>
             <View style={[styles.card, { width: cardWidth }]}>
-              <Image source={require('../assets/superheroo-logo.png')} style={styles.pageLogo} />
+              <Image source={require('../../assets/superheroo-logo.png')} style={styles.pageLogo} />
               <View style={styles.badge}>
                 <Text style={styles.badgeText}>{item.badge}</Text>
               </View>

@@ -21,7 +21,7 @@ export function SplashScreen({ navigation }: Props) {
     <View style={styles.root}>
       <View style={[styles.header, { paddingTop: Math.max(insets.top, 12) }]} />
       <View style={styles.center}>
-        <Image source={require('../assets/superheroo-logo.png')} style={styles.logo} />
+        <Image source={require('../../assets/superheroo-logo.png')} style={styles.logo} />
         <Text style={styles.title}>Superheroo</Text>
         <Text style={styles.tagline}>Tap. Create. Relax.</Text>
       </View>
