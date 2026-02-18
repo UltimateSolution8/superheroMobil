@@ -1,0 +1,130 @@
+FROM ghcr.io/cirruslabs/android-sdk:34 AS build
+
+WORKDIR /app
+
+ARG APK_VARIANT=debug
+ARG EXPO_PUBLIC_API_BASE_URL=http://localhost:8080
+ARG EXPO_PUBLIC_SOCKET_URL=http://localhost:8090
+ARG EXPO_PUBLIC_DEMO_FALLBACK_LOCATION=
+ARG EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=
+ARG EXPO_PUBLIC_DEV_SHOW_OTP=true
+
+ENV ANDROID_SDK_ROOT=/opt/android-sdk-linux
+ENV ANDROID_HOME=/opt/android-sdk-linux
+ENV EXPO_PUBLIC_API_BASE_URL=${EXPO_PUBLIC_API_BASE_URL}
+ENV EXPO_PUBLIC_SOCKET_URL=${EXPO_PUBLIC_SOCKET_URL}
+ENV EXPO_PUBLIC_DEMO_FALLBACK_LOCATION=${EXPO_PUBLIC_DEMO_FALLBACK_LOCATION}
+ENV EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=${EXPO_PUBLIC_GOOGLE_MAPS_API_KEY}
+ENV EXPO_PUBLIC_DEV_SHOW_OTP=${EXPO_PUBLIC_DEV_SHOW_OTP}
+
+# Install Node >= 20.19.4 (React Native / Expo 54 requirement) and basic tooling.
+RUN apt-get update -qq \
+  && apt-get install -y --no-install-recommends curl ca-certificates gnupg git \
+  && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+  && apt-get install -y --no-install-recommends nodejs \
+  && rm -rf /var/lib/apt/lists/*
+
+COPY package.json package-lock.json app.json app.config.js tsconfig.json index.ts App.tsx ./
+RUN npm ci
+
+COPY assets ./assets
+COPY src ./src
+
+# Ensure manifest reflects latest app.config.js changes (Google Maps API key).
+RUN CI=1 npx expo prebuild --platform android --clean
+
+# Generate native Android project inside the image (keeps host disk clean).
+# (Re-run without --clean to keep prebuild caches warm for subsequent layers.)
+RUN CI=1 npx expo prebuild --platform android
+
+# Only for "release": pre-install Android SDK components that Gradle might try to download.
+# This reduces flaky builds due to occasional corrupted SDK zip downloads.
+RUN set -eux; \
+  if [ "$APK_VARIANT" = "release" ]; then \
+    SDKMANAGER="/opt/android-sdk-linux/cmdline-tools/latest/bin/sdkmanager"; \
+    test -x "$SDKMANAGER"; \
+    export ANDROID_SDK_ROOT="/opt/android-sdk-linux"; \
+    export ANDROID_HOME="/opt/android-sdk-linux"; \
+    for i in 1 2 3; do \
+      yes | "$SDKMANAGER" --sdk_root="$ANDROID_SDK_ROOT" --install \
+        "platform-tools" \
+        "platforms;android-36" \
+        "build-tools;36.0.0" \
+        && break; \
+      echo "sdkmanager failed (attempt $i). Clearing caches and retrying..." >&2; \
+      rm -rf /root/.android/cache || true; \
+      rm -rf "$ANDROID_SDK_ROOT/.android/cache" || true; \
+      sleep 3; \
+    done; \
+    test -d "$ANDROID_SDK_ROOT/build-tools/36.0.0"; \
+  fi
+
+# Keep the build within typical Docker Desktop memory limits by:
+# - limiting ABIs (arm64-only is enough for modern Android devices)
+# - reducing Gradle/Kotlin heap sizes
+# - disabling parallel workers
+RUN set -eux; \
+  GP="/app/android/gradle.properties"; \
+  touch "$GP"; \
+  if grep -q '^reactNativeArchitectures=' "$GP"; then \
+    sed -i 's/^reactNativeArchitectures=.*/reactNativeArchitectures=arm64-v8a/' "$GP"; \
+  else \
+    printf '%s\n' 'reactNativeArchitectures=arm64-v8a' >> "$GP"; \
+  fi; \
+  if grep -q '^org.gradle.jvmargs=' "$GP"; then \
+    sed -i 's/^org.gradle.jvmargs=.*/org.gradle.jvmargs=-Xmx1536m -XX:MaxMetaspaceSize=512m -Dfile.encoding=UTF-8/' "$GP"; \
+  else \
+    printf '%s\n' 'org.gradle.jvmargs=-Xmx1536m -XX:MaxMetaspaceSize=512m -Dfile.encoding=UTF-8' >> "$GP"; \
+  fi; \
+  if grep -q '^kotlin.daemon.jvmargs=' "$GP"; then \
+    sed -i 's/^kotlin.daemon.jvmargs=.*/kotlin.daemon.jvmargs=-Xmx512m/' "$GP"; \
+  else \
+    printf '%s\n' 'kotlin.daemon.jvmargs=-Xmx512m' >> "$GP"; \
+  fi; \
+  if grep -q '^org.gradle.workers.max=' "$GP"; then \
+    sed -i 's/^org.gradle.workers.max=.*/org.gradle.workers.max=1/' "$GP"; \
+  else \
+    printf '%s\n' 'org.gradle.workers.max=1' >> "$GP"; \
+  fi; \
+  if grep -q '^org.gradle.parallel=' "$GP"; then \
+    sed -i 's/^org.gradle.parallel=.*/org.gradle.parallel=false/' "$GP"; \
+  else \
+    printf '%s\n' 'org.gradle.parallel=false' >> "$GP"; \
+  fi; \
+  if grep -q '^org.gradle.vfs.watch=' "$GP"; then \
+    sed -i 's/^org.gradle.vfs.watch=.*/org.gradle.vfs.watch=false/' "$GP"; \
+  else \
+    printf '%s\n' 'org.gradle.vfs.watch=false' >> "$GP"; \
+  fi
+
+WORKDIR /app/android
+RUN set -eux; \
+  if [ "$APK_VARIANT" = "release" ]; then \
+    # Make release installable without requiring a private keystore (dev-only).
+    # This swaps the release signing config to use the standard debug keystore.
+    sed -i 's/signingConfig signingConfigs\\.release/signingConfig signingConfigs.debug/g' /app/android/app/build.gradle || true; \
+    ./gradlew --no-daemon --max-workers 1 assembleRelease -x lint -x test; \
+  elif [ "$APK_VARIANT" = "standalone" ]; then \
+    # Bundle JS during the build so the APK does NOT require Metro (fixes "Unable to load script" on devices).
+    # React Native's Gradle tasks differ across versions/plugins; try the common task names.
+    ./gradlew --no-daemon --max-workers 1 bundleDebugJsAndAssets -x lint -x test \
+      || ./gradlew --no-daemon --max-workers 1 createBundleDebugJsAndAssets -x lint -x test; \
+    ./gradlew --no-daemon --max-workers 1 assembleDebug -x lint -x test; \
+  else \
+    ./gradlew --no-daemon --max-workers 1 assembleDebug -x lint -x test; \
+  fi
+
+FROM build AS artifact
+ARG APK_VARIANT=debug
+RUN set -eux; \
+  mkdir -p /out; \
+  if [ "$APK_VARIANT" = "release" ]; then \
+    cp -f /app/android/app/build/outputs/apk/release/app-release.apk /out/Superheroo-release.apk; \
+  elif [ "$APK_VARIANT" = "standalone" ]; then \
+    cp -f /app/android/app/build/outputs/apk/debug/app-debug.apk /out/Superheroo-standalone.apk; \
+  else \
+    cp -f /app/android/app/build/outputs/apk/debug/app-debug.apk /out/Superheroo-debug.apk; \
+  fi
+
+FROM scratch
+COPY --from=artifact /out/ /out/
