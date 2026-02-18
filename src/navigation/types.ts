@@ -1,6 +1,8 @@
 import type { UserRole } from '../api/types';
 
 export type AuthStackParamList = {
+  Splash: undefined;
+  Onboarding: undefined;
   Login: undefined;
   EmailLogin: undefined;
   BuyerSignup: undefined;
