@@ -20,7 +20,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     }
 
     const s = io(SOCKET_URL, {
-      transports: ['websocket'],
+      transports: ['websocket', 'polling'],
       auth: { token: accessToken },
       timeout: 8000,
       reconnectionDelayMax: 3000,
@@ -40,4 +40,3 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 export function useSocket(): Socket | null {
   return useContext(SocketContext);
 }
-

@@ -29,6 +29,31 @@ function authHeaders(accessToken: string | null): Record<string, string> {
   return h;
 }
 
+function toNumber(value: unknown, fallback = 0): number {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function toOptionalNumber(value: unknown): number | null {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+function normalizeTask(raw: any): Task {
+  if (!raw || typeof raw !== 'object') return raw as Task;
+  return {
+    ...raw,
+    timeMinutes: toNumber(raw.timeMinutes, 0),
+    budgetPaise: toNumber(raw.budgetPaise, 0),
+    lat: toNumber(raw.lat, 0),
+    lng: toNumber(raw.lng, 0),
+    arrivalSelfieLat: toOptionalNumber(raw.arrivalSelfieLat),
+    arrivalSelfieLng: toOptionalNumber(raw.arrivalSelfieLng),
+    completionSelfieLat: toOptionalNumber(raw.completionSelfieLat),
+    completionSelfieLng: toOptionalNumber(raw.completionSelfieLng),
+  } as Task;
+}
+
 export async function otpStart(phone: string, role: UserRole): Promise<OtpStartResponse> {
   return fetchJson(url('/api/v1/auth/otp/start'), {
     method: 'POST',
@@ -145,10 +170,11 @@ export async function createTask(accessToken: string, req: CreateTaskRequest): P
 }
 
 export async function acceptTask(accessToken: string, taskId: string): Promise<Task> {
-  return fetchJson(url(`/api/v1/tasks/${taskId}/accept`), {
+  const task = await fetchJson<Task>(url(`/api/v1/tasks/${taskId}/accept`), {
     method: 'POST',
     headers: authHeaders(accessToken),
   });
+  return normalizeTask(task);
 }
 
 export async function updateTaskStatus(
@@ -157,11 +183,12 @@ export async function updateTaskStatus(
   status: TaskStatus,
   otp?: string | null,
 ): Promise<Task> {
-  return fetchJson(url(`/api/v1/tasks/${taskId}/status`), {
+  const task = await fetchJson<Task>(url(`/api/v1/tasks/${taskId}/status`), {
     method: 'POST',
     headers: authHeaders(accessToken),
     body: JSON.stringify({ status, otp: otp ?? null }),
   });
+  return normalizeTask(task);
 }
 
 export async function uploadTaskSelfie(
@@ -201,21 +228,23 @@ export async function uploadTaskSelfie(
     const message = parsed?.message || `Request failed (${res.status})`;
     throw new ApiError(message, { status: res.status, code: parsed?.code, details: parsed?.details });
   }
-  return parsed as Task;
+  return normalizeTask(parsed);
 }
 
 export async function getTask(accessToken: string, taskId: string): Promise<Task> {
-  return fetchJson(url(`/api/v1/tasks/${taskId}`), {
+  const task = await fetchJson<Task>(url(`/api/v1/tasks/${taskId}`), {
     method: 'GET',
     headers: authHeaders(accessToken),
   });
+  return normalizeTask(task);
 }
 
 export async function listMyTasks(accessToken: string): Promise<Task[]> {
-  return fetchJson(url('/api/v1/tasks/mine'), {
+  const tasks = await fetchJson<Task[]>(url('/api/v1/tasks/mine'), {
     method: 'GET',
     headers: authHeaders(accessToken),
   });
+  return Array.isArray(tasks) ? tasks.map((t) => normalizeTask(t)) : [];
 }
 
 export async function getMe(accessToken: string): Promise<MeProfile> {

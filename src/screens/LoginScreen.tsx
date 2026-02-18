@@ -12,7 +12,6 @@ import { Notice } from '../ui/Notice';
 import { theme } from '../ui/theme';
 import type { AuthStackParamList } from '../navigation/types';
 import { ApiError } from '../api/http';
-import { DEV_SHOW_OTP } from '../config';
 import { useI18n } from '../i18n/I18nProvider';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'Login'>;
@@ -62,23 +61,22 @@ export function LoginScreen({ navigation }: Props) {
           contentContainerStyle={[styles.scroll, { paddingBottom: Math.max(insets.bottom, 12) + 16 }]}
           keyboardShouldPersistTaps="handled"
         >
-          <Segmented
-            value={lang}
-            onChange={(v) => setLang(v as 'en' | 'hi' | 'te')}
-            options={[
-              { key: 'en', label: 'EN' },
-              { key: 'hi', label: 'हिं' },
-              { key: 'te', label: 'తెల' },
-            ]}
-          />
-
           <View style={[styles.header, { paddingTop: Math.max(insets.top, 8) + 6 }]}>
-            <View style={styles.brandRow}>
+            <View style={styles.langRow}>
+              <Segmented
+                value={lang}
+                onChange={(v) => setLang(v as 'en' | 'hi' | 'te')}
+                options={[
+                  { key: 'en', label: 'EN' },
+                  { key: 'hi', label: 'हिं' },
+                  { key: 'te', label: 'తెల' },
+                ]}
+              />
+            </View>
+            <View style={styles.brandBlock}>
               <Image source={require('../../assets/superheroo-logo.png')} style={styles.logo} />
-              <View>
-                <Text style={styles.h1}>{t('app.name')}</Text>
-                <Text style={styles.sub}>{t('app.tagline')}</Text>
-              </View>
+              <Text style={styles.h1}>{t('app.name')}</Text>
+              <Text style={styles.sub}>{t('app.tagline')}</Text>
             </View>
           </View>
 
@@ -100,8 +98,6 @@ export function LoginScreen({ navigation }: Props) {
             autoFocus
           />
 
-          {DEV_SHOW_OTP ? <Notice kind="warning" text="Dev OTP is shown on the next screen." /> : null}
-
           {error ? <Notice kind="danger" text={error} /> : null}
 
           <View style={styles.footer}>
@@ -121,9 +117,10 @@ export function LoginScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   kav: { flex: 1, justifyContent: 'space-between' },
   scroll: { gap: theme.space.md },
-  header: { gap: 10 },
-  brandRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  logo: { width: 56, height: 56, borderRadius: 18 },
+  header: { gap: 12 },
+  langRow: { alignItems: 'flex-start', marginBottom: 6 },
+  brandBlock: { alignItems: 'center', gap: 6 },
+  logo: { width: 72, height: 72, borderRadius: 20 },
   h1: { color: theme.colors.text, fontSize: 30, fontWeight: '900', letterSpacing: 0.3 },
   sub: { color: theme.colors.muted, fontSize: 14, lineHeight: 20 },
   footer: { gap: 12, marginTop: 8 },

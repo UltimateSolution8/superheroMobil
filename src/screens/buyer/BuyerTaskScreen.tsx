@@ -11,8 +11,9 @@ import { useSocket } from '../../realtime/SocketProvider';
 import { Screen } from '../../ui/Screen';
 import { PrimaryButton } from '../../ui/PrimaryButton';
 import { Notice } from '../../ui/Notice';
+import { MenuButton } from '../../ui/MenuButton';
 import { theme } from '../../ui/theme';
-import { GOOGLE_MAPS_API_KEY } from '../../config';
+import { DEMO_FALLBACK_LOCATION, GOOGLE_MAPS_API_KEY } from '../../config';
 import type { BuyerStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<BuyerStackParamList, 'BuyerTask'>;
@@ -87,6 +88,12 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
 
   const lastRouteFetch = useRef(0);
   const helperMarkerRef = useRef<any>(null);
+  const mapRef = useRef<MapView | null>(null);
+  const lastFitAt = useRef(0);
+
+  const taskLat = Number(task?.lat);
+  const taskLng = Number(task?.lng);
+  const hasTaskCoords = Number.isFinite(taskLat) && Number.isFinite(taskLng);
 
   const load = useCallback(async () => {
     setBusy(true);
@@ -138,6 +145,19 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
       if (marker && typeof marker.animateMarkerToCoordinate === 'function' && Platform.OS === 'android') {
         marker.animateMarkerToCoordinate({ latitude: nextLat, longitude: nextLng }, 900);
       }
+      if (hasTaskCoords && mapRef.current) {
+        const now = Date.now();
+        if (now - lastFitAt.current > 6_000) {
+          lastFitAt.current = now;
+          mapRef.current.fitToCoordinates(
+            [
+              { latitude: taskLat, longitude: taskLng },
+              { latitude: nextLat, longitude: nextLng },
+            ],
+            { edgePadding: { top: 80, right: 60, bottom: 100, left: 60 }, animated: true },
+          );
+        }
+      }
     };
 
     socket.on('task_assigned', onAssigned);
@@ -148,10 +168,10 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
       socket.off('task_status_changed', onStatus);
       socket.off('helper.location', onHelperLoc);
     };
-  }, [socket, taskId]);
+  }, [socket, taskId, hasTaskCoords, taskLat, taskLng]);
 
   useEffect(() => {
-    if (!task || !helperLoc || !GOOGLE_MAPS_API_KEY) return;
+    if (!task || !helperLoc || !GOOGLE_MAPS_API_KEY || !hasTaskCoords) return;
     const now = Date.now();
     if (now - lastRouteFetch.current < 12_000) return;
     lastRouteFetch.current = now;
@@ -161,7 +181,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
         const url =
           'https://maps.googleapis.com/maps/api/directions/json' +
           `?origin=${helperLoc.lat},${helperLoc.lng}` +
-          `&destination=${task.lat},${task.lng}` +
+          `&destination=${taskLat},${taskLng}` +
           `&key=${encodeURIComponent(GOOGLE_MAPS_API_KEY)}`;
         const res = await fetch(url);
         const json = await res.json();
@@ -182,15 +202,28 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
     fetchRoute();
   }, [helperLoc, task]);
 
+  useEffect(() => {
+    if (!mapRef.current || !hasTaskCoords) return;
+    mapRef.current.animateToRegion(
+      {
+        latitude: taskLat,
+        longitude: taskLng,
+        latitudeDelta: 0.02,
+        longitudeDelta: 0.02,
+      },
+      800,
+    );
+  }, [hasTaskCoords, taskLat, taskLng]);
+
   const onBackHome = useCallback(() => navigation.popToTop(), [navigation]);
 
   const status = task?.status ?? 'SEARCHING';
   const helperId = task?.assignedHelperId ?? null;
   const canDone = useMemo(() => status === 'COMPLETED', [status]);
   const helperDistance = useMemo(() => {
-    if (!task || !helperLoc) return null;
-    return distanceMeters({ lat: task.lat, lng: task.lng }, { lat: helperLoc.lat, lng: helperLoc.lng });
-  }, [helperLoc, task]);
+    if (!task || !helperLoc || !hasTaskCoords) return null;
+    return distanceMeters({ lat: taskLat, lng: taskLng }, { lat: helperLoc.lat, lng: helperLoc.lng });
+  }, [helperLoc, hasTaskCoords, task, taskLat, taskLng]);
   const helperEta = useMemo(() => {
     if (routeEtaMin != null) return routeEtaMin;
     if (!helperDistance) return null;
@@ -210,9 +243,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
   return (
     <Screen style={styles.screen}>
       <View style={styles.topBar}>
-        <Text onPress={() => navigation.navigate('Menu')} style={styles.menu}>
-          ☰
-        </Text>
+        <MenuButton onPress={() => navigation.navigate('Menu')} />
         <Text style={styles.h1}>Task</Text>
         <Text onPress={onBackHome} style={styles.link}>
           Back
@@ -225,23 +256,15 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
         <MapView
           style={styles.map}
           provider={PROVIDER_GOOGLE}
-          region={
-            task
-              ? {
-                  latitude: task.lat,
-                  longitude: task.lng,
-                  latitudeDelta: 0.02,
-                  longitudeDelta: 0.02,
-                }
-              : {
-                  latitude: 12.9716,
-                  longitude: 77.5946,
-                  latitudeDelta: 0.02,
-                  longitudeDelta: 0.02,
-                }
-          }
+          ref={mapRef}
+          initialRegion={{
+            latitude: hasTaskCoords ? taskLat : DEMO_FALLBACK_LOCATION?.lat ?? 12.9716,
+            longitude: hasTaskCoords ? taskLng : DEMO_FALLBACK_LOCATION?.lng ?? 77.5946,
+            latitudeDelta: 0.02,
+            longitudeDelta: 0.02,
+          }}
         >
-          {task ? <Marker coordinate={{ latitude: task.lat, longitude: task.lng }} title="You" /> : null}
+          {hasTaskCoords ? <Marker coordinate={{ latitude: taskLat, longitude: taskLng }} title="You" /> : null}
           {helperLoc ? (
             <Marker
               ref={helperMarkerRef}
@@ -302,7 +325,6 @@ const styles = StyleSheet.create({
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   h1: { color: theme.colors.text, fontSize: 20, fontWeight: '900' },
   link: { color: theme.colors.primary, fontWeight: '800' },
-  menu: { color: theme.colors.primary, fontSize: 22, fontWeight: '900', paddingRight: 6 },
   card: {
     borderWidth: 1,
     borderColor: theme.colors.border,

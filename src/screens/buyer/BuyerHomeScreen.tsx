@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import * as Location from 'expo-location';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -16,6 +16,7 @@ import { PrimaryButton } from '../../ui/PrimaryButton';
 import { TextField } from '../../ui/TextField';
 import { Notice } from '../../ui/Notice';
 import { Segmented } from '../../ui/Segmented';
+import { MenuButton } from '../../ui/MenuButton';
 import { theme } from '../../ui/theme';
 import { DEMO_FALLBACK_LOCATION, GOOGLE_MAPS_API_KEY } from '../../config';
 import type { BuyerStackParamList } from '../../navigation/types';
@@ -232,106 +233,109 @@ export function BuyerHomeScreen({ navigation }: Props) {
 
   return (
     <Screen style={styles.screen}>
-      <ScrollView
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: theme.space.xl * 3 + insets.bottom }]}
-        keyboardShouldPersistTaps="handled"
-      >
-        <View style={styles.topBar}>
-          <Text onPress={() => navigation.navigate('Menu')} style={styles.menu}>
-            ☰
-          </Text>
-          <Text style={styles.h1}>{t('buyer.create_task')}</Text>
-          <View style={styles.topLinks}>
-            <Text onPress={() => navigation.navigate('SupportTickets')} style={styles.link}>
-              {t('buyer.support')}
-            </Text>
-            <Text onPress={signOut} style={styles.link}>
-              {t('buyer.sign_out')}
-            </Text>
-          </View>
-        </View>
-
-        {!online ? <Notice kind="warning" text={t('buyer.offline')} /> : null}
-        {locError ? <Notice kind="warning" text={locError} /> : null}
-        {error ? <Notice kind="danger" text={error} /> : null}
-
-        <View style={styles.card}>
-          <Text style={styles.section}>{t('buyer.pickup_location')}</Text>
-          <View style={styles.searchRow}>
-            <View style={styles.searchField}>
-              <TextField
-                label={t('buyer.search_location')}
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                placeholder={t('buyer.search_location')}
-              />
+      <KeyboardAvoidingView behavior={Platform.select({ ios: 'padding', android: undefined })} style={styles.kav}>
+        <ScrollView
+          contentContainerStyle={[
+            styles.scrollContent,
+            { paddingBottom: theme.space.xl * 2 + Math.max(insets.bottom, theme.space.lg) },
+          ]}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.topBar}>
+            <MenuButton onPress={() => navigation.navigate('Menu')} />
+            <Text style={styles.h1}>{t('buyer.create_task')}</Text>
+            <View style={styles.topLinks}>
+              <Text onPress={() => navigation.navigate('SupportTickets')} style={styles.link}>
+                {t('buyer.support')}
+              </Text>
+              <Text onPress={signOut} style={styles.link}>
+                {t('buyer.sign_out')}
+              </Text>
             </View>
-            <PrimaryButton label={t('buyer.search')} onPress={searchLocation} loading={searchBusy} style={styles.searchBtn} />
           </View>
 
-          <View style={styles.mapWrap}>
-            <MapView
-              style={styles.map}
-              provider={PROVIDER_GOOGLE}
-              onPress={onMapPress}
-              initialRegion={{
-                latitude: lat ?? DEMO_FALLBACK_LOCATION?.lat ?? 12.9716,
-                longitude: lng ?? DEMO_FALLBACK_LOCATION?.lng ?? 77.5946,
-                latitudeDelta: 0.01,
-                longitudeDelta: 0.01,
-              }}
-              region={
-                lat != null && lng != null
-                  ? {
-                      latitude: lat,
-                      longitude: lng,
-                      latitudeDelta: 0.01,
-                      longitudeDelta: 0.01,
-                    }
-                  : undefined
-              }
-            >
-              {lat != null && lng != null ? (
-                <Marker coordinate={{ latitude: lat, longitude: lng }} title="Pickup location" />
-              ) : null}
-            </MapView>
-          </View>
+          {!online ? <Notice kind="warning" text={t('buyer.offline')} /> : null}
+          {locError ? <Notice kind="warning" text={locError} /> : null}
+          {error ? <Notice kind="danger" text={error} /> : null}
 
-          <Text style={styles.section}>{t('buyer.task_details')}</Text>
-          <TextField label={t('buyer.task_name')} value={title} onChangeText={setTitle} placeholder={t('buyer.task_name_placeholder')} />
-          <TextField
-            label={t('buyer.description')}
-            value={description}
-            onChangeText={setDescription}
-            placeholder={t('buyer.description_placeholder')}
-            multiline
-          />
-          <TextField label={t('buyer.expected_time')} value={timeMinutes} onChangeText={setTimeMinutes} keyboardType="number-pad" />
-          <TextField label={t('buyer.budget')} value={budgetRupees} onChangeText={setBudgetRupees} keyboardType="number-pad" />
-          <Segmented options={URGENCY_OPTIONS} value={urgency} onChange={(v) => setUrgency(v as TaskUrgency)} />
-          <TextField
-            label={t('buyer.address_optional')}
-            value={addressText}
-            onChangeText={setAddressText}
-            placeholder={t('buyer.address_placeholder')}
-          />
+          <View style={styles.card}>
+            <Text style={styles.section}>{t('buyer.pickup_location')}</Text>
+            <View style={styles.searchRow}>
+              <View style={styles.searchField}>
+                <TextField
+                  label={t('buyer.search_location')}
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  placeholder={t('buyer.search_location')}
+                />
+              </View>
+              <PrimaryButton label={t('buyer.search')} onPress={searchLocation} loading={searchBusy} style={styles.searchBtn} />
+            </View>
 
-          <View style={[styles.actionsRow, { paddingBottom: Math.max(insets.bottom + theme.space.md, theme.space.lg) }]}>
-            <PrimaryButton label={t('buyer.refresh_location')} onPress={refreshLocation} variant="ghost" style={styles.half} />
-            <PrimaryButton label={t('buyer.create_task_btn')} onPress={onCreate} disabled={!canCreate} loading={busy} style={styles.half} />
+            <View style={styles.mapWrap}>
+              <MapView
+                style={styles.map}
+                provider={PROVIDER_GOOGLE}
+                onPress={onMapPress}
+                initialRegion={{
+                  latitude: lat ?? DEMO_FALLBACK_LOCATION?.lat ?? 12.9716,
+                  longitude: lng ?? DEMO_FALLBACK_LOCATION?.lng ?? 77.5946,
+                  latitudeDelta: 0.01,
+                  longitudeDelta: 0.01,
+                }}
+                region={
+                  lat != null && lng != null
+                    ? {
+                        latitude: lat,
+                        longitude: lng,
+                        latitudeDelta: 0.01,
+                        longitudeDelta: 0.01,
+                      }
+                    : undefined
+                }
+              >
+                {lat != null && lng != null ? (
+                  <Marker coordinate={{ latitude: lat, longitude: lng }} title="Pickup location" />
+                ) : null}
+              </MapView>
+            </View>
+
+            <Text style={styles.section}>{t('buyer.task_details')}</Text>
+            <TextField label={t('buyer.task_name')} value={title} onChangeText={setTitle} placeholder={t('buyer.task_name_placeholder')} />
+            <TextField
+              label={t('buyer.description')}
+              value={description}
+              onChangeText={setDescription}
+              placeholder={t('buyer.description_placeholder')}
+              multiline
+            />
+            <TextField label={t('buyer.expected_time')} value={timeMinutes} onChangeText={setTimeMinutes} keyboardType="number-pad" />
+            <TextField label={t('buyer.budget')} value={budgetRupees} onChangeText={setBudgetRupees} keyboardType="number-pad" />
+            <Segmented options={URGENCY_OPTIONS} value={urgency} onChange={(v) => setUrgency(v as TaskUrgency)} />
+            <TextField
+              label={t('buyer.address_optional')}
+              value={addressText}
+              onChangeText={setAddressText}
+              placeholder={t('buyer.address_placeholder')}
+            />
+
+            <View style={[styles.actionsRow, { paddingBottom: Math.max(insets.bottom + theme.space.md, theme.space.lg) }]}>
+              <PrimaryButton label={t('buyer.refresh_location')} onPress={refreshLocation} variant="ghost" style={styles.half} />
+              <PrimaryButton label={t('buyer.create_task_btn')} onPress={onCreate} disabled={!canCreate} loading={busy} style={styles.half} />
+            </View>
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
+  kav: { flex: 1 },
   screen: { padding: 0, gap: 0 },
   scrollContent: { padding: theme.space.lg, gap: theme.space.md, paddingBottom: theme.space.xl * 2 },
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   topLinks: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  menu: { color: theme.colors.primary, fontSize: 22, fontWeight: '900', paddingRight: 6 },
   h1: { color: theme.colors.text, fontSize: 20, fontWeight: '900' },
   link: { color: theme.colors.primary, fontWeight: '800' },
   card: {

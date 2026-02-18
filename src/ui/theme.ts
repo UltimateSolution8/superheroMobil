@@ -5,7 +5,7 @@ export const theme = {
     text: '#0F172A',
     muted: '#475569',
     border: '#E2E8F0',
-    primary: '#2563EB',
+    primary: '#1E3A8A',
     primaryText: '#FFFFFF',
     accent: '#FACC15',
     danger: '#EF4444',

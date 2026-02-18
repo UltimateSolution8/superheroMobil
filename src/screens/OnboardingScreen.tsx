@@ -53,15 +53,17 @@ export function OnboardingScreen({ navigation }: Props) {
   return (
     <View style={styles.root}>
       <View style={[styles.header, { paddingTop: Math.max(insets.top, 12) + 6 }]}>
-        <Segmented
-          value={lang}
-          onChange={(v) => setLang(v as 'en' | 'hi' | 'te')}
-          options={[
-            { key: 'en', label: 'EN' },
-            { key: 'hi', label: 'हिं' },
-            { key: 'te', label: 'తెల' },
-          ]}
-        />
+        <View style={styles.langRow}>
+          <Segmented
+            value={lang}
+            onChange={(v) => setLang(v as 'en' | 'hi' | 'te')}
+            options={[
+              { key: 'en', label: 'EN' },
+              { key: 'hi', label: 'हिं' },
+              { key: 'te', label: 'తెల' },
+            ]}
+          />
+        </View>
         <View style={styles.brandRow}>
           <Image source={require('../../assets/superheroo-logo.png')} style={styles.logo} />
           <View>
@@ -116,15 +118,16 @@ export function OnboardingScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: theme.colors.bg, paddingTop: 16 },
   header: { paddingHorizontal: 20, gap: 12 },
-  brandRow: { flexDirection: 'row', alignItems: 'center', gap: 10, justifyContent: 'space-between' },
-  logo: { width: 44, height: 44, borderRadius: 14 },
-  brand: { fontSize: 18, fontWeight: '800', color: theme.colors.text },
+  langRow: { alignItems: 'flex-start', marginBottom: 4 },
+  brandRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  logo: { width: 56, height: 56, borderRadius: 16 },
+  brand: { fontSize: 20, fontWeight: '800', color: theme.colors.text },
   tagline: { color: theme.colors.muted, fontSize: 12 },
-  skip: { color: theme.colors.primary, fontWeight: '700' },
+  skip: { color: theme.colors.primary, fontWeight: '700', alignSelf: 'flex-end', marginTop: 4 },
   page: {
-    marginTop: 70,
     alignItems: 'center',
-    justifyContent: 'flex-start',
+    justifyContent: 'center',
+    paddingVertical: 24,
   },
   card: {
     marginHorizontal: 24,
@@ -134,7 +137,7 @@ const styles = StyleSheet.create({
     gap: 10,
     ...theme.shadow.card,
   },
-  pageLogo: { width: 72, height: 72, borderRadius: 18, alignSelf: 'center' },
+  pageLogo: { width: 86, height: 86, borderRadius: 22, alignSelf: 'center' },
   badge: {
     width: 48,
     height: 48,

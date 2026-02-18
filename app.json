@@ -2,7 +2,7 @@
   "expo": {
     "name": "Superheroo",
     "slug": "superheroo",
-    "version": "1.0.0",
+    "version": "1.0.5",
     "orientation": "portrait",
     "icon": "./assets/superheroo-logo.png",
     "userInterfaceStyle": "automatic",
@@ -17,6 +17,7 @@
     },
     "android": {
       "package": "com.helpinminutes.app",
+      "versionCode": 5,
       "usesCleartextTraffic": true,
       "adaptiveIcon": {
         "foregroundImage": "./assets/superheroo-logo.png",

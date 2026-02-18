@@ -12,6 +12,7 @@ import { useSocket } from '../../realtime/SocketProvider';
 import { Screen } from '../../ui/Screen';
 import { PrimaryButton } from '../../ui/PrimaryButton';
 import { Notice } from '../../ui/Notice';
+import { MenuButton } from '../../ui/MenuButton';
 import { theme } from '../../ui/theme';
 import { DEMO_FALLBACK_LOCATION } from '../../config';
 import type { HelperStackParamList } from '../../navigation/types';
@@ -24,11 +25,27 @@ type OfferRowProps = {
   onAccept: (taskId: string) => void;
 };
 
+function normalizeOffer(raw: TaskOfferedEvent): TaskOfferedEvent {
+  const lat = Number(raw.lat);
+  const lng = Number(raw.lng);
+  const distanceMeters = Number(raw.distanceMeters);
+  const budgetPaise = Number(raw.budgetPaise);
+  const timeMinutes = Number(raw.timeMinutes);
+  return {
+    ...raw,
+    lat: Number.isFinite(lat) ? lat : 0,
+    lng: Number.isFinite(lng) ? lng : 0,
+    distanceMeters: Number.isFinite(distanceMeters) ? distanceMeters : 0,
+    budgetPaise: Number.isFinite(budgetPaise) ? budgetPaise : 0,
+    timeMinutes: Number.isFinite(timeMinutes) ? timeMinutes : 0,
+  };
+}
+
 const OfferRow = React.memo(function OfferRow({ offer, onAccept }: OfferRowProps) {
   const { t } = useI18n();
   const onPress = useCallback(() => onAccept(offer.taskId), [offer.taskId, onAccept]);
-  const km = Math.max(0, offer.distanceMeters / 1000).toFixed(1);
-  const budget = (offer.budgetPaise / 100).toFixed(0);
+  const km = Math.max(0, Number(offer.distanceMeters) / 1000).toFixed(1);
+  const budget = (Number(offer.budgetPaise) / 100).toFixed(0);
   return (
     <View style={styles.offerRow}>
       <Text style={styles.offerTitle}>{offer.title}</Text>
@@ -208,9 +225,10 @@ export function HelperHomeScreen({ navigation }: Props) {
     if (!socket) return;
     const onOffered = (evt: TaskOfferedEvent) => {
       if (!evt || !evt.taskId) return;
+      const normalized = normalizeOffer(evt);
       setOffers((prev) => {
-        if (prev.some((p) => p.taskId === evt.taskId)) return prev;
-        return [evt, ...prev].slice(0, 20);
+        if (prev.some((p) => p.taskId === normalized.taskId)) return prev;
+        return [normalized, ...prev].slice(0, 20);
       });
     };
     socket.on('task.offered', onOffered);
@@ -295,9 +313,7 @@ export function HelperHomeScreen({ navigation }: Props) {
   return (
     <Screen style={styles.screen}>
       <View style={styles.topBar}>
-        <Text onPress={() => navigation.navigate('Menu')} style={styles.menu}>
-          ☰
-        </Text>
+        <MenuButton onPress={() => navigation.navigate('Menu')} />
         <Text style={styles.h1}>Superheroo</Text>
         <View style={styles.topLinks}>
           <Text onPress={() => navigation.navigate('SupportTickets')} style={styles.link}>
@@ -359,7 +375,6 @@ const styles = StyleSheet.create({
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   topLinks: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   h1: { color: theme.colors.text, fontSize: 20, fontWeight: '900' },
-  menu: { color: theme.colors.primary, fontSize: 22, fontWeight: '900', paddingRight: 6 },
   link: { color: theme.colors.primary, fontWeight: '800' },
   card: {
     borderWidth: 1,

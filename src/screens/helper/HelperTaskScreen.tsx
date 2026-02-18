@@ -13,6 +13,7 @@ import { Screen } from '../../ui/Screen';
 import { PrimaryButton } from '../../ui/PrimaryButton';
 import { Notice } from '../../ui/Notice';
 import { TextField } from '../../ui/TextField';
+import { MenuButton } from '../../ui/MenuButton';
 import { theme } from '../../ui/theme';
 import type { HelperStackParamList } from '../../navigation/types';
 
@@ -93,33 +94,27 @@ export function HelperTaskScreen({ route, navigation }: Props) {
   const next = useMemo(() => nextStatus(status), [status]);
 
   const pickSelfie = useCallback(async () => {
+    const cam = await ImagePicker.requestCameraPermissionsAsync();
+    if (cam.status !== 'granted') {
+      setError('Camera permission is required.');
+      return null;
+    }
+
+    const res = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.7,
+      allowsEditing: false,
+      cameraType: ImagePicker.CameraType.front,
+    });
+    if (!res.canceled && res.assets?.length) {
+      return res.assets[0];
+    }
+
     return new Promise<ImagePicker.ImagePickerAsset | null>((resolve) => {
       Alert.alert(
-        'Selfie required',
-        'Take a selfie to verify arrival/completion.',
+        'Use a gallery photo?',
+        'Camera was closed. You can choose a saved selfie instead.',
         [
-          {
-            text: 'Take selfie',
-            onPress: async () => {
-              const cam = await ImagePicker.requestCameraPermissionsAsync();
-              if (cam.status !== 'granted') {
-                setError('Camera permission is required.');
-                resolve(null);
-                return;
-              }
-              const res = await ImagePicker.launchCameraAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                quality: 0.7,
-                allowsEditing: false,
-                cameraType: ImagePicker.CameraType.front,
-              });
-              if (res.canceled || !res.assets?.length) {
-                resolve(null);
-                return;
-              }
-              resolve(res.assets[0]);
-            },
-          },
           {
             text: 'Choose from gallery',
             onPress: async () => {
@@ -129,16 +124,16 @@ export function HelperTaskScreen({ route, navigation }: Props) {
                 resolve(null);
                 return;
               }
-              const res = await ImagePicker.launchImageLibraryAsync({
+              const pick = await ImagePicker.launchImageLibraryAsync({
                 mediaTypes: ImagePicker.MediaTypeOptions.Images,
                 quality: 0.7,
                 allowsEditing: false,
               });
-              if (res.canceled || !res.assets?.length) {
+              if (pick.canceled || !pick.assets?.length) {
                 resolve(null);
                 return;
               }
-              resolve(res.assets[0]);
+              resolve(pick.assets[0]);
             },
           },
           { text: 'Cancel', style: 'cancel', onPress: () => resolve(null) },
@@ -306,9 +301,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
   return (
     <Screen>
       <View style={styles.topBar}>
-        <Text onPress={() => navigation.navigate('Menu')} style={styles.menu}>
-          ☰
-        </Text>
+        <MenuButton onPress={() => navigation.navigate('Menu')} />
         <Text style={styles.h1}>Job</Text>
         <Text onPress={backHome} style={styles.link}>
           Back
@@ -372,7 +365,6 @@ const styles = StyleSheet.create({
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   h1: { color: theme.colors.text, fontSize: 20, fontWeight: '900' },
   link: { color: theme.colors.primary, fontWeight: '800' },
-  menu: { color: theme.colors.primary, fontSize: 22, fontWeight: '900', paddingRight: 6 },
   card: {
     borderWidth: 1,
     borderColor: theme.colors.border,
