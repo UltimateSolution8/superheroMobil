@@ -1,50 +1,62 @@
-const { withAndroidManifest } = require('@expo/config-plugins');
+const appJson = require('./app.json');
 
-function withGoogleMapsApiKey(config, apiKey) {
-  if (!apiKey) return config;
-  return withAndroidManifest(config, (config) => {
-    const manifest = config.modResults;
-    const app = manifest.manifest.application?.[0];
-    if (!app) return config;
-    app['meta-data'] = app['meta-data'] || [];
-    const existing = app['meta-data'].find((item) => item.$?.['android:name'] === 'com.google.android.geo.API_KEY');
-    if (existing) {
-      existing.$['android:value'] = apiKey;
-    } else {
-      app['meta-data'].push({
-        $: {
-          'android:name': 'com.google.android.geo.API_KEY',
-          'android:value': apiKey,
-        },
-      });
-    }
-    return config;
-  });
-}
+const expo = appJson.expo || {};
+const googleMapsApiKey = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || '';
+const basePlugins = Array.isArray(expo.plugins) ? expo.plugins : [];
+const plugins = Array.from(
+  new Set([
+    ...basePlugins,
+    'expo-image-picker',
+    'expo-location',
+    'expo-document-picker',
+  ])
+);
+const androidPermissions = Array.from(
+  new Set([
+    ...(expo.android && Array.isArray(expo.android.permissions) ? expo.android.permissions : []),
+    'ACCESS_COARSE_LOCATION',
+    'ACCESS_FINE_LOCATION',
+    'ACCESS_BACKGROUND_LOCATION',
+    'FOREGROUND_SERVICE',
+    'CAMERA',
+    'READ_MEDIA_IMAGES',
+    'READ_EXTERNAL_STORAGE',
+    'WRITE_EXTERNAL_STORAGE',
+    'INTERNET',
+  ]),
+);
+const iosInfoPlist = {
+  ...(expo.ios && expo.ios.infoPlist ? expo.ios.infoPlist : {}),
+  NSCameraUsageDescription: 'Allow Superheroo to access the camera for selfie verification.',
+  NSPhotoLibraryUsageDescription: 'Allow Superheroo to access your photos for KYC and task selfies.',
+  NSLocationWhenInUseUsageDescription: 'Allow Superheroo to access your location for nearby tasks.',
+};
 
-module.exports = ({ config }) => {
-  const apiKey = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY?.trim() || '';
-
-  const next = {
-    ...config,
+module.exports = {
+  expo: {
+    ...expo,
+    plugins,
     extra: {
-      ...(config.extra || {}),
-      apiBaseUrl: process.env.EXPO_PUBLIC_API_BASE_URL?.trim() || 'http://localhost:8080',
-      socketUrl: process.env.EXPO_PUBLIC_SOCKET_URL?.trim() || 'http://localhost:8090',
-      googleMapsApiKey: apiKey,
+      ...(expo.extra || {}),
+      googleMapsApiKey,
     },
     android: {
-      ...(config.android || {}),
+      ...(expo.android || {}),
+      permissions: androidPermissions,
       config: {
-        ...(config.android?.config || {}),
+        ...(expo.android && expo.android.config ? expo.android.config : {}),
         googleMaps: {
-          apiKey,
+          apiKey: googleMapsApiKey,
         },
       },
-      // Ensure react-native-maps can read the key from manifest meta-data.
-      googleMapsApiKey: apiKey,
     },
-  };
-
-  return withGoogleMapsApiKey(next, apiKey);
+    ios: {
+      ...(expo.ios || {}),
+      infoPlist: iosInfoPlist,
+      config: {
+        ...(expo.ios && expo.ios.config ? expo.ios.config : {}),
+        googleMapsApiKey,
+      },
+    },
+  },
 };

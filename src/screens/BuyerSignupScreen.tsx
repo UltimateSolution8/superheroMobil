@@ -45,8 +45,8 @@ export function BuyerSignupScreen({ navigation }: Props) {
     <Screen>
       <KeyboardAvoidingView behavior={Platform.select({ ios: 'padding', android: undefined })} style={styles.kav}>
         <View style={styles.header}>
-          <Text style={styles.h1}>Create buyer account</Text>
-          <Text style={styles.sub}>Use email and password. OTP login still works.</Text>
+          <Text style={styles.h1}>Sign up</Text>
+          <Text style={styles.sub}>Create a buyer account with email and password.</Text>
         </View>
 
         <View style={styles.form}>
@@ -76,7 +76,7 @@ export function BuyerSignupScreen({ navigation }: Props) {
         {error ? <Notice kind="danger" text={error} /> : null}
 
         <View style={styles.footer}>
-          <PrimaryButton label="Create account" onPress={onSubmit} disabled={!canSubmit} loading={busy} />
+          <PrimaryButton label="Sign up" onPress={onSubmit} disabled={!canSubmit} loading={busy} />
           <Text onPress={() => navigation.goBack()} style={styles.alt}>
             Back to login
           </Text>

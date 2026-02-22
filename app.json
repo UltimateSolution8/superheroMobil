@@ -2,7 +2,7 @@
   "expo": {
     "name": "Superheroo",
     "slug": "superheroo",
-    "version": "1.0.5",
+    "version": "1.0.9",
     "orientation": "portrait",
     "icon": "./assets/superheroo-logo.png",
     "userInterfaceStyle": "automatic",
@@ -10,14 +10,14 @@
     "splash": {
       "image": "./assets/superheroo-logo.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#1E3A8A"
     },
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "package": "com.helpinminutes.app",
-      "versionCode": 5,
+      "versionCode": 9,
       "usesCleartextTraffic": true,
       "adaptiveIcon": {
         "foregroundImage": "./assets/superheroo-logo.png",

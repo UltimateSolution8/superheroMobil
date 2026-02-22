@@ -237,7 +237,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
         <ScrollView
           contentContainerStyle={[
             styles.scrollContent,
-            { paddingBottom: theme.space.xl * 2 + Math.max(insets.bottom, theme.space.lg) },
+            { paddingBottom: theme.space.xl * 3 + Math.max(insets.bottom, theme.space.lg) },
           ]}
           keyboardShouldPersistTaps="handled"
         >
@@ -319,7 +319,12 @@ export function BuyerHomeScreen({ navigation }: Props) {
               placeholder={t('buyer.address_placeholder')}
             />
 
-            <View style={[styles.actionsRow, { paddingBottom: Math.max(insets.bottom + theme.space.md, theme.space.lg) }]}>
+            <View
+              style={[
+                styles.actionsRow,
+                { paddingBottom: Math.max(insets.bottom + theme.space.md, theme.space.lg), marginBottom: theme.space.md },
+              ]}
+            >
               <PrimaryButton label={t('buyer.refresh_location')} onPress={refreshLocation} variant="ghost" style={styles.half} />
               <PrimaryButton label={t('buyer.create_task_btn')} onPress={onCreate} disabled={!canCreate} loading={busy} style={styles.half} />
             </View>

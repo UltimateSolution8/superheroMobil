@@ -51,14 +51,16 @@ function normalizeTask(raw: any): Task {
     arrivalSelfieLng: toOptionalNumber(raw.arrivalSelfieLng),
     completionSelfieLat: toOptionalNumber(raw.completionSelfieLat),
     completionSelfieLng: toOptionalNumber(raw.completionSelfieLng),
+    buyerRating: toOptionalNumber(raw.buyerRating),
+    helperRating: toOptionalNumber(raw.helperRating),
   } as Task;
 }
 
-export async function otpStart(phone: string, role: UserRole): Promise<OtpStartResponse> {
+export async function otpStart(phone: string, role: UserRole, channel?: string | null): Promise<OtpStartResponse> {
   return fetchJson(url('/api/v1/auth/otp/start'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ phone, role }),
+    body: JSON.stringify({ phone, role, channel: channel ?? null }),
   });
 }
 
@@ -135,11 +137,18 @@ export async function helperSubmitKyc(
   },
 ): Promise<HelperProfile> {
   const body = new FormData();
+  const appendFile = (field: string, file: { uri: string; name: string; type: string }) => {
+    body.append(field, {
+      uri: file.uri,
+      name: file.name,
+      type: file.type,
+    } as any);
+  };
   body.append('fullName', req.fullName);
   body.append('idNumber', req.idNumber);
-  body.append('idFront', req.idFront as unknown as Blob);
-  body.append('idBack', req.idBack as unknown as Blob);
-  body.append('selfie', req.selfie as unknown as Blob);
+  appendFile('idFront', req.idFront);
+  appendFile('idBack', req.idBack);
+  appendFile('selfie', req.selfie);
 
   const res = await fetch(url('/api/v1/helper/kyc/submit'), {
     method: 'POST',
@@ -191,6 +200,20 @@ export async function updateTaskStatus(
   return normalizeTask(task);
 }
 
+export async function rateTask(
+  accessToken: string,
+  taskId: string,
+  rating: number,
+  comment?: string | null,
+): Promise<Task> {
+  const task = await fetchJson<Task>(url(`/api/v1/tasks/${taskId}/rating`), {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+    body: JSON.stringify({ rating, comment: comment ?? null }),
+  });
+  return normalizeTask(task);
+}
+
 export async function uploadTaskSelfie(
   accessToken: string,
   taskId: string,
@@ -204,12 +227,19 @@ export async function uploadTaskSelfie(
   },
 ): Promise<Task> {
   const body = new FormData();
+  const appendFile = (field: string, file: { uri: string; name: string; type: string }) => {
+    body.append(field, {
+      uri: file.uri,
+      name: file.name,
+      type: file.type,
+    } as any);
+  };
   body.append('stage', req.stage);
   body.append('lat', String(req.lat));
   body.append('lng', String(req.lng));
   if (req.addressText) body.append('addressText', req.addressText);
   if (req.capturedAt) body.append('capturedAt', req.capturedAt);
-  body.append('selfie', req.selfie as unknown as Blob);
+  appendFile('selfie', req.selfie);
 
   const res = await fetch(url(`/api/v1/tasks/${taskId}/selfie`), {
     method: 'POST',

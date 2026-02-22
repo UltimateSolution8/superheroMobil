@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, AppState, StyleSheet, Text, View } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
+import { Alert, AppState, Linking, Platform, StyleSheet, Text, View } from 'react-native';
+import type { ImagePickerAsset } from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 
 import type { Task, TaskStatus, TaskStatusChangedEvent } from '../../api/types';
 import * as api from '../../api/client';
@@ -16,6 +17,7 @@ import { TextField } from '../../ui/TextField';
 import { MenuButton } from '../../ui/MenuButton';
 import { theme } from '../../ui/theme';
 import type { HelperStackParamList } from '../../navigation/types';
+import { DEMO_FALLBACK_LOCATION, GOOGLE_MAPS_API_KEY } from '../../config';
 
 type Props = NativeStackScreenProps<HelperStackParamList, 'HelperTask'>;
 
@@ -37,6 +39,19 @@ function statusLabel(s: TaskStatus) {
   return s;
 }
 
+function distanceMeters(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
+  const R = 6371e3;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(b.lat - a.lat);
+  const dLng = toRad(b.lng - a.lng);
+  const lat1 = toRad(a.lat);
+  const lat2 = toRad(b.lat);
+  const sinDLat = Math.sin(dLat / 2);
+  const sinDLng = Math.sin(dLng / 2);
+  const h = sinDLat * sinDLat + Math.cos(lat1) * Math.cos(lat2) * sinDLng * sinDLng;
+  return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+}
+
 export function HelperTaskScreen({ route, navigation }: Props) {
   const { taskId } = route.params;
   const { withAuth } = useAuth();
@@ -48,9 +63,17 @@ export function HelperTaskScreen({ route, navigation }: Props) {
   const [notice, setNotice] = useState<string | null>(null);
   const [arrivalOtp, setArrivalOtp] = useState('');
   const [completionOtp, setCompletionOtp] = useState('');
+  const [helperLoc, setHelperLoc] = useState<{ lat: number; lng: number; ts: number } | null>(null);
+  const [routeCoords, setRouteCoords] = useState<{ latitude: number; longitude: number }[]>([]);
+  const [routeEtaMin, setRouteEtaMin] = useState<number | null>(null);
+  const [rating, setRating] = useState<number>(5);
+  const [ratingComment, setRatingComment] = useState('');
+  const [ratingBusy, setRatingBusy] = useState(false);
 
   const locationSub = useRef<Location.LocationSubscription | null>(null);
   const lastEmitAt = useRef<number>(0);
+  const mapRef = useRef<MapView | null>(null);
+  const lastFitAt = useRef(0);
 
   const load = useCallback(async () => {
     setBusy(true);
@@ -78,7 +101,11 @@ export function HelperTaskScreen({ route, navigation }: Props) {
 
   useEffect(() => {
     if (!socket) return;
-    socket.emit('task.subscribe', { taskId });
+    if (task?.buyerId) {
+      socket.emit('task.subscribe', { taskId, buyerId: task.buyerId });
+    } else {
+      socket.emit('task.subscribe', { taskId });
+    }
 
     const onStatus = (evt: TaskStatusChangedEvent) => {
       if (!evt || evt.taskId !== taskId) return;
@@ -88,52 +115,120 @@ export function HelperTaskScreen({ route, navigation }: Props) {
     return () => {
       socket.off('task_status_changed', onStatus);
     };
-  }, [socket, taskId]);
+  }, [socket, task?.buyerId, taskId]);
 
   const status = task?.status ?? 'ASSIGNED';
   const next = useMemo(() => nextStatus(status), [status]);
 
+  const taskLat = Number(task?.lat);
+  const taskLng = Number(task?.lng);
+  const hasTaskCoords = Number.isFinite(taskLat) && Number.isFinite(taskLng);
+
+  const helperDistance = useMemo(() => {
+    if (!helperLoc || !hasTaskCoords) return null;
+    return distanceMeters({ lat: helperLoc.lat, lng: helperLoc.lng }, { lat: taskLat, lng: taskLng });
+  }, [helperLoc, hasTaskCoords, taskLat, taskLng]);
+
+  const helperEta = useMemo(() => {
+    if (routeEtaMin != null) return routeEtaMin;
+    if (helperDistance == null) return null;
+    return Math.max(1, Math.round(helperDistance / 60));
+  }, [helperDistance, routeEtaMin]);
+
+  const canRate = status === 'COMPLETED' && !task?.helperRating;
+  const submitRating = useCallback(async () => {
+    if (!canRate || ratingBusy) return;
+    setRatingBusy(true);
+    setError(null);
+    try {
+      const updated = await withAuth((at) => api.rateTask(at, taskId, rating, ratingComment.trim() || null));
+      setTask(updated);
+    } catch {
+      setError('Could not submit rating.');
+    } finally {
+      setRatingBusy(false);
+    }
+  }, [canRate, rating, ratingBusy, ratingComment, taskId, withAuth]);
+
   const pickSelfie = useCallback(async () => {
-    const cam = await ImagePicker.requestCameraPermissionsAsync();
-    if (cam.status !== 'granted') {
-      setError('Camera permission is required.');
+    let ImagePicker: typeof import('expo-image-picker') | null = null;
+    try {
+      ImagePicker = await import('expo-image-picker');
+    } catch {
+      setError('Image picker is unavailable in this build.');
       return null;
     }
 
-    const res = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.7,
-      allowsEditing: false,
-      cameraType: ImagePicker.CameraType.front,
-    });
-    if (!res.canceled && res.assets?.length) {
-      return res.assets[0];
-    }
+    const IP = ImagePicker;
 
-    return new Promise<ImagePicker.ImagePickerAsset | null>((resolve) => {
+    const takeCamera = async (): Promise<ImagePickerAsset | null> => {
+      try {
+        const cam = await IP.requestCameraPermissionsAsync();
+        if (cam.status !== 'granted') {
+          setError('Camera permission is required. Try choosing from gallery.');
+          return null;
+        }
+        const res = await IP.launchCameraAsync({
+          mediaTypes: IP.MediaTypeOptions.Images,
+          quality: 0.7,
+          allowsEditing: false,
+          cameraType: IP.CameraType.front,
+        });
+        if (!res.canceled && res.assets?.length) {
+          return res.assets[0];
+        }
+        return null;
+      } catch {
+        setError('Camera is unavailable (e.g. emulator). Please choose from gallery.');
+        return null;
+      }
+    };
+
+    const pickGallery = async (): Promise<ImagePickerAsset | null> => {
+      try {
+        const perm = await IP.requestMediaLibraryPermissionsAsync();
+        if (perm.status !== 'granted') {
+          setError('Gallery permission is required.');
+          return null;
+        }
+        const pick = await IP.launchImageLibraryAsync({
+          mediaTypes: IP.MediaTypeOptions.Images,
+          quality: 0.7,
+          allowsEditing: false,
+        });
+        if (pick.canceled || !pick.assets?.length) {
+          return null;
+        }
+        return pick.assets[0];
+      } catch {
+        setError('Could not open gallery.');
+        return null;
+      }
+    };
+
+    return new Promise<ImagePickerAsset | null>((resolve) => {
       Alert.alert(
-        'Use a gallery photo?',
-        'Camera was closed. You can choose a saved selfie instead.',
+        'Take or choose a selfie',
+        'You need a selfie for verification. Choose a source:',
         [
           {
-            text: 'Choose from gallery',
+            text: 'Camera',
             onPress: async () => {
-              const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-              if (perm.status !== 'granted') {
-                setError('Gallery permission is required.');
-                resolve(null);
-                return;
+              const asset = await takeCamera();
+              if (asset) {
+                resolve(asset);
+              } else {
+                // Camera failed — auto-fallback to gallery
+                const galleryAsset = await pickGallery();
+                resolve(galleryAsset);
               }
-              const pick = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                quality: 0.7,
-                allowsEditing: false,
-              });
-              if (pick.canceled || !pick.assets?.length) {
-                resolve(null);
-                return;
-              }
-              resolve(pick.assets[0]);
+            },
+          },
+          {
+            text: 'Gallery',
+            onPress: async () => {
+              const asset = await pickGallery();
+              resolve(asset);
             },
           },
           { text: 'Cancel', style: 'cancel', onPress: () => resolve(null) },
@@ -159,6 +254,10 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       let address = task?.addressText ?? '';
 
       try {
+        const perm = await Location.requestForegroundPermissionsAsync();
+        if (perm.status !== 'granted') {
+          throw new Error('Location permission missing');
+        }
         const p = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
         lat = p.coords.latitude;
         lng = p.coords.longitude;
@@ -234,6 +333,17 @@ export function HelperTaskScreen({ route, navigation }: Props) {
 
   const backHome = useCallback(() => navigation.popToTop(), [navigation]);
 
+  const openMaps = useCallback(() => {
+    if (!hasTaskCoords) return;
+    const url = Platform.select({
+      ios: `http://maps.apple.com/?daddr=${taskLat},${taskLng}`,
+      android: `https://www.google.com/maps/dir/?api=1&destination=${taskLat},${taskLng}`,
+    });
+    if (url) {
+      Linking.openURL(url);
+    }
+  }, [hasTaskCoords, taskLat, taskLng]);
+
   useEffect(() => {
     if (!socket) return;
     let cancelled = false;
@@ -241,6 +351,8 @@ export function HelperTaskScreen({ route, navigation }: Props) {
 
     const start = async () => {
       try {
+        const perm = await Location.requestForegroundPermissionsAsync();
+        if (perm.status !== 'granted') return;
         locationSub.current?.remove();
         locationSub.current = await Location.watchPositionAsync(
           {
@@ -253,7 +365,23 @@ export function HelperTaskScreen({ route, navigation }: Props) {
             const now = Date.now();
             if (now - lastEmitAt.current < 5_000) return;
             lastEmitAt.current = now;
-            socket.emit('location.update', { lat: pos.coords.latitude, lng: pos.coords.longitude });
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            setHelperLoc({ lat, lng, ts: now });
+            socket.emit('location.update', { lat, lng, taskId });
+            if (hasTaskCoords && mapRef.current) {
+              const stamp = Date.now();
+              if (stamp - lastFitAt.current > 8_000) {
+                lastFitAt.current = stamp;
+                mapRef.current.fitToCoordinates(
+                  [
+                    { latitude: taskLat, longitude: taskLng },
+                    { latitude: lat, longitude: lng },
+                  ],
+                  { edgePadding: { top: 80, right: 60, bottom: 120, left: 60 }, animated: true },
+                );
+              }
+            }
           },
         );
       } catch {
@@ -270,7 +398,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
         lastEmitAt.current = now;
         // send a heartbeat using last known location from task coords if no live GPS
         if (task?.lat && task?.lng) {
-          socket.emit('location.update', { lat: task.lat, lng: task.lng });
+          socket.emit('location.update', { lat: task.lat, lng: task.lng, taskId });
         }
       }, 12_000);
     };
@@ -296,7 +424,60 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       locationSub.current?.remove();
       locationSub.current = null;
     };
-  }, [socket, task?.lat, task?.lng]);
+  }, [hasTaskCoords, socket, task?.lat, task?.lng, taskId, taskLat, taskLng]);
+
+  useEffect(() => {
+    if (!task || !helperLoc || !GOOGLE_MAPS_API_KEY || !hasTaskCoords) return;
+    const fetchRoute = async () => {
+      try {
+        const url =
+          'https://maps.googleapis.com/maps/api/directions/json' +
+          `?origin=${helperLoc.lat},${helperLoc.lng}` +
+          `&destination=${taskLat},${taskLng}` +
+          `&key=${encodeURIComponent(GOOGLE_MAPS_API_KEY)}`;
+        const res = await fetch(url);
+        const json = await res.json();
+        const route = json?.routes?.[0];
+        const poly = route?.overview_polyline?.points;
+        const legs = route?.legs?.[0];
+        if (poly && typeof poly === 'string') {
+          const points: { latitude: number; longitude: number }[] = [];
+          let index = 0;
+          let lat = 0;
+          let lng = 0;
+          while (index < poly.length) {
+            let b = 0;
+            let shift = 0;
+            let result = 0;
+            do {
+              b = poly.charCodeAt(index++) - 63;
+              result |= (b & 0x1f) << shift;
+              shift += 5;
+            } while (b >= 0x20);
+            const dlat = (result & 1) !== 0 ? ~(result >> 1) : result >> 1;
+            lat += dlat;
+            shift = 0;
+            result = 0;
+            do {
+              b = poly.charCodeAt(index++) - 63;
+              result |= (b & 0x1f) << shift;
+              shift += 5;
+            } while (b >= 0x20);
+            const dlng = (result & 1) !== 0 ? ~(result >> 1) : result >> 1;
+            lng += dlng;
+            points.push({ latitude: lat / 1e5, longitude: lng / 1e5 });
+          }
+          setRouteCoords(points.filter((p) => Number.isFinite(p.latitude) && Number.isFinite(p.longitude)));
+        }
+        if (legs?.duration?.value) {
+          setRouteEtaMin(Math.max(1, Math.round(legs.duration.value / 60)));
+        }
+      } catch {
+        // best effort
+      }
+    };
+    fetchRoute();
+  }, [helperLoc, hasTaskCoords, task, taskLat, taskLng]);
 
   return (
     <Screen>
@@ -311,12 +492,37 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       {notice ? <Notice kind="success" text={notice} /> : null}
       {error ? <Notice kind="danger" text={error} /> : null}
 
+      <View style={styles.mapWrap}>
+        <MapView
+          style={styles.map}
+          provider={PROVIDER_GOOGLE}
+          ref={mapRef}
+          initialRegion={{
+            latitude: hasTaskCoords ? taskLat : DEMO_FALLBACK_LOCATION?.lat ?? 12.9716,
+            longitude: hasTaskCoords ? taskLng : DEMO_FALLBACK_LOCATION?.lng ?? 77.5946,
+            latitudeDelta: 0.02,
+            longitudeDelta: 0.02,
+          }}
+        >
+          {hasTaskCoords ? <Marker coordinate={{ latitude: taskLat, longitude: taskLng }} title="Buyer" /> : null}
+          {helperLoc ? <Marker coordinate={{ latitude: helperLoc.lat, longitude: helperLoc.lng }} title="You" /> : null}
+          {routeCoords.length > 1 ? (
+            <Polyline coordinates={routeCoords} strokeColor={theme.colors.primary} strokeWidth={4} />
+          ) : null}
+        </MapView>
+      </View>
+
       <View style={styles.card}>
         <Text style={styles.status}>{statusLabel(status)}</Text>
         <Text style={styles.muted}>Task ID: {taskId}</Text>
         {task?.title ? <Text style={styles.title}>{task.title}</Text> : null}
         {task?.addressText ? <Text style={styles.muted}>Address: {task.addressText}</Text> : null}
         {task?.description ? <Text style={styles.desc}>{task.description}</Text> : null}
+        <Text style={styles.muted}>
+          Distance: {helperDistance == null ? '--' : `${(helperDistance / 1000).toFixed(2)} km`} • ETA:{' '}
+          {helperEta == null ? '--' : `${helperEta} min`}
+        </Text>
+        <PrimaryButton label="Open in Maps" onPress={openMaps} variant="ghost" />
 
         {next === 'STARTED' ? (
           <View>
@@ -356,6 +562,36 @@ export function HelperTaskScreen({ route, navigation }: Props) {
             style={styles.half}
           />
         </View>
+
+        {status === 'COMPLETED' ? (
+          <View style={styles.ratingCard}>
+            <Text style={styles.muted}>Rate buyer</Text>
+            {task?.helperRating ? (
+              <Text style={styles.muted}>Your rating: {task.helperRating.toFixed(1)} / 5</Text>
+            ) : (
+              <>
+                <View style={styles.ratingRow}>
+                  {[1, 2, 3, 4, 5].map((r) => (
+                    <Text
+                      key={`rate-${r}`}
+                      style={[styles.star, r <= rating ? styles.starOn : styles.starOff]}
+                      onPress={() => setRating(r)}
+                    >
+                      ★
+                    </Text>
+                  ))}
+                </View>
+                <TextField
+                  label="Comment (optional)"
+                  value={ratingComment}
+                  onChangeText={setRatingComment}
+                  placeholder="Share feedback"
+                />
+                <PrimaryButton label="Submit rating" onPress={submitRating} loading={ratingBusy} />
+              </>
+            )}
+          </View>
+        ) : null}
       </View>
     </Screen>
   );
@@ -365,6 +601,15 @@ const styles = StyleSheet.create({
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   h1: { color: theme.colors.text, fontSize: 20, fontWeight: '900' },
   link: { color: theme.colors.primary, fontWeight: '800' },
+  mapWrap: {
+    marginTop: theme.space.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radius.md,
+    overflow: 'hidden',
+    height: 220,
+  },
+  map: { flex: 1 },
   card: {
     borderWidth: 1,
     borderColor: theme.colors.border,
@@ -381,4 +626,17 @@ const styles = StyleSheet.create({
   otpHint: { color: theme.colors.muted, fontSize: 12, marginBottom: 6 },
   actions: { flexDirection: 'row', gap: theme.space.sm, paddingTop: 8 },
   half: { flex: 1 },
+  ratingCard: {
+    marginTop: theme.space.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radius.md,
+    padding: theme.space.md,
+    gap: theme.space.sm,
+    backgroundColor: theme.colors.card,
+  },
+  ratingRow: { flexDirection: 'row', gap: 6 },
+  star: { fontSize: 24 },
+  starOn: { color: theme.colors.accent },
+  starOff: { color: theme.colors.border },
 });

@@ -45,8 +45,8 @@ export function HelperSignupScreen({ navigation }: Props) {
     <Screen>
       <KeyboardAvoidingView behavior={Platform.select({ ios: 'padding', android: undefined })} style={styles.kav}>
         <View style={styles.header}>
-          <Text style={styles.h1}>Create helper account</Text>
-          <Text style={styles.sub}>After signup, complete KYC to go online.</Text>
+          <Text style={styles.h1}>Sign up</Text>
+          <Text style={styles.sub}>Create a helper account and complete KYC to go online.</Text>
         </View>
 
         <View style={styles.form}>
@@ -78,7 +78,7 @@ export function HelperSignupScreen({ navigation }: Props) {
         {error ? <Notice kind="danger" text={error} /> : null}
 
         <View style={styles.footer}>
-          <PrimaryButton label="Create helper account" onPress={onSubmit} disabled={!canSubmit} loading={busy} />
+          <PrimaryButton label="Sign up" onPress={onSubmit} disabled={!canSubmit} loading={busy} />
           <Text onPress={() => navigation.goBack()} style={styles.alt}>
             Back to login
           </Text>

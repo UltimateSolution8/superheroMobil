@@ -8,7 +8,7 @@ type Props = {
   onPress: () => void;
   disabled?: boolean;
   loading?: boolean;
-  variant?: 'primary' | 'danger' | 'ghost';
+  variant?: 'primary' | 'accent' | 'danger' | 'ghost';
   style?: ViewStyle;
 };
 
@@ -21,6 +21,7 @@ export const PrimaryButton = memo(function PrimaryButton({
   style,
 }: Props) {
   const colors = useMemo(() => {
+    if (variant === 'accent') return { bg: theme.colors.accent, text: theme.colors.primary };
     if (variant === 'danger') return { bg: theme.colors.danger, text: theme.colors.primaryText };
     if (variant === 'ghost') return { bg: 'transparent', text: theme.colors.primary };
     return { bg: theme.colors.primary, text: theme.colors.primaryText };
@@ -36,7 +37,7 @@ export const PrimaryButton = memo(function PrimaryButton({
       style={({ pressed }) => [
         styles.base,
         variant === 'ghost' ? styles.ghost : null,
-        variant === 'primary' ? styles.primaryShadow : null,
+        variant === 'primary' || variant === 'accent' ? styles.primaryShadow : null,
         { backgroundColor: colors.bg, opacity: isDisabled ? 0.55 : pressed ? 0.85 : 1 },
         style,
       ]}
