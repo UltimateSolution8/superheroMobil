@@ -49,6 +49,64 @@ export function HelperKycScreen({ navigation }: Props) {
     });
   }, []);
 
+  const pickSelfie = useCallback(async () => {
+    let ImagePicker: typeof import('expo-image-picker') | null = null;
+    try {
+      ImagePicker = await import('expo-image-picker');
+    } catch {
+      setError('Image picker is unavailable in this build.');
+      return;
+    }
+
+    try {
+      const cam = await ImagePicker.requestCameraPermissionsAsync();
+      if (cam.status !== 'granted') {
+        setError('Camera permission is required for selfie.');
+        return;
+      }
+      const res = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.8,
+        allowsEditing: false,
+        cameraType: ImagePicker.CameraType.front,
+      });
+      if (!res.canceled && res.assets?.length) {
+        const a = res.assets[0];
+        setSelfie({
+          uri: a.uri,
+          name: a.fileName ?? `selfie-${Date.now()}.jpg`,
+          type: a.mimeType ?? 'image/jpeg',
+        });
+        return;
+      }
+    } catch {
+      setError('Could not open camera. Please choose from gallery.');
+    }
+
+    const lib = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (lib.status !== 'granted') {
+      setError('Gallery permission is required for selfie.');
+      return;
+    }
+    try {
+      const pick = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.8,
+        allowsEditing: false,
+      });
+      if (!pick.canceled && pick.assets?.length) {
+        const a = pick.assets[0];
+        setSelfie({
+          uri: a.uri,
+          name: a.fileName ?? `selfie-${Date.now()}.jpg`,
+          type: a.mimeType ?? 'image/jpeg',
+        });
+      }
+    } catch {
+      setError('Could not open gallery.');
+    }
+  }, []);
+
   const submit = useCallback(async () => {
     if (busy || !canSubmit || !idFront || !idBack || !selfie) return;
     setBusy(true);
@@ -119,8 +177,8 @@ export function HelperKycScreen({ navigation }: Props) {
             variant="ghost"
           />
           <PrimaryButton
-            label={selfie ? 'Selfie selected' : 'Upload Selfie'}
-            onPress={() => pickDoc((f) => setSelfie(f))}
+            label={selfie ? 'Selfie selected' : 'Capture Selfie'}
+            onPress={pickSelfie}
             variant="ghost"
           />
         </View>

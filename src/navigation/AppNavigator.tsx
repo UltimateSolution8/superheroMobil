@@ -12,6 +12,7 @@ import { HelperSignupScreen } from '../screens/HelperSignupScreen';
 import { OtpScreen } from '../screens/OtpScreen';
 import { SplashScreen } from '../screens/SplashScreen';
 import { OnboardingScreen } from '../screens/OnboardingScreen';
+import { RoleSelectionScreen } from '../screens/RoleSelectionScreen';
 import { BuyerHomeScreen } from '../screens/buyer/BuyerHomeScreen';
 import { BuyerTaskScreen } from '../screens/buyer/BuyerTaskScreen';
 import { HelperHomeScreen } from '../screens/helper/HelperHomeScreen';
@@ -50,6 +51,7 @@ export function AppNavigator() {
         <AuthStack.Navigator screenOptions={{ headerShown: false, animation: 'fade' }}>
           <AuthStack.Screen name="Splash" component={SplashScreen} />
           <AuthStack.Screen name="Onboarding" component={OnboardingScreen} />
+          <AuthStack.Screen name="RoleSelection" component={RoleSelectionScreen} />
           <AuthStack.Screen name="Login" component={LoginScreen} />
           <AuthStack.Screen name="EmailLogin" component={EmailLoginScreen} />
           <AuthStack.Screen name="BuyerSignup" component={BuyerSignupScreen} />

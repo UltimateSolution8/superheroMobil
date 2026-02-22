@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AppState, FlatList, StyleSheet, Text, View } from 'react-native';
 import * as Location from 'expo-location';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -69,6 +69,7 @@ export function HelperHomeScreen({ navigation }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [autoKycDone, setAutoKycDone] = useState(false);
+  const [sortBy, setSortBy] = useState<'distance' | 'time' | 'budget'>('distance');
 
   const locationSub = useRef<Location.LocationSubscription | null>(null);
   const lastEmitAt = useRef<number>(0);
@@ -310,6 +311,18 @@ export function HelperHomeScreen({ navigation }: Props) {
     };
   }, [isOnline, socket]);
 
+  const sortedOffers = useMemo(() => {
+    const list = [...offers];
+    if (sortBy === 'time') {
+      list.sort((a, b) => (a.timeMinutes ?? 0) - (b.timeMinutes ?? 0));
+    } else if (sortBy === 'budget') {
+      list.sort((a, b) => (b.budgetPaise ?? 0) - (a.budgetPaise ?? 0));
+    } else {
+      list.sort((a, b) => (a.distanceMeters ?? 0) - (b.distanceMeters ?? 0));
+    }
+    return list;
+  }, [offers, sortBy]);
+
   return (
     <Screen style={styles.screen}>
       <View style={styles.topBar}>
@@ -355,8 +368,29 @@ export function HelperHomeScreen({ navigation }: Props) {
 
       <View style={styles.card}>
         <Text style={styles.section}>{t('helper.nearby_tasks')}</Text>
+        <View style={styles.sortRow}>
+          <Text style={styles.sortLabel}>Sort by</Text>
+          <PrimaryButton
+            label="Distance"
+            onPress={() => setSortBy('distance')}
+            variant={sortBy === 'distance' ? 'primary' : 'ghost'}
+            style={styles.sortBtn}
+          />
+          <PrimaryButton
+            label="Time"
+            onPress={() => setSortBy('time')}
+            variant={sortBy === 'time' ? 'primary' : 'ghost'}
+            style={styles.sortBtn}
+          />
+          <PrimaryButton
+            label="Money"
+            onPress={() => setSortBy('budget')}
+            variant={sortBy === 'budget' ? 'primary' : 'ghost'}
+            style={styles.sortBtn}
+          />
+        </View>
         <FlatList
-          data={offers}
+          data={sortedOffers}
           keyExtractor={(o) => o.taskId}
           renderItem={({ item }) => <OfferRow offer={item} onAccept={acceptOffer} />}
           contentContainerStyle={styles.offerList}
@@ -386,6 +420,9 @@ const styles = StyleSheet.create({
     ...theme.shadow.card,
   },
   section: { color: theme.colors.muted, fontSize: 12, fontWeight: '800', letterSpacing: 0.25 },
+  sortRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
+  sortLabel: { color: theme.colors.muted, fontSize: 12, fontWeight: '700' },
+  sortBtn: { paddingHorizontal: 10 },
   actionsRow: { flexDirection: 'row', gap: theme.space.sm, marginTop: 8 },
   half: { flex: 1 },
   offerList: { gap: 12, paddingTop: 6 },

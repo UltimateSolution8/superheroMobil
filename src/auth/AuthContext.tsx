@@ -15,7 +15,7 @@ type AuthState = {
 };
 
 type AuthContextValue = AuthState & {
-  startOtp: (phone: string, role: UserRole) => Promise<{ otp?: string | null }>;
+  startOtp: (phone: string, role: UserRole, channel?: string | null) => Promise<{ otp?: string | null }>;
   verifyOtp: (phone: string, otp: string, role: UserRole) => Promise<void>;
   loginWithPassword: (email: string, password: string) => Promise<void>;
   signupWithPassword: (
@@ -63,8 +63,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const startOtp = useCallback(async (phone: string, role: UserRole) => {
-    const res = await api.otpStart(phone, role);
+  const startOtp = useCallback(async (phone: string, role: UserRole, channel?: string | null) => {
+    const res = await api.otpStart(phone, role, channel ?? null);
     return { otp: res.devOtp ?? res.otp ?? null };
   }, []);
 

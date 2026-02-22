@@ -46,7 +46,7 @@ export function OnboardingScreen({ navigation }: Props) {
       setPage(next);
       scrollRef.current?.scrollTo({ x: next * pageWidth, animated: true });
     } else {
-      navigation.replace('Login');
+      navigation.replace('RoleSelection');
     }
   };
 
@@ -68,10 +68,10 @@ export function OnboardingScreen({ navigation }: Props) {
           <Image source={require('../../assets/superheroo-logo.png')} style={styles.logo} />
           <View>
             <Text style={styles.brand}>Superheroo</Text>
-            <Text style={styles.tagline}>Tap. Create. Relax.</Text>
+            <Text style={styles.tagline}>Help in minutes</Text>
           </View>
         </View>
-        <Text style={styles.skip} onPress={() => navigation.replace('Login')}>
+        <Text style={styles.skip} onPress={() => navigation.replace('RoleSelection')}>
           Skip
         </Text>
       </View>
@@ -82,7 +82,9 @@ export function OnboardingScreen({ navigation }: Props) {
         showsHorizontalScrollIndicator={false}
         ref={scrollRef}
         snapToInterval={pageWidth}
+        snapToAlignment="center"
         decelerationRate="fast"
+        contentContainerStyle={styles.scrollContent}
         onMomentumScrollEnd={(e) => {
           const next = Math.round(e.nativeEvent.contentOffset.x / pageWidth);
           setPage(Math.min(Math.max(next, 0), PAGES.length - 1));
@@ -116,7 +118,8 @@ export function OnboardingScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: theme.colors.bg, paddingTop: 16 },
+  root: { flex: 1, backgroundColor: theme.colors.bg, paddingTop: 12 },
+  scrollContent: { alignItems: 'center' },
   header: { paddingHorizontal: 20, gap: 12 },
   langRow: { alignItems: 'flex-start', marginBottom: 4 },
   brandRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
@@ -130,11 +133,11 @@ const styles = StyleSheet.create({
     paddingVertical: 24,
   },
   card: {
-    marginHorizontal: 24,
     backgroundColor: theme.colors.card,
     borderRadius: theme.radius.lg,
     padding: 24,
     gap: 10,
+    alignSelf: 'center',
     ...theme.shadow.card,
   },
   pageLogo: { width: 86, height: 86, borderRadius: 22, alignSelf: 'center' },

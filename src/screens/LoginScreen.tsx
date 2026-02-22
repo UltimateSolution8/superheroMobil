@@ -20,10 +20,10 @@ function normalizePhone(raw: string) {
   return raw.replace(/\\D+/g, '').slice(-10);
 }
 
-export function LoginScreen({ navigation }: Props) {
+export function LoginScreen({ navigation, route }: Props) {
   const { startOtp } = useAuth();
   const { t, lang, setLang } = useI18n();
-  const [role, setRole] = useState<'BUYER' | 'HELPER'>('BUYER');
+  const [role, setRole] = useState<'BUYER' | 'HELPER'>(route.params?.role ?? 'BUYER');
   const [phone, setPhone] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,13 +31,19 @@ export function LoginScreen({ navigation }: Props) {
 
   const canSend = useMemo(() => normalizePhone(phone).length === 10, [phone]);
 
+  React.useEffect(() => {
+    if (route.params?.role && route.params.role !== role) {
+      setRole(route.params.role);
+    }
+  }, [route.params?.role, role]);
+
   const onSend = useCallback(async () => {
     if (!canSend || busy) return;
     setBusy(true);
     setError(null);
     try {
       const p = normalizePhone(phone);
-      const res = await startOtp(p, role);
+      const res = await startOtp(p, role, null);
       navigation.navigate('Otp', { phone: p, role, devOtp: res.otp ?? null });
     } catch (e) {
       if (e instanceof ApiError) {
@@ -49,6 +55,28 @@ export function LoginScreen({ navigation }: Props) {
       setBusy(false);
     }
   }, [busy, canSend, navigation, phone, role, startOtp]);
+
+  const onSendWithChannel = useCallback(
+    async (channel: 'sms' | 'whatsapp' | 'call') => {
+      if (!canSend || busy) return;
+      setBusy(true);
+      setError(null);
+      try {
+        const p = normalizePhone(phone);
+        const res = await startOtp(p, role, channel);
+        navigation.navigate('Otp', { phone: p, role, devOtp: res.otp ?? null });
+      } catch (e) {
+        if (e instanceof ApiError) {
+          setError(`Could not send OTP (${e.status}). Check your network and try again.`);
+        } else {
+          setError('Could not send OTP. Check your network and try again.');
+        }
+      } finally {
+        setBusy(false);
+      }
+    },
+    [busy, canSend, navigation, phone, role, startOtp],
+  );
 
   const onSignup = useCallback(() => {
     navigation.navigate(role === 'BUYER' ? 'BuyerSignup' : 'HelperSignup');
@@ -102,6 +130,14 @@ export function LoginScreen({ navigation }: Props) {
 
           <View style={styles.footer}>
             <PrimaryButton label={t('login.send_otp')} onPress={onSend} disabled={!canSend} loading={busy} />
+            <View style={styles.otpOptions}>
+              <Text style={styles.otpLink} onPress={() => onSendWithChannel('whatsapp')}>
+                Send via WhatsApp
+              </Text>
+              <Text style={styles.otpLink} onPress={() => onSendWithChannel('call')}>
+                Get OTP on call
+              </Text>
+            </View>
             <PrimaryButton label={t('login.sign_up')} onPress={onSignup} variant="ghost" />
             <Text onPress={() => navigation.navigate('EmailLogin')} style={styles.alt}>
               {t('login.use_email')}
@@ -124,6 +160,8 @@ const styles = StyleSheet.create({
   h1: { color: theme.colors.text, fontSize: 30, fontWeight: '900', letterSpacing: 0.3 },
   sub: { color: theme.colors.muted, fontSize: 14, lineHeight: 20 },
   footer: { gap: 12, marginTop: 8 },
+  otpOptions: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 6 },
+  otpLink: { color: theme.colors.primary, fontWeight: '700', fontSize: 12 },
   alt: { color: theme.colors.primary, fontWeight: '800', textAlign: 'center', paddingVertical: 4 },
   legal: { color: theme.colors.muted, fontSize: 12, lineHeight: 18 },
 });

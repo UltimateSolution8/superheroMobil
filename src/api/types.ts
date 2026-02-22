@@ -76,6 +76,12 @@ export type Task = {
   completionSelfieLng?: number | null;
   completionSelfieAddress?: string | null;
   completionSelfieCapturedAt?: string | null;
+  buyerRating?: number | null;
+  buyerRatingComment?: string | null;
+  buyerRatedAt?: string | null;
+  helperRating?: number | null;
+  helperRatingComment?: string | null;
+  helperRatedAt?: string | null;
   createdAt: string;
 };
 

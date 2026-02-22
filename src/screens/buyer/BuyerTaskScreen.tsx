@@ -12,6 +12,7 @@ import { Screen } from '../../ui/Screen';
 import { PrimaryButton } from '../../ui/PrimaryButton';
 import { Notice } from '../../ui/Notice';
 import { MenuButton } from '../../ui/MenuButton';
+import { TextField } from '../../ui/TextField';
 import { theme } from '../../ui/theme';
 import { DEMO_FALLBACK_LOCATION, GOOGLE_MAPS_API_KEY } from '../../config';
 import type { BuyerStackParamList } from '../../navigation/types';
@@ -69,7 +70,11 @@ function decodePolyline(encoded: string): { latitude: number; longitude: number 
     const dlng = (result & 1) !== 0 ? ~(result >> 1) : result >> 1;
     lng += dlng;
 
-    coords.push({ latitude: lat / 1e5, longitude: lng / 1e5 });
+    const latitude = lat / 1e5;
+    const longitude = lng / 1e5;
+    if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
+      coords.push({ latitude, longitude });
+    }
   }
   return coords;
 }
@@ -85,6 +90,9 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
   const [helperLoc, setHelperLoc] = useState<{ lat: number; lng: number; ts: number } | null>(null);
   const [routeCoords, setRouteCoords] = useState<{ latitude: number; longitude: number }[]>([]);
   const [routeEtaMin, setRouteEtaMin] = useState<number | null>(null);
+  const [rating, setRating] = useState<number>(5);
+  const [ratingComment, setRatingComment] = useState('');
+  const [ratingBusy, setRatingBusy] = useState(false);
 
   const lastRouteFetch = useRef(0);
   const helperMarkerRef = useRef<any>(null);
@@ -240,6 +248,21 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
     return helperDistance <= 60;
   }, [helperDistance]);
 
+  const canRate = status === 'COMPLETED' && !task?.buyerRating;
+  const submitRating = useCallback(async () => {
+    if (!canRate || ratingBusy) return;
+    setRatingBusy(true);
+    setError(null);
+    try {
+      const updated = await withAuth((at) => api.rateTask(at, taskId, rating, ratingComment.trim() || null));
+      setTask(updated);
+    } catch {
+      setError('Could not submit rating.');
+    } finally {
+      setRatingBusy(false);
+    }
+  }, [canRate, rating, ratingBusy, ratingComment, taskId, withAuth]);
+
   return (
     <Screen style={styles.screen}>
       <View style={styles.topBar}>
@@ -316,6 +339,36 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
       </View>
 
       {canDone ? <Notice kind="success" text="Marked as completed by helper." /> : null}
+
+      {status === 'COMPLETED' ? (
+        <View style={styles.ratingCard}>
+          <Text style={styles.liveTitle}>Rate your Superheroo</Text>
+          {task?.buyerRating ? (
+            <Text style={styles.muted}>Your rating: {task.buyerRating.toFixed(1)} / 5</Text>
+          ) : (
+            <>
+              <View style={styles.ratingRow}>
+                {[1, 2, 3, 4, 5].map((r) => (
+                  <Text
+                    key={`rate-${r}`}
+                    style={[styles.star, r <= rating ? styles.starOn : styles.starOff]}
+                    onPress={() => setRating(r)}
+                  >
+                    ★
+                  </Text>
+                ))}
+              </View>
+              <TextField
+                label="Comment (optional)"
+                value={ratingComment}
+                onChangeText={setRatingComment}
+                placeholder="Share feedback"
+              />
+              <PrimaryButton label="Submit rating" onPress={submitRating} loading={ratingBusy} />
+            </>
+          )}
+        </View>
+      ) : null}
     </Screen>
   );
 }
@@ -364,4 +417,18 @@ const styles = StyleSheet.create({
   liveStat: { flex: 1, padding: theme.space.sm, borderRadius: theme.radius.md, backgroundColor: '#EEF2FF' },
   liveLabel: { color: theme.colors.muted, fontSize: 11 },
   liveValue: { color: theme.colors.text, fontSize: 15, fontWeight: '800' },
+  ratingCard: {
+    marginTop: theme.space.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.card,
+    borderRadius: theme.radius.md,
+    padding: theme.space.md,
+    gap: theme.space.sm,
+    ...theme.shadow.card,
+  },
+  ratingRow: { flexDirection: 'row', gap: 6 },
+  star: { fontSize: 24 },
+  starOn: { color: theme.colors.accent },
+  starOff: { color: theme.colors.border },
 });
