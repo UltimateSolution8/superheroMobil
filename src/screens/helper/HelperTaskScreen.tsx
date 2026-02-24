@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, AppState, Linking, Platform, StyleSheet, Text, View } from 'react-native';
-import type { ImagePickerAsset } from 'expo-image-picker';
+import type { Asset } from 'react-native-image-picker';
+import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import * as Location from 'expo-location';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -151,53 +152,35 @@ export function HelperTaskScreen({ route, navigation }: Props) {
   }, [canRate, rating, ratingBusy, ratingComment, taskId, withAuth]);
 
   const pickSelfie = useCallback(async () => {
-    let ImagePicker: typeof import('expo-image-picker') | null = null;
-    try {
-      ImagePicker = await import('expo-image-picker');
-    } catch {
-      setError('Image picker is unavailable in this build.');
-      return null;
-    }
-
-    const takeCamera = async (): Promise<ImagePickerAsset | null> => {
+    const takeCamera = async (): Promise<Asset | null> => {
       try {
-        const cam = await ImagePicker.requestCameraPermissionsAsync();
-        if (cam.status !== 'granted') {
-          setError('Camera permission is required. Try choosing from gallery.');
+        const res = await launchCamera({
+          mediaType: 'photo',
+          quality: 0.7,
+          cameraType: 'front',
+          saveToPhotos: false,
+        });
+        if (res.didCancel) return null;
+        if (res.errorCode) {
+          setError('Camera is unavailable. Please choose from gallery.');
           return null;
         }
-        const res = await ImagePicker.launchCameraAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
-          quality: 0.7,
-          allowsEditing: false,
-          cameraType: ImagePicker.CameraType.front,
-        });
-        if (!res.canceled && res.assets?.length) {
-          return res.assets[0];
-        }
-        return null;
+        return res.assets?.[0] ?? null;
       } catch {
-        setError('Camera is unavailable (e.g. emulator). Please choose from gallery.');
+        setError('Camera is unavailable. Please choose from gallery.');
         return null;
       }
     };
 
-    const pickGallery = async (): Promise<ImagePickerAsset | null> => {
+    const pickGallery = async (): Promise<Asset | null> => {
       try {
-        const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (perm.status !== 'granted') {
-          setError('Gallery permission is required.');
+        const pick = await launchImageLibrary({ mediaType: 'photo', quality: 0.7, selectionLimit: 1 });
+        if (pick.didCancel) return null;
+        if (pick.errorCode) {
+          setError('Could not open gallery.');
           return null;
         }
-        const pick = await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
-          quality: 0.7,
-          allowsEditing: false,
-        });
-        if (pick.canceled || !pick.assets?.length) {
-          return null;
-        }
-        return pick.assets[0];
+        return pick.assets?.[0] ?? null;
       } catch {
         setError('Could not open gallery.');
         return null;
@@ -205,9 +188,9 @@ export function HelperTaskScreen({ route, navigation }: Props) {
     };
 
     const cameraAsset = await takeCamera();
-    if (cameraAsset) return cameraAsset;
+    if (cameraAsset?.uri) return cameraAsset;
 
-    return new Promise<ImagePickerAsset | null>((resolve) => {
+    return new Promise<Asset | null>((resolve) => {
       Alert.alert(
         'Camera unavailable',
         'Would you like to choose a selfie from your gallery?',
@@ -234,7 +217,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       const selfie: PickedFile = {
         uri: a.uri,
         name: a.fileName ?? `${stage.toLowerCase()}-selfie-${Date.now()}.jpg`,
-        type: a.mimeType ?? 'image/jpeg',
+        type: a.type ?? 'image/jpeg',
       };
 
       let lat = task?.lat ?? 0;
