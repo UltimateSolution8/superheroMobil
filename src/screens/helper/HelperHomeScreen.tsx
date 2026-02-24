@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AppState, FlatList, StyleSheet, Text, View } from 'react-native';
+import { AppState, FlatList, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import * as Location from 'expo-location';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
@@ -24,6 +24,12 @@ type OfferRowProps = {
   offer: TaskOfferedEvent;
   onAccept: (taskId: string) => void;
 };
+
+const SORT_OPTIONS: Array<{ key: 'distance' | 'time' | 'budget'; label: string }> = [
+  { key: 'distance', label: 'Distance' },
+  { key: 'time', label: 'Time' },
+  { key: 'budget', label: 'Money' },
+];
 
 function normalizeOffer(raw: TaskOfferedEvent): TaskOfferedEvent {
   const lat = Number(raw.lat);
@@ -70,6 +76,7 @@ export function HelperHomeScreen({ navigation }: Props) {
   const [notice, setNotice] = useState<string | null>(null);
   const [autoKycDone, setAutoKycDone] = useState(false);
   const [sortBy, setSortBy] = useState<'distance' | 'time' | 'budget'>('distance');
+  const [sortOpen, setSortOpen] = useState(false);
 
   const locationSub = useRef<Location.LocationSubscription | null>(null);
   const lastEmitAt = useRef<number>(0);
@@ -323,6 +330,10 @@ export function HelperHomeScreen({ navigation }: Props) {
     return list;
   }, [offers, sortBy]);
 
+  const sortLabel = useMemo(() => {
+    return SORT_OPTIONS.find((opt) => opt.key === sortBy)?.label ?? 'Distance';
+  }, [sortBy]);
+
   return (
     <Screen style={styles.screen}>
       <View style={styles.topBar}>
@@ -370,24 +381,10 @@ export function HelperHomeScreen({ navigation }: Props) {
         <Text style={styles.section}>{t('helper.nearby_tasks')}</Text>
         <View style={styles.sortRow}>
           <Text style={styles.sortLabel}>Sort by</Text>
-          <PrimaryButton
-            label="Distance"
-            onPress={() => setSortBy('distance')}
-            variant={sortBy === 'distance' ? 'primary' : 'ghost'}
-            style={styles.sortBtn}
-          />
-          <PrimaryButton
-            label="Time"
-            onPress={() => setSortBy('time')}
-            variant={sortBy === 'time' ? 'primary' : 'ghost'}
-            style={styles.sortBtn}
-          />
-          <PrimaryButton
-            label="Money"
-            onPress={() => setSortBy('budget')}
-            variant={sortBy === 'budget' ? 'primary' : 'ghost'}
-            style={styles.sortBtn}
-          />
+          <Pressable style={styles.sortDropdown} onPress={() => setSortOpen(true)}>
+            <Text style={styles.sortValue}>{sortLabel}</Text>
+            <Text style={styles.sortCaret}>▾</Text>
+          </Pressable>
         </View>
         <FlatList
           data={sortedOffers}
@@ -400,6 +397,26 @@ export function HelperHomeScreen({ navigation }: Props) {
           ListEmptyComponent={<Text style={styles.muted}>{isOnline ? t('helper.no_offers') : t('helper.go_online_receive')}</Text>}
         />
       </View>
+
+      <Modal transparent visible={sortOpen} animationType="fade" onRequestClose={() => setSortOpen(false)}>
+        <Pressable style={styles.modalBackdrop} onPress={() => setSortOpen(false)}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>Sort tasks</Text>
+            {SORT_OPTIONS.map((opt) => (
+              <Pressable
+                key={opt.key}
+                style={[styles.modalOption, sortBy === opt.key ? styles.modalOptionActive : null]}
+                onPress={() => {
+                  setSortBy(opt.key);
+                  setSortOpen(false);
+                }}
+              >
+                <Text style={styles.modalOptionText}>{opt.label}</Text>
+              </Pressable>
+            ))}
+          </View>
+        </Pressable>
+      </Modal>
     </Screen>
   );
 }
@@ -420,9 +437,21 @@ const styles = StyleSheet.create({
     ...theme.shadow.card,
   },
   section: { color: theme.colors.muted, fontSize: 12, fontWeight: '800', letterSpacing: 0.25 },
-  sortRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
+  sortRow: { flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap' },
   sortLabel: { color: theme.colors.muted, fontSize: 12, fontWeight: '700' },
-  sortBtn: { paddingHorizontal: 10 },
+  sortDropdown: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.card,
+  },
+  sortValue: { color: theme.colors.text, fontSize: 13, fontWeight: '700' },
+  sortCaret: { color: theme.colors.muted, fontSize: 14, fontWeight: '700' },
   actionsRow: { flexDirection: 'row', gap: theme.space.sm, marginTop: 8 },
   half: { flex: 1 },
   offerList: { gap: 12, paddingTop: 6 },
@@ -438,4 +467,36 @@ const styles = StyleSheet.create({
   offerTitle: { color: theme.colors.text, fontSize: 14, fontWeight: '800', lineHeight: 20 },
   offerMeta: { color: theme.colors.muted, fontSize: 12 },
   muted: { color: theme.colors.muted },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.35)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  modalCard: {
+    width: '100%',
+    maxWidth: 320,
+    borderRadius: 16,
+    backgroundColor: theme.colors.card,
+    padding: 16,
+    gap: 10,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    ...theme.shadow.card,
+  },
+  modalTitle: { color: theme.colors.text, fontSize: 14, fontWeight: '800' },
+  modalOption: {
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: '#FFFFFF',
+  },
+  modalOptionActive: {
+    borderColor: theme.colors.primary,
+    backgroundColor: '#EEF2FF',
+  },
+  modalOptionText: { color: theme.colors.text, fontSize: 13, fontWeight: '700' },
 });

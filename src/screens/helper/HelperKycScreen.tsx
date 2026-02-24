@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, View } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
@@ -50,6 +50,7 @@ export function HelperKycScreen({ navigation }: Props) {
   }, []);
 
   const pickSelfie = useCallback(async () => {
+    setError(null);
     let ImagePicker: typeof import('expo-image-picker') | null = null;
     try {
       ImagePicker = await import('expo-image-picker');
@@ -58,53 +59,71 @@ export function HelperKycScreen({ navigation }: Props) {
       return;
     }
 
+    const pickGallery = async () => {
+      try {
+        const lib = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (lib.status !== 'granted') {
+          setError('Gallery permission is required for selfie.');
+          return;
+        }
+        const pick = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          quality: 0.8,
+          allowsEditing: false,
+        });
+        if (!pick.canceled && pick.assets?.length) {
+          const a = pick.assets[0];
+          if (!a.uri) {
+            setError('Could not access selected image.');
+            return;
+          }
+          setSelfie({
+            uri: a.uri,
+            name: a.fileName ?? `selfie-${Date.now()}.jpg`,
+            type: a.mimeType ?? 'image/jpeg',
+          });
+        }
+      } catch {
+        setError('Could not open gallery.');
+      }
+    };
+
     try {
       const cam = await ImagePicker.requestCameraPermissionsAsync();
-      if (cam.status !== 'granted') {
-        setError('Camera permission is required for selfie.');
-        return;
-      }
-      const res = await ImagePicker.launchCameraAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 0.8,
-        allowsEditing: false,
-        cameraType: ImagePicker.CameraType.front,
-      });
-      if (!res.canceled && res.assets?.length) {
-        const a = res.assets[0];
-        setSelfie({
-          uri: a.uri,
-          name: a.fileName ?? `selfie-${Date.now()}.jpg`,
-          type: a.mimeType ?? 'image/jpeg',
+      if (cam.status === 'granted') {
+        const res = await ImagePicker.launchCameraAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          quality: 0.8,
+          allowsEditing: false,
+          cameraType: ImagePicker.CameraType.front,
         });
-        return;
+        if (!res.canceled && res.assets?.length) {
+          const a = res.assets[0];
+          if (!a.uri) {
+            setError('Could not access captured image.');
+            return;
+          }
+          setSelfie({
+            uri: a.uri,
+            name: a.fileName ?? `selfie-${Date.now()}.jpg`,
+            type: a.mimeType ?? 'image/jpeg',
+          });
+          return;
+        }
       }
     } catch {
-      setError('Could not open camera. Please choose from gallery.');
+      // fall back to gallery
     }
 
-    const lib = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (lib.status !== 'granted') {
-      setError('Gallery permission is required for selfie.');
-      return;
-    }
-    try {
-      const pick = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 0.8,
-        allowsEditing: false,
-      });
-      if (!pick.canceled && pick.assets?.length) {
-        const a = pick.assets[0];
-        setSelfie({
-          uri: a.uri,
-          name: a.fileName ?? `selfie-${Date.now()}.jpg`,
-          type: a.mimeType ?? 'image/jpeg',
-        });
-      }
-    } catch {
-      setError('Could not open gallery.');
-    }
+    Alert.alert(
+      'Camera unavailable',
+      'Would you like to choose a selfie from your gallery?',
+      [
+        { text: 'Choose from gallery', onPress: () => void pickGallery() },
+        { text: 'Cancel', style: 'cancel' },
+      ],
+      { cancelable: true },
+    );
   }, []);
 
   const submit = useCallback(async () => {

@@ -159,20 +159,18 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       return null;
     }
 
-    const IP = ImagePicker;
-
     const takeCamera = async (): Promise<ImagePickerAsset | null> => {
       try {
-        const cam = await IP.requestCameraPermissionsAsync();
+        const cam = await ImagePicker.requestCameraPermissionsAsync();
         if (cam.status !== 'granted') {
           setError('Camera permission is required. Try choosing from gallery.');
           return null;
         }
-        const res = await IP.launchCameraAsync({
-          mediaTypes: IP.MediaTypeOptions.Images,
+        const res = await ImagePicker.launchCameraAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
           quality: 0.7,
           allowsEditing: false,
-          cameraType: IP.CameraType.front,
+          cameraType: ImagePicker.CameraType.front,
         });
         if (!res.canceled && res.assets?.length) {
           return res.assets[0];
@@ -186,13 +184,13 @@ export function HelperTaskScreen({ route, navigation }: Props) {
 
     const pickGallery = async (): Promise<ImagePickerAsset | null> => {
       try {
-        const perm = await IP.requestMediaLibraryPermissionsAsync();
+        const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (perm.status !== 'granted') {
           setError('Gallery permission is required.');
           return null;
         }
-        const pick = await IP.launchImageLibraryAsync({
-          mediaTypes: IP.MediaTypeOptions.Images,
+        const pick = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
           quality: 0.7,
           allowsEditing: false,
         });
@@ -206,26 +204,16 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       }
     };
 
+    const cameraAsset = await takeCamera();
+    if (cameraAsset) return cameraAsset;
+
     return new Promise<ImagePickerAsset | null>((resolve) => {
       Alert.alert(
-        'Take or choose a selfie',
-        'You need a selfie for verification. Choose a source:',
+        'Camera unavailable',
+        'Would you like to choose a selfie from your gallery?',
         [
           {
-            text: 'Camera',
-            onPress: async () => {
-              const asset = await takeCamera();
-              if (asset) {
-                resolve(asset);
-              } else {
-                // Camera failed — auto-fallback to gallery
-                const galleryAsset = await pickGallery();
-                resolve(galleryAsset);
-              }
-            },
-          },
-          {
-            text: 'Gallery',
+            text: 'Choose from gallery',
             onPress: async () => {
               const asset = await pickGallery();
               resolve(asset);

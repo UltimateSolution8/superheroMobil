@@ -301,22 +301,6 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
         </MapView>
       </View>
 
-      <View style={styles.card}>
-        <Text style={styles.status}>{statusLabel(status)}</Text>
-        {helperArrived ? <Notice kind="success" text="Helper has arrived at your location." /> : null}
-        <Text style={styles.muted}>Task ID: {taskId}</Text>
-        {task?.title ? <Text style={styles.title}>{task.title}</Text> : null}
-        {helperId ? <Text style={styles.muted}>Helper: {helperId}</Text> : null}
-        {task?.addressText ? <Text style={styles.muted}>Address: {task.addressText}</Text> : null}
-        {task?.description ? <Text style={styles.desc}>{task.description}</Text> : null}
-        <Text style={styles.muted}>Urgency: {task?.urgency ?? '-'} | ETA: {task?.timeMinutes ?? '-'} min</Text>
-        <Text style={styles.muted}>Budget: INR {task ? (task.budgetPaise / 100).toFixed(0) : '-'}</Text>
-        {task?.arrivalOtp ? <Text style={styles.otp}>Arrival OTP: {task.arrivalOtp}</Text> : null}
-        {task?.completionOtp ? <Text style={styles.otp}>Completion OTP: {task.completionOtp}</Text> : null}
-
-        <PrimaryButton label="Refresh" onPress={load} loading={busy} variant="ghost" />
-      </View>
-
       <View style={styles.liveCard}>
         <Text style={styles.liveTitle}>Helper on the way</Text>
         <Text style={styles.liveSub}>Live location updates while helper is en route.</Text>
@@ -336,6 +320,22 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
             <Text style={styles.liveValue}>{helperLastSeen == null ? '--' : `${helperLastSeen}s`}</Text>
           </View>
         </View>
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.status}>{statusLabel(status)}</Text>
+        {helperArrived ? <Notice kind="success" text="Helper has arrived at your location." /> : null}
+        <Text style={styles.muted}>Task ID: {taskId}</Text>
+        {task?.title ? <Text style={styles.title}>{task.title}</Text> : null}
+        {helperId ? <Text style={styles.muted}>Helper: {helperId}</Text> : null}
+        {task?.addressText ? <Text style={styles.muted}>Address: {task.addressText}</Text> : null}
+        {task?.description ? <Text style={styles.desc}>{task.description}</Text> : null}
+        <Text style={styles.muted}>Urgency: {task?.urgency ?? '-'} | ETA: {task?.timeMinutes ?? '-'} min</Text>
+        <Text style={styles.muted}>Budget: INR {task ? (task.budgetPaise / 100).toFixed(0) : '-'}</Text>
+        {task?.arrivalOtp ? <Text style={styles.otp}>Arrival OTP: {task.arrivalOtp}</Text> : null}
+        {task?.completionOtp ? <Text style={styles.otp}>Completion OTP: {task.completionOtp}</Text> : null}
+
+        <PrimaryButton label="Refresh" onPress={load} loading={busy} variant="ghost" />
       </View>
 
       {canDone ? <Notice kind="success" text="Marked as completed by helper." /> : null}
@@ -379,6 +379,7 @@ const styles = StyleSheet.create({
   h1: { color: theme.colors.text, fontSize: 20, fontWeight: '900' },
   link: { color: theme.colors.primary, fontWeight: '800' },
   card: {
+    marginTop: theme.space.md,
     borderWidth: 1,
     borderColor: theme.colors.border,
     backgroundColor: theme.colors.card,
