@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, View } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
-import * as ImagePicker from 'expo-image-picker';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import * as api from '../../api/client';
@@ -52,6 +51,14 @@ export function HelperKycScreen({ navigation }: Props) {
 
   const pickSelfie = useCallback(async () => {
     setError(null);
+    let ImagePicker: typeof import('expo-image-picker') | null = null;
+    try {
+      ImagePicker = await import('expo-image-picker');
+    } catch {
+      setError('Image picker is unavailable in this build.');
+      return;
+    }
+
     const pickGallery = async () => {
       try {
         const lib = await ImagePicker.requestMediaLibraryPermissionsAsync();

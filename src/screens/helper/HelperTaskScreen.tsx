@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, AppState, Linking, Platform, StyleSheet, Text, View } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
 import type { ImagePickerAsset } from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { useFocusEffect } from '@react-navigation/native';
@@ -152,6 +151,14 @@ export function HelperTaskScreen({ route, navigation }: Props) {
   }, [canRate, rating, ratingBusy, ratingComment, taskId, withAuth]);
 
   const pickSelfie = useCallback(async () => {
+    let ImagePicker: typeof import('expo-image-picker') | null = null;
+    try {
+      ImagePicker = await import('expo-image-picker');
+    } catch {
+      setError('Image picker is unavailable in this build.');
+      return null;
+    }
+
     const takeCamera = async (): Promise<ImagePickerAsset | null> => {
       try {
         const cam = await ImagePicker.requestCameraPermissionsAsync();
