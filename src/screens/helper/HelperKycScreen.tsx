@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, View } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 
 import * as api from '../../api/client';
 import { ApiError } from '../../api/http';
@@ -51,68 +52,55 @@ export function HelperKycScreen({ navigation }: Props) {
 
   const pickSelfie = useCallback(async () => {
     setError(null);
-    let ImagePicker: typeof import('expo-image-picker') | null = null;
-    try {
-      ImagePicker = await import('expo-image-picker');
-    } catch {
-      setError('Image picker is unavailable in this build.');
-      return;
-    }
-
     const pickGallery = async () => {
       try {
-        const lib = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (lib.status !== 'granted') {
-          setError('Gallery permission is required for selfie.');
+        const pick = await launchImageLibrary({ mediaType: 'photo', quality: 0.8, selectionLimit: 1 });
+        if (pick.didCancel) return;
+        if (pick.errorCode) {
+          setError('Could not open gallery.');
           return;
         }
-        const pick = await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
-          quality: 0.8,
-          allowsEditing: false,
-        });
-        if (!pick.canceled && pick.assets?.length) {
-          const a = pick.assets[0];
-          if (!a.uri) {
-            setError('Could not access selected image.');
-            return;
-          }
-          setSelfie({
-            uri: a.uri,
-            name: a.fileName ?? `selfie-${Date.now()}.jpg`,
-            type: a.mimeType ?? 'image/jpeg',
-          });
+        const a = pick.assets?.[0];
+        if (!a?.uri) {
+          setError('Could not access selected image.');
+          return;
         }
+        setSelfie({
+          uri: a.uri,
+          name: a.fileName ?? `selfie-${Date.now()}.jpg`,
+          type: a.type ?? 'image/jpeg',
+        });
       } catch {
         setError('Could not open gallery.');
       }
     };
 
     try {
-      const cam = await ImagePicker.requestCameraPermissionsAsync();
-      if (cam.status === 'granted') {
-        const res = await ImagePicker.launchCameraAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
-          quality: 0.8,
-          allowsEditing: false,
-          cameraType: ImagePicker.CameraType.front,
-        });
-        if (!res.canceled && res.assets?.length) {
-          const a = res.assets[0];
-          if (!a.uri) {
-            setError('Could not access captured image.');
-            return;
-          }
-          setSelfie({
-            uri: a.uri,
-            name: a.fileName ?? `selfie-${Date.now()}.jpg`,
-            type: a.mimeType ?? 'image/jpeg',
-          });
+      const res = await launchCamera({
+        mediaType: 'photo',
+        quality: 0.8,
+        cameraType: 'front',
+        saveToPhotos: false,
+      });
+      if (res.didCancel) {
+        // fall back to gallery prompt
+      } else if (res.errorCode) {
+        setError('Camera is unavailable. Please choose from gallery.');
+      } else {
+        const a = res.assets?.[0];
+        if (!a?.uri) {
+          setError('Could not access captured image.');
           return;
         }
+        setSelfie({
+          uri: a.uri,
+          name: a.fileName ?? `selfie-${Date.now()}.jpg`,
+          type: a.type ?? 'image/jpeg',
+        });
+        return;
       }
     } catch {
-      // fall back to gallery
+      setError('Camera is unavailable. Please choose from gallery.');
     }
 
     Alert.alert(

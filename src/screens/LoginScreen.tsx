@@ -47,7 +47,7 @@ export function LoginScreen({ navigation, route }: Props) {
       navigation.navigate('Otp', { phone: p, role, devOtp: res.otp ?? null });
     } catch (e) {
       if (e instanceof ApiError) {
-        setError(`Could not send OTP (${e.status}). Check your network and try again.`);
+        setError(e.message || `Could not send OTP (${e.status}). Check your network and try again.`);
       } else {
         setError('Could not send OTP. Check your network and try again.');
       }
@@ -67,7 +67,7 @@ export function LoginScreen({ navigation, route }: Props) {
         navigation.navigate('Otp', { phone: p, role, devOtp: res.otp ?? null });
       } catch (e) {
         if (e instanceof ApiError) {
-          setError(`Could not send OTP (${e.status}). Check your network and try again.`);
+          setError(e.message || `Could not send OTP (${e.status}). Check your network and try again.`);
         } else {
           setError('Could not send OTP. Check your network and try again.');
         }
