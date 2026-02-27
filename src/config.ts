@@ -11,7 +11,7 @@ const socketFromExtra = typeof extra.socketUrl === 'string' ? extra.socketUrl.tr
 const mapsFromExtra = typeof extra.googleMapsApiKey === 'string' ? extra.googleMapsApiKey.trim() : '';
 
 export const API_BASE_URL =
-  process.env.EXPO_PUBLIC_API_BASE_URL?.trim() || apiFromExtra || 'http://localhost:8080';
+  process.env.EXPO_PUBLIC_API_BASE_URL?.trim() || apiFromExtra || 'http://129.159.233.237:8081';
 
 export const SOCKET_URL =
   process.env.EXPO_PUBLIC_SOCKET_URL?.trim() || socketFromExtra || 'http://localhost:8090';
