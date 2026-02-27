@@ -212,7 +212,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
   const uploadCheckpointSelfie = useCallback(
     async (stage: 'ARRIVAL' | 'COMPLETION') => {
       const a = await pickSelfie();
-      if (!a) return false;
+      if (!a || !a.uri) return false;
 
       const selfie: PickedFile = {
         uri: a.uri,
