@@ -26,6 +26,7 @@ import { ProfileScreen } from '../screens/common/ProfileScreen';
 import { HistoryScreen } from '../screens/common/HistoryScreen';
 import { PaymentsScreen } from '../screens/common/PaymentsScreen';
 import { SettingsScreen } from '../screens/common/SettingsScreen';
+import { DiagnosticsScreen } from '../screens/common/DiagnosticsScreen';
 import type { AuthStackParamList, BuyerStackParamList, HelperStackParamList } from './types';
 import { theme } from '../ui/theme';
 
@@ -57,6 +58,7 @@ export function AppNavigator() {
           <AuthStack.Screen name="BuyerSignup" component={BuyerSignupScreen} />
           <AuthStack.Screen name="HelperSignup" component={HelperSignupScreen} />
           <AuthStack.Screen name="Otp" component={OtpScreen} />
+          <AuthStack.Screen name="Diagnostics" component={DiagnosticsScreen} />
         </AuthStack.Navigator>
       ) : (
         <SocketProvider>
@@ -69,6 +71,7 @@ export function AppNavigator() {
               <BuyerStack.Screen name="History" component={HistoryScreen} />
               <BuyerStack.Screen name="Payments" component={PaymentsScreen} />
               <BuyerStack.Screen name="Settings" component={SettingsScreen} />
+              <BuyerStack.Screen name="Diagnostics" component={DiagnosticsScreen} />
               <BuyerStack.Screen name="SupportTickets" component={SupportTicketsScreen} />
               <BuyerStack.Screen name="SupportNewTicket" component={SupportNewTicketScreen} />
               <BuyerStack.Screen name="SupportTicket" component={SupportTicketScreen} />
@@ -83,6 +86,7 @@ export function AppNavigator() {
               <HelperStack.Screen name="History" component={HistoryScreen} />
               <HelperStack.Screen name="Payments" component={PaymentsScreen} />
               <HelperStack.Screen name="Settings" component={SettingsScreen} />
+              <HelperStack.Screen name="Diagnostics" component={DiagnosticsScreen} />
               <HelperStack.Screen name="SupportTickets" component={SupportTicketsScreen} />
               <HelperStack.Screen name="SupportNewTicket" component={SupportNewTicketScreen} />
               <HelperStack.Screen name="SupportTicket" component={SupportTicketScreen} />

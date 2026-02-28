@@ -9,6 +9,7 @@ export type AuthStackParamList = {
   BuyerSignup: undefined;
   HelperSignup: undefined;
   Otp: { phone: string; role: UserRole; devOtp?: string | null };
+  Diagnostics: undefined;
 };
 
 export type BuyerStackParamList = {
@@ -22,6 +23,7 @@ export type BuyerStackParamList = {
   SupportTickets: undefined;
   SupportNewTicket: undefined;
   SupportTicket: { ticketId: string };
+  Diagnostics: undefined;
 };
 
 export type HelperStackParamList = {
@@ -36,4 +38,5 @@ export type HelperStackParamList = {
   SupportTickets: undefined;
   SupportNewTicket: undefined;
   SupportTicket: { ticketId: string };
+  Diagnostics: undefined;
 };
