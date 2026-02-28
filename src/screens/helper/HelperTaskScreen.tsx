@@ -17,6 +17,7 @@ import { Notice } from '../../ui/Notice';
 import { TextField } from '../../ui/TextField';
 import { MenuButton } from '../../ui/MenuButton';
 import { theme } from '../../ui/theme';
+import { ensureCameraPermissions, ensureGalleryPermissions } from '../../utils/permissions';
 import type { HelperStackParamList } from '../../navigation/types';
 import { DEMO_FALLBACK_LOCATION, GOOGLE_MAPS_API_KEY } from '../../config';
 
@@ -154,6 +155,11 @@ export function HelperTaskScreen({ route, navigation }: Props) {
   const pickSelfie = useCallback(async () => {
     const takeCamera = async (): Promise<Asset | null> => {
       try {
+        const allowed = await ensureCameraPermissions();
+        if (!allowed) {
+          setError('Camera permission is required to capture a selfie.');
+          return null;
+        }
         const res = await launchCamera({
           mediaType: 'photo',
           quality: 0.7,
@@ -174,6 +180,11 @@ export function HelperTaskScreen({ route, navigation }: Props) {
 
     const pickGallery = async (): Promise<Asset | null> => {
       try {
+        const allowed = await ensureGalleryPermissions();
+        if (!allowed) {
+          setError('Gallery permission is required to select a selfie.');
+          return null;
+        }
         const pick = await launchImageLibrary({ mediaType: 'photo', quality: 0.7, selectionLimit: 1 });
         if (pick.didCancel) return null;
         if (pick.errorCode) {

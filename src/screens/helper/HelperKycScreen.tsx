@@ -12,6 +12,7 @@ import { Notice } from '../../ui/Notice';
 import { PrimaryButton } from '../../ui/PrimaryButton';
 import { Screen } from '../../ui/Screen';
 import { theme } from '../../ui/theme';
+import { ensureCameraPermissions, ensureGalleryPermissions } from '../../utils/permissions';
 
 type Props = NativeStackScreenProps<HelperStackParamList, 'HelperKyc'>;
 
@@ -54,6 +55,11 @@ export function HelperKycScreen({ navigation }: Props) {
     setError(null);
     const pickGallery = async () => {
       try {
+        const allowed = await ensureGalleryPermissions();
+        if (!allowed) {
+          setError('Gallery permission is required to select a selfie.');
+          return;
+        }
         const pick = await launchImageLibrary({ mediaType: 'photo', quality: 0.8, selectionLimit: 1 });
         if (pick.didCancel) return;
         if (pick.errorCode) {
@@ -76,6 +82,11 @@ export function HelperKycScreen({ navigation }: Props) {
     };
 
     try {
+      const allowed = await ensureCameraPermissions();
+      if (!allowed) {
+        setError('Camera permission is required to capture a selfie.');
+        return;
+      }
       const res = await launchCamera({
         mediaType: 'photo',
         quality: 0.8,

@@ -142,6 +142,9 @@ export function LoginScreen({ navigation, route }: Props) {
             <Text onPress={() => navigation.navigate('EmailLogin')} style={styles.alt}>
               {t('login.use_email')}
             </Text>
+            <Text onPress={() => navigation.navigate('Diagnostics')} style={styles.alt}>
+              Diagnostics
+            </Text>
             <Text style={styles.legal}>{t('login.terms')}</Text>
           </View>
         </ScrollView>
