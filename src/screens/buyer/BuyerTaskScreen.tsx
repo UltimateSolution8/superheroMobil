@@ -94,6 +94,8 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
   const [ratingComment, setRatingComment] = useState('');
   const [ratingBusy, setRatingBusy] = useState(false);
   const helperPhone = task?.helperPhone?.trim() || '';
+  const canRenderMap = Boolean(GOOGLE_MAPS_API_KEY);
+  const mapProvider = canRenderMap ? PROVIDER_GOOGLE : undefined;
 
   const lastRouteFetch = useRef(0);
   const helperMarkerRef = useRef<any>(null);
@@ -292,31 +294,35 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
 
       {error ? <Notice kind="danger" text={error} /> : null}
 
-      <View style={styles.mapWrap}>
-        <MapView
-          style={styles.map}
-          provider={PROVIDER_GOOGLE}
-          ref={mapRef}
-          initialRegion={{
-            latitude: hasTaskCoords ? taskLat : DEMO_FALLBACK_LOCATION?.lat ?? 12.9716,
-            longitude: hasTaskCoords ? taskLng : DEMO_FALLBACK_LOCATION?.lng ?? 77.5946,
-            latitudeDelta: 0.02,
-            longitudeDelta: 0.02,
-          }}
-        >
-          {hasTaskCoords ? <Marker coordinate={{ latitude: taskLat, longitude: taskLng }} title="You" /> : null}
-          {helperLoc ? (
-            <Marker
-              ref={helperMarkerRef}
-              coordinate={{ latitude: helperLoc.lat, longitude: helperLoc.lng }}
-              title="Helper"
-            />
-          ) : null}
-          {routeCoords.length > 1 ? (
-            <Polyline coordinates={routeCoords} strokeColor={theme.colors.primary} strokeWidth={4} />
-          ) : null}
-        </MapView>
-      </View>
+      {canRenderMap ? (
+        <View style={styles.mapWrap}>
+          <MapView
+            style={styles.map}
+            provider={mapProvider}
+            ref={mapRef}
+            initialRegion={{
+              latitude: hasTaskCoords ? taskLat : DEMO_FALLBACK_LOCATION?.lat ?? 12.9716,
+              longitude: hasTaskCoords ? taskLng : DEMO_FALLBACK_LOCATION?.lng ?? 77.5946,
+              latitudeDelta: 0.02,
+              longitudeDelta: 0.02,
+            }}
+          >
+            {hasTaskCoords ? <Marker coordinate={{ latitude: taskLat, longitude: taskLng }} title="You" /> : null}
+            {helperLoc ? (
+              <Marker
+                ref={helperMarkerRef}
+                coordinate={{ latitude: helperLoc.lat, longitude: helperLoc.lng }}
+                title="Helper"
+              />
+            ) : null}
+            {routeCoords.length > 1 ? (
+              <Polyline coordinates={routeCoords} strokeColor={theme.colors.primary} strokeWidth={4} />
+            ) : null}
+          </MapView>
+        </View>
+      ) : (
+        <Notice kind="warning" text="Map unavailable: missing Google Maps API key." />
+      )}
 
       <View style={styles.liveCard}>
         <Text style={styles.liveTitle}>Helper on the way</Text>

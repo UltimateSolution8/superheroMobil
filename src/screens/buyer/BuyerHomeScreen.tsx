@@ -54,6 +54,8 @@ export function BuyerHomeScreen({ navigation }: Props) {
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const canRenderMap = Boolean(GOOGLE_MAPS_API_KEY);
+  const mapProvider = canRenderMap ? PROVIDER_GOOGLE : undefined;
 
   const titleOk = useMemo(() => title.trim().length >= 3, [title]);
   const descOk = useMemo(() => description.trim().length >= 10, [description]);
@@ -369,33 +371,37 @@ export function BuyerHomeScreen({ navigation }: Props) {
             </View>
           ) : null}
 
-            <View style={styles.mapWrap}>
-              <MapView
-                style={styles.map}
-                provider={PROVIDER_GOOGLE}
-                onPress={onMapPress}
-                initialRegion={{
-                  latitude: lat ?? DEMO_FALLBACK_LOCATION?.lat ?? 12.9716,
-                  longitude: lng ?? DEMO_FALLBACK_LOCATION?.lng ?? 77.5946,
-                  latitudeDelta: 0.01,
-                  longitudeDelta: 0.01,
-                }}
-                region={
-                  lat != null && lng != null
-                    ? {
-                        latitude: lat,
-                        longitude: lng,
-                        latitudeDelta: 0.01,
-                        longitudeDelta: 0.01,
-                      }
-                    : undefined
-                }
-              >
-                {lat != null && lng != null ? (
-                  <Marker coordinate={{ latitude: lat, longitude: lng }} title="Pickup location" />
-                ) : null}
-              </MapView>
-            </View>
+            {canRenderMap ? (
+              <View style={styles.mapWrap}>
+                <MapView
+                  style={styles.map}
+                  provider={mapProvider}
+                  onPress={onMapPress}
+                  initialRegion={{
+                    latitude: lat ?? DEMO_FALLBACK_LOCATION?.lat ?? 12.9716,
+                    longitude: lng ?? DEMO_FALLBACK_LOCATION?.lng ?? 77.5946,
+                    latitudeDelta: 0.01,
+                    longitudeDelta: 0.01,
+                  }}
+                  region={
+                    lat != null && lng != null
+                      ? {
+                          latitude: lat,
+                          longitude: lng,
+                          latitudeDelta: 0.01,
+                          longitudeDelta: 0.01,
+                        }
+                      : undefined
+                  }
+                >
+                  {lat != null && lng != null ? (
+                    <Marker coordinate={{ latitude: lat, longitude: lng }} title="Pickup location" />
+                  ) : null}
+                </MapView>
+              </View>
+            ) : (
+              <Notice kind="warning" text="Map unavailable: missing Google Maps API key." />
+            )}
 
             <Text style={styles.section}>{t('buyer.task_details')}</Text>
             <TextField label={t('buyer.task_name')} value={title} onChangeText={setTitle} placeholder={t('buyer.task_name_placeholder')} />
