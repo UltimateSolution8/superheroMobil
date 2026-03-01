@@ -22,7 +22,8 @@ export function EmailLoginScreen({ navigation }: Props) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const canLogin = useMemo(() => email.trim().length >= 3 && password.trim().length >= 6, [email, password]);
+  const emailOk = useMemo(() => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim()), [email]);
+  const canLogin = useMemo(() => emailOk && password.trim().length >= 6, [emailOk, password]);
 
   const onLogin = useCallback(async () => {
     if (!canLogin || busy) return;
@@ -75,6 +76,7 @@ export function EmailLoginScreen({ navigation }: Props) {
         />
 
         {error ? <Notice kind="danger" text={error} /> : null}
+        {!emailOk && email.trim().length > 0 ? <Notice kind="warning" text="Enter a valid email address." /> : null}
 
         <PrimaryButton label={t('email.sign_in')} onPress={onLogin} disabled={!canLogin} loading={busy} />
         <View style={styles.signupRow}>

@@ -22,7 +22,9 @@ export function BuyerSignupScreen({ navigation }: Props) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const canSubmit = useMemo(() => email.includes('@') && password.trim().length >= 6, [email, password]);
+  const emailOk = useMemo(() => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim()), [email]);
+  const phoneOk = useMemo(() => phone.trim().length === 0 || /^\d{10}$/.test(phone.trim()), [phone]);
+  const canSubmit = useMemo(() => emailOk && phoneOk && password.trim().length >= 6, [emailOk, password, phoneOk]);
 
   const onSubmit = useCallback(async () => {
     if (!canSubmit || busy) return;
@@ -74,6 +76,8 @@ export function BuyerSignupScreen({ navigation }: Props) {
         </View>
 
         {error ? <Notice kind="danger" text={error} /> : null}
+        {!emailOk && email.trim().length > 0 ? <Notice kind="warning" text="Enter a valid email address." /> : null}
+        {!phoneOk ? <Notice kind="warning" text="Phone must be 10 digits." /> : null}
 
         <View style={styles.footer}>
           <PrimaryButton label="Sign up" onPress={onSubmit} disabled={!canSubmit} loading={busy} />
