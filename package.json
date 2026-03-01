@@ -29,7 +29,8 @@
     "react-native-maps": "1.20.1",
     "react-native-safe-area-context": "5.6.1",
     "react-native-screens": "~4.15.0",
-    "socket.io-client": "^4.8.1"
+    "socket.io-client": "^4.8.1",
+    "@react-native-voice/voice": "^3.2.0"
   },
   "devDependencies": {
     "@react-native-community/cli": "^20.1.1",

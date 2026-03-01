@@ -13,7 +13,10 @@
       "backgroundColor": "#1E3A8A"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "Superheroo uses the microphone to capture your task details by voice."
+      }
     },
     "android": {
       "package": "com.helpinminutes.app",
@@ -23,6 +26,9 @@
         "foregroundImage": "./assets/superheroo-logo.png",
         "backgroundColor": "#ffffff"
       },
+      "permissions": [
+        "RECORD_AUDIO"
+      ],
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
