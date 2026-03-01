@@ -27,6 +27,8 @@ import { HistoryScreen } from '../screens/common/HistoryScreen';
 import { PaymentsScreen } from '../screens/common/PaymentsScreen';
 import { SettingsScreen } from '../screens/common/SettingsScreen';
 import { DiagnosticsScreen } from '../screens/common/DiagnosticsScreen';
+import { SosScreen } from '../screens/common/SosScreen';
+import { TermsScreen } from '../screens/common/TermsScreen';
 import type { AuthStackParamList, BuyerStackParamList, HelperStackParamList } from './types';
 import { theme } from '../ui/theme';
 
@@ -71,6 +73,8 @@ export function AppNavigator() {
               <BuyerStack.Screen name="History" component={HistoryScreen} />
               <BuyerStack.Screen name="Payments" component={PaymentsScreen} />
               <BuyerStack.Screen name="Settings" component={SettingsScreen} />
+              <BuyerStack.Screen name="SOS" component={SosScreen} />
+              <BuyerStack.Screen name="Terms" component={TermsScreen} />
               <BuyerStack.Screen name="Diagnostics" component={DiagnosticsScreen} />
               <BuyerStack.Screen name="SupportTickets" component={SupportTicketsScreen} />
               <BuyerStack.Screen name="SupportNewTicket" component={SupportNewTicketScreen} />
@@ -86,6 +90,8 @@ export function AppNavigator() {
               <HelperStack.Screen name="History" component={HistoryScreen} />
               <HelperStack.Screen name="Payments" component={PaymentsScreen} />
               <HelperStack.Screen name="Settings" component={SettingsScreen} />
+              <HelperStack.Screen name="SOS" component={SosScreen} />
+              <HelperStack.Screen name="Terms" component={TermsScreen} />
               <HelperStack.Screen name="Diagnostics" component={DiagnosticsScreen} />
               <HelperStack.Screen name="SupportTickets" component={SupportTicketsScreen} />
               <HelperStack.Screen name="SupportNewTicket" component={SupportNewTicketScreen} />

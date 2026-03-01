@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AppState, FlatList, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import * as Notifications from 'expo-notifications';
 import * as Location from 'expo-location';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
@@ -64,7 +65,7 @@ const OfferRow = React.memo(function OfferRow({ offer, onAccept }: OfferRowProps
 });
 
 export function HelperHomeScreen({ navigation }: Props) {
-  const { withAuth, signOut } = useAuth();
+  const { withAuth } = useAuth();
   const { t } = useI18n();
   const socket = useSocket();
   const online = useIsOnline();
@@ -93,6 +94,17 @@ export function HelperHomeScreen({ navigation }: Props) {
 
   useEffect(() => {
     loadProfile();
+  }, [loadProfile]);
+
+  useEffect(() => {
+    const sub = Notifications.addNotificationReceivedListener((event) => {
+      const type = event.request?.content?.data?.type;
+      if (type === 'KYC_APPROVED') {
+        setNotice('KYC approved. You can go online now.');
+        loadProfile();
+      }
+    });
+    return () => sub.remove();
   }, [loadProfile]);
 
   useEffect(() => {
@@ -339,19 +351,15 @@ export function HelperHomeScreen({ navigation }: Props) {
       <View style={styles.topBar}>
         <MenuButton onPress={() => navigation.navigate('Menu')} />
         <Text style={styles.h1}>Superheroo</Text>
-        <View style={styles.topLinks}>
-          <Text onPress={() => navigation.navigate('SupportTickets')} style={styles.link}>
-            {t('buyer.support')}
-          </Text>
-          <Text onPress={signOut} style={styles.link}>
-            {t('buyer.sign_out')}
-          </Text>
-        </View>
+        <View style={styles.topLinks} />
       </View>
 
       {!online ? <Notice kind="warning" text={t('buyer.offline')} /> : null}
       {profile?.kycStatus === 'PENDING' ? (
         <Notice kind="warning" text="KYC pending review. Upload or update docs from Complete KYC." />
+      ) : null}
+      {profile?.kycStatus === 'APPROVED' ? (
+        <Notice kind="success" text="KYC approved. You can go online now." />
       ) : null}
       {profile?.kycStatus === 'REJECTED' ? (
         <Notice kind="danger" text={`KYC rejected${profile.kycRejectionReason ? `: ${profile.kycRejectionReason}` : ''}. Please re-submit.`} />

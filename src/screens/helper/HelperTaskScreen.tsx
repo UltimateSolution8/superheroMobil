@@ -467,9 +467,10 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       <View style={styles.topBar}>
         <MenuButton onPress={() => navigation.navigate('Menu')} />
         <Text style={styles.h1}>Job</Text>
-        <Text onPress={backHome} style={styles.link}>
-          Back
-        </Text>
+        <View style={styles.topActions}>
+          <Text onPress={load} style={styles.link}>Refresh</Text>
+          <Text onPress={backHome} style={styles.link}>Back</Text>
+        </View>
       </View>
 
       {buyerPhone ? (
@@ -598,6 +599,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
 
 const styles = StyleSheet.create({
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  topActions: { flexDirection: 'row', gap: 12, alignItems: 'center' },
   contactRow: {
     marginTop: theme.space.sm,
     padding: theme.space.sm,

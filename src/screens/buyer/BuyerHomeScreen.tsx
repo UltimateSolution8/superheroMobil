@@ -32,7 +32,7 @@ const URGENCY_OPTIONS: { label: string; key: TaskUrgency }[] = [
 ];
 
 export function BuyerHomeScreen({ navigation }: Props) {
-  const { withAuth, signOut } = useAuth();
+  const { withAuth } = useAuth();
   const { t } = useI18n();
   const online = useIsOnline();
   const insets = useSafeAreaInsets();
@@ -327,14 +327,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
           <View style={styles.topBar}>
             <MenuButton onPress={() => navigation.navigate('Menu')} />
             <Text style={styles.h1}>{t('buyer.create_task')}</Text>
-            <View style={styles.topLinks}>
-              <Text onPress={() => navigation.navigate('SupportTickets')} style={styles.link}>
-                {t('buyer.support')}
-              </Text>
-              <Text onPress={signOut} style={styles.link}>
-                {t('buyer.sign_out')}
-              </Text>
-            </View>
+            <View style={styles.topLinks} />
           </View>
 
           {!online ? <Notice kind="warning" text={t('buyer.offline')} /> : null}

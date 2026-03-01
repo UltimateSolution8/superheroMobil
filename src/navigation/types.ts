@@ -20,6 +20,8 @@ export type BuyerStackParamList = {
   History: undefined;
   Payments: undefined;
   Settings: undefined;
+  SOS: undefined;
+  Terms: undefined;
   SupportTickets: undefined;
   SupportNewTicket: undefined;
   SupportTicket: { ticketId: string };
@@ -35,6 +37,8 @@ export type HelperStackParamList = {
   History: undefined;
   Payments: undefined;
   Settings: undefined;
+  SOS: undefined;
+  Terms: undefined;
   SupportTickets: undefined;
   SupportNewTicket: undefined;
   SupportTicket: { ticketId: string };
