@@ -71,6 +71,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
   const [rating, setRating] = useState<number>(5);
   const [ratingComment, setRatingComment] = useState('');
   const [ratingBusy, setRatingBusy] = useState(false);
+  const buyerPhone = task?.buyerPhone?.trim() || '';
 
   const locationSub = useRef<Location.LocationSubscription | null>(null);
   const lastEmitAt = useRef<number>(0);
@@ -471,6 +472,22 @@ export function HelperTaskScreen({ route, navigation }: Props) {
         </Text>
       </View>
 
+      {buyerPhone ? (
+        <View style={styles.contactRow}>
+          <View>
+            <Text style={styles.label}>Buyer</Text>
+            <Text style={styles.value}>{task?.buyerName ?? buyerPhone}</Text>
+            <Text style={styles.value}>{buyerPhone}</Text>
+          </View>
+          <PrimaryButton
+            label="Call buyer"
+            onPress={() => Linking.openURL(`tel:${buyerPhone}`)}
+            variant="ghost"
+            style={styles.callButton}
+          />
+        </View>
+      ) : null}
+
       {notice ? <Notice kind="success" text={notice} /> : null}
       {error ? <Notice kind="danger" text={error} /> : null}
 
@@ -496,8 +513,8 @@ export function HelperTaskScreen({ route, navigation }: Props) {
 
       <View style={styles.card}>
         <Text style={styles.status}>{statusLabel(status)}</Text>
-        <Text style={styles.muted}>Task ID: {taskId}</Text>
         {task?.title ? <Text style={styles.title}>{task.title}</Text> : null}
+        {task?.buyerName ? <Text style={styles.muted}>Buyer: {task.buyerName}</Text> : null}
         {task?.addressText ? <Text style={styles.muted}>Address: {task.addressText}</Text> : null}
         {task?.description ? <Text style={styles.desc}>{task.description}</Text> : null}
         <Text style={styles.muted}>
@@ -581,6 +598,21 @@ export function HelperTaskScreen({ route, navigation }: Props) {
 
 const styles = StyleSheet.create({
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  contactRow: {
+    marginTop: theme.space.sm,
+    padding: theme.space.sm,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radius.md,
+    backgroundColor: theme.colors.card,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: theme.space.sm,
+  },
+  label: { color: theme.colors.muted, fontSize: 11 },
+  value: { color: theme.colors.text, fontSize: 14, fontWeight: '700' },
+  callButton: { paddingHorizontal: theme.space.md },
   h1: { color: theme.colors.text, fontSize: 20, fontWeight: '900' },
   link: { color: theme.colors.primary, fontWeight: '800' },
   mapWrap: {

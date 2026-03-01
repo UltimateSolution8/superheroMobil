@@ -39,3 +39,9 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# local gradle distribution cache
+/gradle-dist/
+
+# Firebase config (keep local)
+google-services.json

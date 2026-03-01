@@ -11,10 +11,12 @@ const socketFromExtra = typeof extra.socketUrl === 'string' ? extra.socketUrl.tr
 const mapsFromExtra = typeof extra.googleMapsApiKey === 'string' ? extra.googleMapsApiKey.trim() : '';
 
 export const API_BASE_URL =
-  process.env.EXPO_PUBLIC_API_BASE_URL?.trim() || apiFromExtra || 'http://129.159.233.237:8081';
+  process.env.EXPO_PUBLIC_API_BASE_URL?.trim() || apiFromExtra || 'http://159.89.167.248:8081';
 
 export const SOCKET_URL =
-  process.env.EXPO_PUBLIC_SOCKET_URL?.trim() || socketFromExtra || 'http://localhost:8090';
+  process.env.EXPO_PUBLIC_SOCKET_URL?.trim() ||
+  socketFromExtra ||
+  'https://superheroorealtime.onrender.com';
 
 export const GOOGLE_MAPS_API_KEY =
   process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY?.trim() || mapsFromExtra || '';

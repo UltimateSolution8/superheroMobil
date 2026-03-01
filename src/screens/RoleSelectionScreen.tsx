@@ -45,8 +45,6 @@ export function RoleSelectionScreen({ navigation }: Props) {
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.heading}>{t('role.title')}</Text>
-        <Text style={styles.sub}>{t('role.subtitle')}</Text>
         <View style={styles.actions}>
           <PrimaryButton label={t('role.book')} onPress={goBuyer} variant="accent" style={styles.bigBtn} />
           <PrimaryButton label={t('role.be')} onPress={goHelper} style={styles.bigBtn} />
@@ -72,8 +70,6 @@ const styles = StyleSheet.create({
     gap: theme.space.md,
     ...theme.shadow.card,
   },
-  heading: { fontSize: 18, fontWeight: '800', color: theme.colors.text },
-  sub: { color: theme.colors.muted, lineHeight: 20 },
   actions: { gap: theme.space.sm, marginTop: 4 },
   bigBtn: { height: 54, borderRadius: 18 },
 });

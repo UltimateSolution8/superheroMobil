@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Platform, StyleSheet, Text, View } from 'react-native';
+import { Linking, Platform, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
@@ -93,6 +93,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
   const [rating, setRating] = useState<number>(5);
   const [ratingComment, setRatingComment] = useState('');
   const [ratingBusy, setRatingBusy] = useState(false);
+  const helperPhone = task?.helperPhone?.trim() || '';
 
   const lastRouteFetch = useRef(0);
   const helperMarkerRef = useRef<any>(null);
@@ -273,6 +274,22 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
         </Text>
       </View>
 
+      {helperPhone ? (
+        <View style={styles.contactRow}>
+          <View>
+            <Text style={styles.label}>Helper</Text>
+            <Text style={styles.value}>{task?.helperName ?? helperPhone}</Text>
+            <Text style={styles.value}>{helperPhone}</Text>
+          </View>
+          <PrimaryButton
+            label="Call helper"
+            onPress={() => Linking.openURL(`tel:${helperPhone}`)}
+            variant="ghost"
+            style={styles.callButton}
+          />
+        </View>
+      ) : null}
+
       {error ? <Notice kind="danger" text={error} /> : null}
 
       <View style={styles.mapWrap}>
@@ -325,9 +342,10 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
       <View style={styles.card}>
         <Text style={styles.status}>{statusLabel(status)}</Text>
         {helperArrived ? <Notice kind="success" text="Helper has arrived at your location." /> : null}
-        <Text style={styles.muted}>Task ID: {taskId}</Text>
         {task?.title ? <Text style={styles.title}>{task.title}</Text> : null}
-        {helperId ? <Text style={styles.muted}>Helper: {helperId}</Text> : null}
+        {helperId ? (
+          <Text style={styles.muted}>Helper: {task?.helperName ?? task?.helperPhone ?? 'Assigned'}</Text>
+        ) : null}
         {task?.addressText ? <Text style={styles.muted}>Address: {task.addressText}</Text> : null}
         {task?.description ? <Text style={styles.desc}>{task.description}</Text> : null}
         <Text style={styles.muted}>Urgency: {task?.urgency ?? '-'} | ETA: {task?.timeMinutes ?? '-'} min</Text>
@@ -376,6 +394,21 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
 const styles = StyleSheet.create({
   screen: { paddingBottom: theme.space.xl },
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  contactRow: {
+    marginTop: theme.space.sm,
+    padding: theme.space.sm,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radius.md,
+    backgroundColor: theme.colors.card,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: theme.space.sm,
+  },
+  label: { color: theme.colors.muted, fontSize: 11 },
+  value: { color: theme.colors.text, fontSize: 14, fontWeight: '700' },
+  callButton: { paddingHorizontal: theme.space.md },
   h1: { color: theme.colors.text, fontSize: 20, fontWeight: '900' },
   link: { color: theme.colors.primary, fontWeight: '800' },
   card: {

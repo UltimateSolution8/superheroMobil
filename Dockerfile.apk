@@ -3,7 +3,7 @@ FROM ghcr.io/cirruslabs/android-sdk:34 AS build
 WORKDIR /app
 
 ARG APK_VARIANT=debug
-ARG EXPO_PUBLIC_API_BASE_URL=http://129.159.233.237:8081
+ARG EXPO_PUBLIC_API_BASE_URL=http://159.89.167.248:8081
 ARG EXPO_PUBLIC_SOCKET_URL=http://localhost:8090
 ARG EXPO_PUBLIC_DEMO_FALLBACK_LOCATION=
 ARG EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=
@@ -25,10 +25,12 @@ RUN apt-get update -qq \
   && rm -rf /var/lib/apt/lists/*
 
 COPY package.json package-lock.json app.json app.config.js tsconfig.json index.ts App.tsx ./
+COPY google-services.json ./google-services.json
 RUN npm ci
 
 COPY assets ./assets
 COPY src ./src
+COPY gradle-dist/gradle-8.14.3-bin.zip /tmp/gradle-8.14.3-bin.zip
 
 # Ensure manifest reflects latest app.config.js changes (Google Maps API key).
 RUN CI=1 npx expo prebuild --platform android --clean
@@ -98,6 +100,18 @@ RUN set -eux; \
   fi
 
 WORKDIR /app/android
+ENV GRADLE_OPTS="-Dorg.gradle.internal.http.connectionTimeout=600000 -Dorg.gradle.internal.http.socketTimeout=600000"
+ENV GRADLE_USER_HOME="/tmp/gradle"
+RUN set -eux; \
+  GRADLE_DIST="gradle-8.14.3-bin.zip"; \
+  if [ ! -f "/tmp/${GRADLE_DIST}" ]; then \
+    curl -L --retry 5 --retry-delay 5 --max-time 600 \
+      "https://services.gradle.org/distributions/${GRADLE_DIST}" \
+      -o "/tmp/${GRADLE_DIST}"; \
+  fi; \
+  if [ -f "/app/android/gradle/wrapper/gradle-wrapper.properties" ]; then \
+    sed -i "s|distributionUrl=.*|distributionUrl=file:///tmp/${GRADLE_DIST}|" /app/android/gradle/wrapper/gradle-wrapper.properties; \
+  fi
 RUN set -eux; \
   if [ "$APK_VARIANT" = "release" ]; then \
     # Make release installable without requiring a private keystore (dev-only).

@@ -1,7 +1,14 @@
+const fs = require('fs');
+const path = require('path');
+const { withAndroidManifest, withDangerousMod } = require('@expo/config-plugins');
 const appJson = require('./app.json');
 
 const expo = appJson.expo || {};
 const googleMapsApiKey = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || '';
+const apiBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://159.89.167.248:8081';
+const socketUrl = process.env.EXPO_PUBLIC_SOCKET_URL || 'https://superheroorealtime.onrender.com';
+const googleServicesFile = path.join(__dirname, 'google-services.json');
+const hasGoogleServices = fs.existsSync(googleServicesFile);
 const basePlugins = Array.isArray(expo.plugins) ? expo.plugins : [];
 const plugins = Array.from(
   new Set([
@@ -9,6 +16,7 @@ const plugins = Array.from(
     'expo-image-picker',
     'expo-location',
     'expo-document-picker',
+    'expo-notifications',
   ])
 );
 const androidPermissions = Array.from(
@@ -32,16 +40,57 @@ const iosInfoPlist = {
   NSLocationWhenInUseUsageDescription: 'Allow Superheroo to access your location for nearby tasks.',
 };
 
+function withNetworkSecurity(config) {
+  return withDangerousMod(config, [
+    'android',
+    async (config) => {
+      const src = path.join(__dirname, 'assets', 'network_security_config.xml');
+      const dest = path.join(
+        config.modRequest.platformProjectRoot,
+        'app',
+        'src',
+        'main',
+        'res',
+        'xml',
+        'network_security_config.xml'
+      );
+      await fs.promises.mkdir(path.dirname(dest), { recursive: true });
+      await fs.promises.copyFile(src, dest);
+      return config;
+    },
+  ]);
+}
+
+function withManifestNetworkSecurity(config) {
+  return withAndroidManifest(config, (config) => {
+    const app = config.modResults.manifest?.application?.[0];
+    if (app) {
+      app.$ = app.$ || {};
+      app.$['android:networkSecurityConfig'] = '@xml/network_security_config';
+      app.$['android:usesCleartextTraffic'] = 'true';
+    }
+    return config;
+  });
+}
+
 module.exports = {
   expo: {
     ...expo,
-    plugins,
+    plugins: [
+      ...plugins,
+      withNetworkSecurity,
+      withManifestNetworkSecurity,
+    ],
     extra: {
       ...(expo.extra || {}),
+      apiBaseUrl,
+      socketUrl,
       googleMapsApiKey,
     },
     android: {
       ...(expo.android || {}),
+      googleServicesFile: hasGoogleServices ? googleServicesFile : undefined,
+      usesCleartextTraffic: true,
       permissions: androidPermissions,
       config: {
         ...(expo.android && expo.android.config ? expo.android.config : {}),
