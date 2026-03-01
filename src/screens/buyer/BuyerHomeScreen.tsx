@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import * as Location from 'expo-location';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -42,6 +42,8 @@ export function BuyerHomeScreen({ navigation }: Props) {
   const [addressText, setAddressText] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchBusy, setSearchBusy] = useState(false);
+  const [autoSearchBusy, setAutoSearchBusy] = useState(false);
+  const [suggestions, setSuggestions] = useState<Array<{ placeId: string; description: string }>>([]);
   const [timeMinutes, setTimeMinutes] = useState('30');
   const [budgetRupees, setBudgetRupees] = useState('150');
   const [urgency, setUrgency] = useState<TaskUrgency>('NORMAL');
@@ -177,7 +179,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
       const url =
         'https://maps.googleapis.com/maps/api/place/findplacefromtext/json' +
         `?input=${encodeURIComponent(searchQuery.trim())}` +
-        '&inputtype=textquery&fields=geometry,formatted_address' +
+        '&inputtype=textquery&fields=geometry,formatted_address,name' +
         `&key=${encodeURIComponent(GOOGLE_MAPS_API_KEY)}`;
       const res = await fetch(url);
       const json = await res.json();
@@ -188,9 +190,12 @@ export function BuyerHomeScreen({ navigation }: Props) {
         setLng(loc.lng);
         if (candidate.formatted_address) {
           setAddressText(candidate.formatted_address);
+        } else if (candidate.name) {
+          setAddressText(candidate.name);
         } else {
           resolveAddress(loc.lat, loc.lng);
         }
+        setSuggestions([]);
       } else {
         setError('Location not found. Try a different search.');
       }
@@ -200,6 +205,82 @@ export function BuyerHomeScreen({ navigation }: Props) {
       setSearchBusy(false);
     }
   }, [searchQuery, resolveAddress]);
+
+  const fetchSuggestions = useCallback(
+    async (query: string) => {
+      if (!GOOGLE_MAPS_API_KEY) return;
+      setAutoSearchBusy(true);
+      try {
+        const url =
+          'https://maps.googleapis.com/maps/api/place/autocomplete/json' +
+          `?input=${encodeURIComponent(query)}` +
+          '&types=geocode' +
+          `&key=${encodeURIComponent(GOOGLE_MAPS_API_KEY)}`;
+        const res = await fetch(url);
+        const json = await res.json();
+        const preds = Array.isArray(json?.predictions) ? json.predictions : [];
+        const trimmed = preds.slice(0, 6).map((p: any) => ({
+          placeId: p.place_id,
+          description: p.description,
+        }));
+        setSuggestions(trimmed);
+      } catch {
+        setSuggestions([]);
+      } finally {
+        setAutoSearchBusy(false);
+      }
+    },
+    [],
+  );
+
+  useEffect(() => {
+    const q = searchQuery.trim();
+    if (q.length < 3) {
+      setSuggestions([]);
+      return undefined;
+    }
+    const t = setTimeout(() => {
+      fetchSuggestions(q);
+    }, 350);
+    return () => clearTimeout(t);
+  }, [fetchSuggestions, searchQuery]);
+
+  const selectSuggestion = useCallback(
+    async (placeId: string, description: string) => {
+      if (!GOOGLE_MAPS_API_KEY) return;
+      setError(null);
+      setSearchBusy(true);
+      setSuggestions([]);
+      setSearchQuery(description);
+      try {
+        const url =
+          'https://maps.googleapis.com/maps/api/place/details/json' +
+          `?place_id=${encodeURIComponent(placeId)}` +
+          '&fields=geometry,formatted_address,name' +
+          `&key=${encodeURIComponent(GOOGLE_MAPS_API_KEY)}`;
+        const res = await fetch(url);
+        const json = await res.json();
+        const result = json?.result;
+        const loc = result?.geometry?.location;
+        if (loc && typeof loc.lat === 'number' && typeof loc.lng === 'number') {
+          setLat(loc.lat);
+          setLng(loc.lng);
+          if (result.formatted_address) {
+            setAddressText(result.formatted_address);
+          } else if (result.name) {
+            setAddressText(result.name);
+          } else {
+            resolveAddress(loc.lat, loc.lng);
+          }
+        }
+      } catch {
+        setError('Could not fetch location details. Try again.');
+      } finally {
+        setSearchBusy(false);
+      }
+    },
+    [resolveAddress],
+  );
 
   const onCreate = useCallback(async () => {
     if (!canCreate || busy || lat == null || lng == null) return;
@@ -260,17 +341,33 @@ export function BuyerHomeScreen({ navigation }: Props) {
 
           <View style={styles.card}>
             <Text style={styles.section}>{t('buyer.pickup_location')}</Text>
-            <View style={styles.searchRow}>
-              <View style={styles.searchField}>
-                <TextField
-                  label={t('buyer.search_location')}
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  placeholder={t('buyer.search_location')}
-                />
-              </View>
-              <PrimaryButton label={t('buyer.search')} onPress={searchLocation} loading={searchBusy} style={styles.searchBtn} />
+          <View style={styles.searchRow}>
+            <View style={styles.searchField}>
+              <TextField
+                label={t('buyer.search_location')}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                placeholder={t('buyer.search_location')}
+              />
             </View>
+            <PrimaryButton label={t('buyer.search')} onPress={searchLocation} loading={searchBusy} style={styles.searchBtn} />
+          </View>
+          {autoSearchBusy ? <Text style={styles.muted}>Searching suggestions…</Text> : null}
+          {suggestions.length > 0 ? (
+            <View style={styles.suggestions}>
+              {suggestions.map((s) => (
+                <Pressable key={s.placeId} style={styles.suggestionRow} onPress={() => selectSuggestion(s.placeId, s.description)}>
+                  <Text style={styles.suggestionText}>{s.description}</Text>
+                </Pressable>
+              ))}
+            </View>
+          ) : null}
+          {addressText ? (
+            <View style={styles.addressBox}>
+              <Text style={styles.addressLabel}>Selected address</Text>
+              <Text style={styles.addressValue}>{addressText}</Text>
+            </View>
+          ) : null}
 
             <View style={styles.mapWrap}>
               <MapView
@@ -317,6 +414,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
               value={addressText}
               onChangeText={setAddressText}
               placeholder={t('buyer.address_placeholder')}
+              multiline
             />
 
             <View
@@ -358,6 +456,30 @@ const styles = StyleSheet.create({
   mapWrap: { height: 200, borderRadius: theme.radius.md, overflow: 'hidden' },
   map: { flex: 1 },
   section: { color: theme.colors.muted, fontSize: 12, fontWeight: '800', letterSpacing: 0.25 },
+  suggestions: {
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radius.sm,
+    backgroundColor: theme.colors.card,
+    overflow: 'hidden',
+  },
+  suggestionRow: {
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+  },
+  suggestionText: { color: theme.colors.text, fontSize: 14 },
+  addressBox: {
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radius.sm,
+    padding: theme.space.sm,
+    backgroundColor: '#F8FAFF',
+    gap: 6,
+  },
+  addressLabel: { color: theme.colors.muted, fontSize: 12, fontWeight: '800' },
+  addressValue: { color: theme.colors.text, fontSize: 13, lineHeight: 18 },
   actionsRow: { flexDirection: 'row', gap: theme.space.sm, marginTop: 8 },
   half: { flex: 1 },
 });

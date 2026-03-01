@@ -4,6 +4,7 @@ import * as api from '../api/client';
 import { ApiError } from '../api/http';
 import type { AuthResponse, AuthUser, UserRole } from '../api/types';
 import { clearAuth, loadAuth, saveAuth } from './storage';
+import { registerForPushNotifications } from '../notifications/push';
 
 type AuthStatus = 'loading' | 'signedOut' | 'signedIn';
 
@@ -62,6 +63,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (state.status !== 'signedIn') return;
+    if (!state.accessToken || state.user?.role !== 'HELPER') return;
+    registerForPushNotifications(state.accessToken);
+  }, [state.status, state.accessToken, state.user?.role]);
 
   const startOtp = useCallback(async (phone: string, role: UserRole, channel?: string | null) => {
     const res = await api.otpStart(phone, role, channel ?? null);

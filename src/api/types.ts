@@ -49,11 +49,18 @@ export type CreateTaskResponse = {
   offeredTo: string[];
 };
 
+export type PushTokenRequest = {
+  token: string;
+  platform: string;
+};
+
 export type TaskStatus = 'SEARCHING' | 'ASSIGNED' | 'ARRIVED' | 'STARTED' | 'COMPLETED';
 
 export type Task = {
   id: string;
   buyerId: string;
+  buyerPhone?: string | null;
+  buyerName?: string | null;
   title: string;
   description: string;
   urgency: TaskUrgency;
@@ -64,6 +71,8 @@ export type Task = {
   addressText?: string | null;
   status: TaskStatus;
   assignedHelperId?: string | null;
+  helperPhone?: string | null;
+  helperName?: string | null;
   arrivalOtp?: string | null;
   completionOtp?: string | null;
   arrivalSelfieUrl?: string | null;

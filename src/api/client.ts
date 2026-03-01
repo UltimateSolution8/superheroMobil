@@ -14,6 +14,7 @@ import type {
   TaskStatus,
   MeProfile,
   UserRole,
+  PushTokenRequest,
 } from './types';
 import { ApiError } from './http';
 
@@ -116,6 +117,14 @@ export async function helperSetOnline(
     method: 'PUT',
     headers: authHeaders(accessToken),
     body: JSON.stringify({ online, lat, lng }),
+  });
+}
+
+export async function registerPushToken(accessToken: string, req: PushTokenRequest): Promise<void> {
+  await fetchJson(url('/api/v1/notifications/token'), {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+    body: JSON.stringify(req),
   });
 }
 
