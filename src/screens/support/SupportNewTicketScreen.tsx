@@ -67,6 +67,7 @@ export function SupportNewTicketScreen({ navigation }: Props) {
       </View>
 
       {!online ? <Notice kind="warning" text="You are offline." /> : null}
+      <Notice kind="info" text="AI will respond first. If needed, a human support agent will follow up." />
       {error ? <Notice kind="danger" text={error} /> : null}
 
       <View style={styles.card}>
@@ -112,4 +113,3 @@ const styles = StyleSheet.create({
   },
   section: { color: theme.colors.muted, fontSize: 12, fontWeight: '800', letterSpacing: 0.25 },
 });
-

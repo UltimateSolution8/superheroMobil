@@ -21,6 +21,9 @@ export function MenuScreen({ navigation }: Props) {
       { key: 'history', label: 'History', screen: 'History' },
       { key: 'payment', label: 'Payment', screen: 'Payments' },
       { key: 'settings', label: 'Settings', screen: 'Settings' },
+      { key: 'support', label: 'Support', screen: 'SupportTickets' },
+      { key: 'sos', label: 'SOS', screen: 'SOS' },
+      { key: 'terms', label: 'Terms & Safety', screen: 'Terms' },
       { key: 'diagnostics', label: 'Diagnostics', screen: 'Diagnostics' },
     ] as const;
   }, [user]);

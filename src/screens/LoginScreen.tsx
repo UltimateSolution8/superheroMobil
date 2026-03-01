@@ -139,9 +139,7 @@ export function LoginScreen({ navigation, route }: Props) {
               </Text>
             </View>
             <PrimaryButton label={t('login.sign_up')} onPress={onSignup} variant="ghost" />
-            <Text onPress={() => navigation.navigate('EmailLogin')} style={styles.alt}>
-              {t('login.use_email')}
-            </Text>
+            <PrimaryButton label={t('login.sign_in')} onPress={() => navigation.navigate('EmailLogin')} variant="ghost" />
             <Text onPress={() => navigation.navigate('Diagnostics')} style={styles.alt}>
               Diagnostics
             </Text>

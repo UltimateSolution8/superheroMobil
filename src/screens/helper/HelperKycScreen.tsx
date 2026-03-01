@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, View } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -13,6 +13,7 @@ import { PrimaryButton } from '../../ui/PrimaryButton';
 import { Screen } from '../../ui/Screen';
 import { theme } from '../../ui/theme';
 import { ensureCameraPermissions, ensureGalleryPermissions } from '../../utils/permissions';
+import type { HelperProfile } from '../../api/types';
 
 type Props = NativeStackScreenProps<HelperStackParamList, 'HelperKyc'>;
 
@@ -30,10 +31,27 @@ export function HelperKycScreen({ navigation }: Props) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [profile, setProfile] = useState<HelperProfile | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const p = await withAuth((t) => api.helperGetProfile(t));
+        if (active) setProfile(p);
+      } catch {
+        // ignore
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [withAuth]);
 
   const canSubmit = useMemo(() => {
+    if (profile?.kycStatus === 'APPROVED') return false;
     return fullName.trim().length >= 3 && idNumber.trim().length >= 4 && !!idFront && !!idBack && !!selfie;
-  }, [fullName, idNumber, idFront, idBack, selfie]);
+  }, [fullName, idNumber, idFront, idBack, selfie, profile?.kycStatus]);
 
   const pickDoc = useCallback(async (setter: (f: PickedFile) => void) => {
     const res = await DocumentPicker.getDocumentAsync({
@@ -161,6 +179,10 @@ export function HelperKycScreen({ navigation }: Props) {
 
         <Text style={styles.caption}>Upload documents once. Admin approval enables online mode and task offers.</Text>
 
+        {profile?.kycStatus === 'APPROVED' ? (
+          <Notice kind="success" text="KYC approved. You are verified and can go online." />
+        ) : null}
+
         {error ? <Notice kind="danger" text={error} /> : null}
         {success ? <Notice kind="success" text={success} /> : null}
 
@@ -188,16 +210,19 @@ export function HelperKycScreen({ navigation }: Props) {
             label={idFront ? 'ID Front selected' : 'Upload ID Front'}
             onPress={() => pickDoc((f) => setIdFront(f))}
             variant="ghost"
+            disabled={profile?.kycStatus === 'APPROVED'}
           />
           <PrimaryButton
             label={idBack ? 'ID Back selected' : 'Upload ID Back'}
             onPress={() => pickDoc((f) => setIdBack(f))}
             variant="ghost"
+            disabled={profile?.kycStatus === 'APPROVED'}
           />
           <PrimaryButton
             label={selfie ? 'Selfie selected' : 'Capture Selfie'}
             onPress={pickSelfie}
             variant="ghost"
+            disabled={profile?.kycStatus === 'APPROVED'}
           />
         </View>
 
