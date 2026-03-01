@@ -11,7 +11,7 @@ const socketFromExtra = typeof extra.socketUrl === 'string' ? extra.socketUrl.tr
 const mapsFromExtra = typeof extra.googleMapsApiKey === 'string' ? extra.googleMapsApiKey.trim() : '';
 
 export const API_BASE_URL =
-  process.env.EXPO_PUBLIC_API_BASE_URL?.trim() || apiFromExtra || 'http://159.89.167.248:8081';
+  process.env.EXPO_PUBLIC_API_BASE_URL?.trim() || apiFromExtra || 'https://api.mysuperhero.xyz';
 
 export const SOCKET_URL =
   process.env.EXPO_PUBLIC_SOCKET_URL?.trim() ||

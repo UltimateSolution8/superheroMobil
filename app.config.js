@@ -5,7 +5,7 @@ const appJson = require('./app.json');
 
 const expo = appJson.expo || {};
 const googleMapsApiKey = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || '';
-const apiBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://159.89.167.248:8081';
+const apiBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL || 'https://api.mysuperhero.xyz';
 const socketUrl = process.env.EXPO_PUBLIC_SOCKET_URL || 'https://superheroorealtime.onrender.com';
 const googleServicesFile = path.join(__dirname, 'google-services.json');
 const hasGoogleServices = fs.existsSync(googleServicesFile);
