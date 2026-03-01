@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import Voice from '@react-native-voice/voice';
 import * as Location from 'expo-location';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -47,6 +48,8 @@ export function BuyerHomeScreen({ navigation }: Props) {
   const [timeMinutes, setTimeMinutes] = useState('30');
   const [budgetRupees, setBudgetRupees] = useState('150');
   const [urgency, setUrgency] = useState<TaskUrgency>('NORMAL');
+  const [voiceActive, setVoiceActive] = useState(false);
+  const [voiceError, setVoiceError] = useState<string | null>(null);
 
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
@@ -67,6 +70,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
   );
 
   const lastLocationTs = useRef<number>(0);
+  const voiceActiveRef = useRef(false);
 
   const resolveAddress = useCallback(async (latitude: number, longitude: number) => {
     try {
@@ -168,6 +172,33 @@ export function BuyerHomeScreen({ navigation }: Props) {
       return undefined;
     }, [refreshLocation]),
   );
+
+  useEffect(() => {
+    Voice.onSpeechResults = (event) => {
+      const text = event.value?.[0] ?? '';
+      if (text) {
+        setDescription((prev) => (prev ? `${prev} ${text}` : text));
+      }
+    };
+    Voice.onSpeechPartialResults = (event) => {
+      const text = event.value?.[0] ?? '';
+      if (text) {
+        setDescription((prev) => (prev ? `${prev} ${text}` : text));
+      }
+    };
+    Voice.onSpeechError = () => {
+      setVoiceError('Voice input failed. Please try again.');
+      setVoiceActive(false);
+      voiceActiveRef.current = false;
+    };
+    Voice.onSpeechEnd = () => {
+      setVoiceActive(false);
+      voiceActiveRef.current = false;
+    };
+    return () => {
+      Voice.destroy().then(Voice.removeAllListeners);
+    };
+  }, []);
 
   const searchLocation = useCallback(async () => {
     if (!searchQuery.trim()) return;
@@ -314,6 +345,25 @@ export function BuyerHomeScreen({ navigation }: Props) {
     }
   }, [addressText, budgetRupees, busy, canCreate, description, lat, lng, navigation, timeMinutes, title, urgency, withAuth]);
 
+  const toggleVoice = useCallback(async () => {
+    setVoiceError(null);
+    if (voiceActiveRef.current) {
+      await Voice.stop();
+      setVoiceActive(false);
+      voiceActiveRef.current = false;
+      return;
+    }
+    try {
+      await Voice.start('en-IN');
+      setVoiceActive(true);
+      voiceActiveRef.current = true;
+    } catch {
+      setVoiceError('Voice input unavailable. Check mic permission.');
+      setVoiceActive(false);
+      voiceActiveRef.current = false;
+    }
+  }, []);
+
   return (
     <Screen style={styles.screen}>
       <KeyboardAvoidingView behavior={Platform.select({ ios: 'padding', android: undefined })} style={styles.kav}>
@@ -333,6 +383,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
           {!online ? <Notice kind="warning" text={t('buyer.offline')} /> : null}
           {locError ? <Notice kind="warning" text={locError} /> : null}
           {error ? <Notice kind="danger" text={error} /> : null}
+          {voiceError ? <Notice kind="danger" text={voiceError} /> : null}
 
           <View style={styles.card}>
             <Text style={styles.section}>{t('buyer.pickup_location')}</Text>
@@ -398,13 +449,21 @@ export function BuyerHomeScreen({ navigation }: Props) {
 
             <Text style={styles.section}>{t('buyer.task_details')}</Text>
             <TextField label={t('buyer.task_name')} value={title} onChangeText={setTitle} placeholder={t('buyer.task_name_placeholder')} />
-            <TextField
-              label={t('buyer.description')}
-              value={description}
-              onChangeText={setDescription}
-              placeholder={t('buyer.description_placeholder')}
-              multiline
-            />
+            <View style={styles.voiceRow}>
+              <TextField
+                label={t('buyer.description')}
+                value={description}
+                onChangeText={setDescription}
+                placeholder={t('buyer.description_placeholder')}
+                multiline
+              />
+              <PrimaryButton
+                label={voiceActive ? 'Stop' : 'Speak'}
+                onPress={toggleVoice}
+                variant="ghost"
+                style={styles.voiceBtn}
+              />
+            </View>
             <TextField label={t('buyer.expected_time')} value={timeMinutes} onChangeText={setTimeMinutes} keyboardType="number-pad" />
             <TextField label={t('buyer.budget')} value={budgetRupees} onChangeText={setBudgetRupees} keyboardType="number-pad" />
             <Segmented options={URGENCY_OPTIONS} value={urgency} onChange={(v) => setUrgency(v as TaskUrgency)} />
@@ -449,6 +508,8 @@ const styles = StyleSheet.create({
     gap: theme.space.sm,
     ...theme.shadow.card,
   },
+  voiceRow: { gap: theme.space.xs },
+  voiceBtn: { alignSelf: 'flex-start' },
   searchRow: { flexDirection: 'row', alignItems: 'flex-end', gap: theme.space.sm },
   searchField: { flex: 1 },
   searchBtn: { alignSelf: 'flex-end' },
