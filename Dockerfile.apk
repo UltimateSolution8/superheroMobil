@@ -19,10 +19,13 @@ ENV EXPO_PUBLIC_DEV_SHOW_OTP=${EXPO_PUBLIC_DEV_SHOW_OTP}
 
 # Install Node >= 20.19.4 (React Native / Expo 54 requirement) and basic tooling.
 RUN apt-get update -qq \
-  && apt-get install -y --no-install-recommends curl ca-certificates gnupg git \
+  && apt-get install -y --no-install-recommends curl ca-certificates gnupg git openjdk-17-jdk \
   && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
   && apt-get install -y --no-install-recommends nodejs \
   && rm -rf /var/lib/apt/lists/*
+
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+ENV PATH="$JAVA_HOME/bin:${PATH}"
 
 COPY package.json package-lock.json app.json app.config.js tsconfig.json index.ts App.tsx ./
 COPY google-services.json ./google-services.json
@@ -38,6 +41,31 @@ RUN CI=1 npx expo prebuild --platform android --clean
 # Generate native Android project inside the image (keeps host disk clean).
 # (Re-run without --clean to keep prebuild caches warm for subsequent layers.)
 RUN CI=1 npx expo prebuild --platform android
+
+# Ensure AndroidX/Jetifier flags are present (prebuild can overwrite gradle.properties).
+RUN set -eux; \
+  GP="/app/android/gradle.properties"; \
+  touch "$GP"; \
+  if ! grep -q '^android.useAndroidX=' "$GP"; then \
+    printf '%s\n' 'android.useAndroidX=true' >> "$GP"; \
+  fi; \
+  if ! grep -q '^android.enableJetifier=' "$GP"; then \
+    printf '%s\n' 'android.enableJetifier=true' >> "$GP"; \
+  fi
+
+# Workaround duplicate legacy support classes pulled transitively.
+RUN set -eux; \
+  APP_GRADLE="/app/android/app/build.gradle"; \
+  # Clean up any accidental literal "\n" sequences from previous runs.
+  sed -i 's/\\\\n/\\n/g' "$APP_GRADLE" || true; \
+  if ! grep -q "configurations.all" "$APP_GRADLE"; then \
+    bash -c 'printf "%s\n" "" \
+      "configurations.all {" \
+      "    exclude group: \"com.android.support\", module: \"support-compat\"" \
+      "    exclude group: \"com.android.support\", module: \"support-v4\"" \
+      "    exclude group: \"com.android.support\", module: \"versionedparcelable\"" \
+      "}" >> "'"$APP_GRADLE"'"'; \
+  fi
 
 # Only for "release": pre-install Android SDK components that Gradle might try to download.
 # This reduces flaky builds due to occasional corrupted SDK zip downloads.

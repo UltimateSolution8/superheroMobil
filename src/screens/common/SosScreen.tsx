@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { Alert, Linking, StyleSheet, Text, View } from 'react-native';
 
 import { useAuth } from '../../auth/AuthContext';
+import { useI18n } from '../../i18n/I18nProvider';
 import { Screen } from '../../ui/Screen';
 import { PrimaryButton } from '../../ui/PrimaryButton';
 import { Notice } from '../../ui/Notice';
@@ -12,6 +13,7 @@ const SOS_NUMBER = '7842541414';
 
 export function SosScreen() {
   const { withAuth } = useAuth();
+  const { t } = useI18n();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -27,10 +29,10 @@ export function SosScreen() {
         subject: 'SOS emergency',
         message: 'SOS triggered from mobile app. Please call the user immediately.',
       }));
-      setSuccess('SOS sent to support. Calling now…');
+      setSuccess(t('sos.success'));
       await Linking.openURL(`tel:${SOS_NUMBER}`);
     } catch {
-      setError('Could not send SOS. Try again.');
+      setError(t('sos.error'));
     } finally {
       setBusy(false);
     }
@@ -39,15 +41,13 @@ export function SosScreen() {
   return (
     <Screen>
       <View style={styles.card}>
-        <Text style={styles.h1}>Emergency SOS</Text>
-        <Text style={styles.sub}>
-          This sends an urgent alert to the support team and opens a call to {SOS_NUMBER}.
-        </Text>
+        <Text style={styles.h1}>{t('sos.title')}</Text>
+        <Text style={styles.sub}>{t('sos.subtitle')}</Text>
 
         {error ? <Notice kind="danger" text={error} /> : null}
         {success ? <Notice kind="success" text={success} /> : null}
 
-        <PrimaryButton label="Send SOS & Call" onPress={triggerSos} loading={busy} />
+        <PrimaryButton label={t('sos.button')} onPress={triggerSos} loading={busy} />
       </View>
     </Screen>
   );

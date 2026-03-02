@@ -38,6 +38,7 @@ function statusLabel(s: TaskStatus) {
   if (s === 'ARRIVED') return 'Arrived';
   if (s === 'STARTED') return 'Started';
   if (s === 'COMPLETED') return 'Completed';
+  if (s === 'CANCELLED') return 'Cancelled';
   return s;
 }
 
@@ -71,6 +72,8 @@ export function HelperTaskScreen({ route, navigation }: Props) {
   const [rating, setRating] = useState<number>(5);
   const [ratingComment, setRatingComment] = useState('');
   const [ratingBusy, setRatingBusy] = useState(false);
+  const [cancelReason, setCancelReason] = useState('');
+  const [cancelBusy, setCancelBusy] = useState(false);
   const buyerPhone = task?.buyerPhone?.trim() || '';
 
   const locationSub = useRef<Location.LocationSubscription | null>(null);
@@ -122,6 +125,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
 
   const status = task?.status ?? 'ASSIGNED';
   const next = useMemo(() => nextStatus(status), [status]);
+  const canCancel = status === 'ASSIGNED' || status === 'SEARCHING';
 
   const taskLat = Number(task?.lat);
   const taskLng = Number(task?.lng);
@@ -152,6 +156,26 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       setRatingBusy(false);
     }
   }, [canRate, rating, ratingBusy, ratingComment, taskId, withAuth]);
+
+  const submitCancel = useCallback(async () => {
+    if (!canCancel || cancelBusy) return;
+    const reason = cancelReason.trim();
+    if (!reason) {
+      setError('Please add a cancellation reason.');
+      return;
+    }
+    setCancelBusy(true);
+    setError(null);
+    try {
+      const updated = await withAuth((at) => api.cancelTask(at, taskId, reason));
+      setTask(updated);
+      setCancelReason('');
+    } catch {
+      setError('Could not cancel the task.');
+    } finally {
+      setCancelBusy(false);
+    }
+  }, [canCancel, cancelBusy, cancelReason, taskId, withAuth]);
 
   const pickSelfie = useCallback(async () => {
     const takeCamera = async (): Promise<Asset | null> => {
@@ -562,6 +586,23 @@ export function HelperTaskScreen({ route, navigation }: Props) {
             style={styles.half}
           />
         </View>
+
+        {canCancel ? (
+          <>
+            <TextField
+              label="Cancellation reason"
+              value={cancelReason}
+              onChangeText={setCancelReason}
+              placeholder="Share why you are cancelling"
+            />
+            <PrimaryButton
+              label="Cancel task"
+              onPress={submitCancel}
+              loading={cancelBusy}
+              variant="danger"
+            />
+          </>
+        ) : null}
 
         {status === 'COMPLETED' ? (
           <View style={styles.ratingCard}>

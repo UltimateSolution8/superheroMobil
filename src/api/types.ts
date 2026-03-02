@@ -54,7 +54,7 @@ export type PushTokenRequest = {
   platform: string;
 };
 
-export type TaskStatus = 'SEARCHING' | 'ASSIGNED' | 'ARRIVED' | 'STARTED' | 'COMPLETED';
+export type TaskStatus = 'SEARCHING' | 'ASSIGNED' | 'ARRIVED' | 'STARTED' | 'COMPLETED' | 'CANCELLED';
 
 export type Task = {
   id: string;
@@ -91,6 +91,9 @@ export type Task = {
   helperRating?: number | null;
   helperRatingComment?: string | null;
   helperRatedAt?: string | null;
+  cancelReason?: string | null;
+  cancelledByRole?: string | null;
+  cancelledAt?: string | null;
   createdAt: string;
 };
 
