@@ -223,6 +223,19 @@ export async function rateTask(
   return normalizeTask(task);
 }
 
+export async function cancelTask(
+  accessToken: string,
+  taskId: string,
+  reason: string,
+): Promise<Task> {
+  const task = await fetchJson<Task>(url(`/api/v1/tasks/${taskId}/cancel`), {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+    body: JSON.stringify({ reason }),
+  });
+  return normalizeTask(task);
+}
+
 export async function uploadTaskSelfie(
   accessToken: string,
   taskId: string,

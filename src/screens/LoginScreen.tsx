@@ -132,16 +132,16 @@ export function LoginScreen({ navigation, route }: Props) {
             <PrimaryButton label={t('login.send_otp')} onPress={onSend} disabled={!canSend} loading={busy} />
             <View style={styles.otpOptions}>
               <Text style={styles.otpLink} onPress={() => onSendWithChannel('whatsapp')}>
-                Send via WhatsApp
+                {t('login.otp_whatsapp')}
               </Text>
               <Text style={styles.otpLink} onPress={() => onSendWithChannel('call')}>
-                Get OTP on call
+                {t('login.otp_call')}
               </Text>
             </View>
             <PrimaryButton label={t('login.sign_up')} onPress={onSignup} variant="ghost" />
             <PrimaryButton label={t('login.sign_in')} onPress={() => navigation.navigate('EmailLogin')} variant="ghost" />
             <Text onPress={() => navigation.navigate('Diagnostics')} style={styles.alt}>
-              Diagnostics
+              {t('login.diagnostics')}
             </Text>
             <Text style={styles.legal}>{t('login.terms')}</Text>
           </View>

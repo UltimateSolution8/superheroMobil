@@ -25,6 +25,7 @@ function statusLabel(s: TaskStatus) {
   if (s === 'ARRIVED') return 'Helper arrived';
   if (s === 'STARTED') return 'Work started';
   if (s === 'COMPLETED') return 'Completed';
+  if (s === 'CANCELLED') return 'Cancelled';
   return s;
 }
 
@@ -93,6 +94,8 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
   const [rating, setRating] = useState<number>(5);
   const [ratingComment, setRatingComment] = useState('');
   const [ratingBusy, setRatingBusy] = useState(false);
+  const [cancelReason, setCancelReason] = useState('');
+  const [cancelBusy, setCancelBusy] = useState(false);
   const helperPhone = task?.helperPhone?.trim() || '';
   const canRenderMap = Boolean(GOOGLE_MAPS_API_KEY);
   const mapProvider = canRenderMap ? PROVIDER_GOOGLE : undefined;
@@ -230,6 +233,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
 
   const status = task?.status ?? 'SEARCHING';
   const helperId = task?.assignedHelperId ?? null;
+  const canCancel = status === 'SEARCHING' || status === 'ASSIGNED';
   const canDone = useMemo(() => status === 'COMPLETED', [status]);
   const helperDistance = useMemo(() => {
     if (!task || !helperLoc || !hasTaskCoords) return null;
@@ -265,6 +269,26 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
       setRatingBusy(false);
     }
   }, [canRate, rating, ratingBusy, ratingComment, taskId, withAuth]);
+
+  const submitCancel = useCallback(async () => {
+    if (!canCancel || cancelBusy) return;
+    const reason = cancelReason.trim();
+    if (!reason) {
+      setError('Please add a cancellation reason.');
+      return;
+    }
+    setCancelBusy(true);
+    setError(null);
+    try {
+      const updated = await withAuth((at) => api.cancelTask(at, taskId, reason));
+      setTask(updated);
+      setCancelReason('');
+    } catch {
+      setError('Could not cancel the task.');
+    } finally {
+      setCancelBusy(false);
+    }
+  }, [canCancel, cancelBusy, cancelReason, taskId, withAuth]);
 
   return (
     <Screen style={styles.screen}>
@@ -361,6 +385,23 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
         {task?.completionOtp ? <Text style={styles.otp}>Completion OTP: {task.completionOtp}</Text> : null}
 
         <PrimaryButton label="Refresh" onPress={load} loading={busy} variant="ghost" />
+
+        {canCancel ? (
+          <>
+            <TextField
+              label="Cancellation reason"
+              value={cancelReason}
+              onChangeText={setCancelReason}
+              placeholder="Share why you are cancelling"
+            />
+            <PrimaryButton
+              label="Cancel task"
+              onPress={submitCancel}
+              loading={cancelBusy}
+              variant="danger"
+            />
+          </>
+        ) : null}
       </View>
 
       {canDone ? <Notice kind="success" text="Marked as completed by helper." /> : null}

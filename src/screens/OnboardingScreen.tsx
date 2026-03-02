@@ -11,24 +11,6 @@ import { useI18n } from '../i18n/I18nProvider';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'Onboarding'>;
 
-const PAGES = [
-  {
-    title: 'Post Small Tasks',
-    subtitle: 'Get help in minutes for errands, loading, or quick fixes.',
-    badge: '01',
-  },
-  {
-    title: 'Track Your Hero Live',
-    subtitle: 'See the helper move in real time with ETA updates.',
-    badge: '02',
-  },
-  {
-    title: 'Secure Escrow Payment',
-    subtitle: 'Pay safely and release only after completion.',
-    badge: '03',
-  },
-];
-
 export function OnboardingScreen({ navigation }: Props) {
   const [page, setPage] = useState(0);
   const scrollRef = useRef<ScrollView>(null);
@@ -36,9 +18,33 @@ export function OnboardingScreen({ navigation }: Props) {
   const { width } = useWindowDimensions();
   const pageWidth = width;
   const cardWidth = Math.min(width - 48, 360);
-  const { lang, setLang } = useI18n();
+  const { lang, setLang, t } = useI18n();
 
-  const ctaLabel = useMemo(() => (page === PAGES.length - 1 ? 'Get Started' : 'Next'), [page]);
+  const PAGES = useMemo(
+    () => [
+      {
+        title: t('onboard.page1_title'),
+        subtitle: t('onboard.page1_sub'),
+        badge: '01',
+      },
+      {
+        title: t('onboard.page2_title'),
+        subtitle: t('onboard.page2_sub'),
+        badge: '02',
+      },
+      {
+        title: t('onboard.page3_title'),
+        subtitle: t('onboard.page3_sub'),
+        badge: '03',
+      },
+    ],
+    [t],
+  );
+
+  const ctaLabel = useMemo(
+    () => (page === PAGES.length - 1 ? t('onboard.get_started') : t('onboard.next')),
+    [page, PAGES.length, t],
+  );
 
   const onNext = () => {
     if (page < PAGES.length - 1) {
@@ -68,11 +74,11 @@ export function OnboardingScreen({ navigation }: Props) {
           <Image source={require('../../assets/superheroo-logo.png')} style={styles.logo} />
           <View>
             <Text style={styles.brand}>Superheroo</Text>
-            <Text style={styles.tagline}>Help in minutes</Text>
+            <Text style={styles.tagline}>{t('app.tagline')}</Text>
           </View>
         </View>
         <Text style={styles.skip} onPress={() => navigation.replace('RoleSelection')}>
-          Skip
+          {t('onboard.skip')}
         </Text>
       </View>
 

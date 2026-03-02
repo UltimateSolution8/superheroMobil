@@ -458,7 +458,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
                 multiline
               />
               <PrimaryButton
-                label={voiceActive ? 'Stop' : 'Speak'}
+                label={voiceActive ? t('buyer.voice_stop') : t('buyer.voice_start')}
                 onPress={toggleVoice}
                 variant="ghost"
                 style={styles.voiceBtn}

@@ -3,24 +3,25 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Screen } from '../../ui/Screen';
 import { theme } from '../../ui/theme';
-
-const TERMS_TEXT = [
-  'Superheroo is a hyperlocal help platform. We connect buyers who need quick help with verified helpers.',
-  'Banned tasks: illegal activities, weapons, drugs, adult services, harassment, medical procedures, financial fraud, gambling, or anything unsafe.',
-  'Safety rules: always meet in public or monitored spaces, avoid sharing OTPs or bank details, and verify the task details before starting.',
-  'Payments: demo escrow holds buyer funds until completion and approval. Platform fees may apply.',
-  'Photo/selfie policy: selfies are used for arrival and completion verification. Do not share or misuse images.',
-  'We may suspend or remove accounts for policy violations or abusive behavior.',
-  'By using the app, you consent to limited location use for matching and safety.',
-];
+import { useI18n } from '../../i18n/I18nProvider';
 
 export function TermsScreen() {
+  const { t } = useI18n();
+  const terms = [
+    t('terms.line1'),
+    t('terms.line2'),
+    t('terms.line3'),
+    t('terms.line4'),
+    t('terms.line5'),
+    t('terms.line6'),
+    t('terms.line7'),
+  ];
   return (
     <Screen>
       <View style={styles.card}>
-        <Text style={styles.h1}>Terms & Safety</Text>
+        <Text style={styles.h1}>{t('terms.title')}</Text>
         <ScrollView>
-          {TERMS_TEXT.map((line, idx) => (
+          {terms.map((line, idx) => (
             <Text key={idx} style={styles.line}>
               • {line}
             </Text>
