@@ -20,6 +20,7 @@ import { theme } from '../../ui/theme';
 import { ensureCameraPermissions, ensureGalleryPermissions } from '../../utils/permissions';
 import type { HelperStackParamList } from '../../navigation/types';
 import { DEMO_FALLBACK_LOCATION, GOOGLE_MAPS_API_KEY } from '../../config';
+import { useActiveTask } from '../../state/ActiveTaskContext';
 
 type Props = NativeStackScreenProps<HelperStackParamList, 'HelperTask'>;
 
@@ -59,6 +60,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
   const { taskId } = route.params;
   const { withAuth } = useAuth();
   const socket = useSocket();
+  const { setActiveTaskId } = useActiveTask();
 
   const [task, setTask] = useState<Task | null>(null);
   const [busy, setBusy] = useState(false);
@@ -126,6 +128,12 @@ export function HelperTaskScreen({ route, navigation }: Props) {
   const status = task?.status ?? 'ASSIGNED';
   const next = useMemo(() => nextStatus(status), [status]);
   const canCancel = status === 'ASSIGNED' || status === 'SEARCHING';
+
+  useEffect(() => {
+    if (status === 'COMPLETED' || status === 'CANCELLED') {
+      setActiveTaskId(null);
+    }
+  }, [setActiveTaskId, status]);
 
   const taskLat = Number(task?.lat);
   const taskLng = Number(task?.lng);
@@ -375,7 +383,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
             const lat = pos.coords.latitude;
             const lng = pos.coords.longitude;
             setHelperLoc({ lat, lng, ts: now });
-            socket.emit('location.update', { lat, lng, taskId });
+            // location updates are handled by the global presence tracker
             if (hasTaskCoords && mapRef.current) {
               const stamp = Date.now();
               if (stamp - lastFitAt.current > 8_000) {
@@ -405,7 +413,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
         lastEmitAt.current = now;
         // send a heartbeat using last known location from task coords if no live GPS
         if (task?.lat && task?.lng) {
-          socket.emit('location.update', { lat: task.lat, lng: task.lng, taskId });
+          // location updates are handled by the global presence tracker
         }
       }, 12_000);
     };

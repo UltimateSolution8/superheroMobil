@@ -5,6 +5,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { useAuth } from '../auth/AuthContext';
 import { SocketProvider } from '../realtime/SocketProvider';
+import { ActiveTaskProvider } from '../state/ActiveTaskContext';
+import { HelperPresenceProvider } from '../state/HelperPresenceContext';
 import { LoginScreen } from '../screens/LoginScreen';
 import { EmailLoginScreen } from '../screens/EmailLoginScreen';
 import { BuyerSignupScreen } from '../screens/BuyerSignupScreen';
@@ -64,10 +66,12 @@ export function AppNavigator() {
         </AuthStack.Navigator>
       ) : (
         <SocketProvider>
-          {user.role === 'BUYER' ? (
-            <BuyerStack.Navigator screenOptions={{ headerShown: false }}>
-              <BuyerStack.Screen name="BuyerHome" component={BuyerHomeScreen} />
-              <BuyerStack.Screen name="BuyerTask" component={BuyerTaskScreen} />
+          <ActiveTaskProvider>
+            <HelperPresenceProvider>
+              {user.role === 'BUYER' ? (
+                <BuyerStack.Navigator screenOptions={{ headerShown: false }}>
+                  <BuyerStack.Screen name="BuyerHome" component={BuyerHomeScreen} />
+                  <BuyerStack.Screen name="BuyerTask" component={BuyerTaskScreen} />
               <BuyerStack.Screen name="Menu" component={MenuScreen} />
               <BuyerStack.Screen name="Profile" component={ProfileScreen} />
               <BuyerStack.Screen name="History" component={HistoryScreen} />
@@ -79,12 +83,12 @@ export function AppNavigator() {
               <BuyerStack.Screen name="SupportTickets" component={SupportTicketsScreen} />
               <BuyerStack.Screen name="SupportNewTicket" component={SupportNewTicketScreen} />
               <BuyerStack.Screen name="SupportTicket" component={SupportTicketScreen} />
-            </BuyerStack.Navigator>
-          ) : user.role === 'HELPER' ? (
-            <HelperStack.Navigator screenOptions={{ headerShown: false }}>
-              <HelperStack.Screen name="HelperHome" component={HelperHomeScreen} />
-              <HelperStack.Screen name="HelperKyc" component={HelperKycScreen} />
-              <HelperStack.Screen name="HelperTask" component={HelperTaskScreen} />
+                </BuyerStack.Navigator>
+              ) : user.role === 'HELPER' ? (
+                <HelperStack.Navigator screenOptions={{ headerShown: false }}>
+                  <HelperStack.Screen name="HelperHome" component={HelperHomeScreen} />
+                  <HelperStack.Screen name="HelperKyc" component={HelperKycScreen} />
+                  <HelperStack.Screen name="HelperTask" component={HelperTaskScreen} />
               <HelperStack.Screen name="Menu" component={MenuScreen} />
               <HelperStack.Screen name="Profile" component={ProfileScreen} />
               <HelperStack.Screen name="History" component={HistoryScreen} />
@@ -96,12 +100,14 @@ export function AppNavigator() {
               <HelperStack.Screen name="SupportTickets" component={SupportTicketsScreen} />
               <HelperStack.Screen name="SupportNewTicket" component={SupportNewTicketScreen} />
               <HelperStack.Screen name="SupportTicket" component={SupportTicketScreen} />
-            </HelperStack.Navigator>
-          ) : (
-            <View style={styles.loading}>
-              <Text style={styles.loadingText}>Admin role is not supported in mobile app.</Text>
-            </View>
-          )}
+                </HelperStack.Navigator>
+              ) : (
+                <View style={styles.loading}>
+                  <Text style={styles.loadingText}>Admin role is not supported in mobile app.</Text>
+                </View>
+              )}
+            </HelperPresenceProvider>
+          </ActiveTaskProvider>
         </SocketProvider>
       )}
     </NavigationContainer>

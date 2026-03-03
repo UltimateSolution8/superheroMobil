@@ -108,6 +108,7 @@ export type TaskOfferedEvent = {
   lat: number;
   lng: number;
   distanceMeters: number;
+  expiresAt?: string | null;
 };
 
 export type TaskAssignedEvent = {

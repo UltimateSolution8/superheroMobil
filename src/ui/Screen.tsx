@@ -3,6 +3,7 @@ import { StyleSheet, View, type ViewStyle } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { theme } from './theme';
+import { ActiveTaskBubble } from './ActiveTaskBubble';
 
 export function Screen({
   children,
@@ -16,6 +17,7 @@ export function Screen({
     <SafeAreaView style={styles.safe}>
       <View style={[styles.inner, style, { paddingBottom: theme.space.lg + insets.bottom }]}>
         {children}
+        <ActiveTaskBubble />
       </View>
     </SafeAreaView>
   );

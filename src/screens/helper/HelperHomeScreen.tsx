@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AppState, FlatList, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import * as Location from 'expo-location';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -18,6 +19,8 @@ import { theme } from '../../ui/theme';
 import { DEMO_FALLBACK_LOCATION } from '../../config';
 import type { HelperStackParamList } from '../../navigation/types';
 import { useI18n } from '../../i18n/I18nProvider';
+import { useHelperPresence } from '../../state/HelperPresenceContext';
+import { useActiveTask } from '../../state/ActiveTaskContext';
 
 type Props = NativeStackScreenProps<HelperStackParamList, 'HelperHome'>;
 
@@ -31,6 +34,8 @@ const SORT_OPTIONS: Array<{ key: 'distance' | 'time' | 'budget'; label: string }
   { key: 'time', label: 'Time' },
   { key: 'budget', label: 'Money' },
 ];
+
+const OFFERS_STORAGE_KEY = 'superheroo.helper.offers';
 
 function normalizeOffer(raw: TaskOfferedEvent): TaskOfferedEvent {
   const lat = Number(raw.lat);
@@ -46,6 +51,12 @@ function normalizeOffer(raw: TaskOfferedEvent): TaskOfferedEvent {
     budgetPaise: Number.isFinite(budgetPaise) ? budgetPaise : 0,
     timeMinutes: Number.isFinite(timeMinutes) ? timeMinutes : 0,
   };
+}
+
+function isOfferExpired(offer: TaskOfferedEvent) {
+  if (!offer.expiresAt) return false;
+  const ts = new Date(offer.expiresAt).getTime();
+  return Number.isFinite(ts) && ts <= Date.now();
 }
 
 const OfferRow = React.memo(function OfferRow({ offer, onAccept }: OfferRowProps) {
@@ -69,9 +80,10 @@ export function HelperHomeScreen({ navigation }: Props) {
   const { t } = useI18n();
   const socket = useSocket();
   const online = useIsOnline();
+  const { isOnline, setOnline, setLastCoords } = useHelperPresence();
+  const { setActiveTaskId } = useActiveTask();
 
   const [profile, setProfile] = useState<HelperProfile | null>(null);
-  const [isOnline, setIsOnline] = useState(false);
   const [offers, setOffers] = useState<TaskOfferedEvent[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -79,9 +91,23 @@ export function HelperHomeScreen({ navigation }: Props) {
   const [sortBy, setSortBy] = useState<'distance' | 'time' | 'budget'>('distance');
   const [sortOpen, setSortOpen] = useState(false);
 
-  const locationSub = useRef<Location.LocationSubscription | null>(null);
-  const lastEmitAt = useRef<number>(0);
   const lastCoords = useRef<{ lat: number; lng: number } | null>(null);
+
+  const persistOffers = useCallback(async (next: TaskOfferedEvent[]) => {
+    await AsyncStorage.setItem(OFFERS_STORAGE_KEY, JSON.stringify(next));
+  }, []);
+
+  const loadOffersFromStorage = useCallback(async () => {
+    try {
+      const raw = await AsyncStorage.getItem(OFFERS_STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as TaskOfferedEvent[];
+      const normalized = Array.isArray(parsed) ? parsed.map(normalizeOffer).filter((o) => !isOfferExpired(o)) : [];
+      setOffers(normalized);
+    } catch {
+      // ignore
+    }
+  }, []);
 
   const loadProfile = useCallback(async () => {
     try {
@@ -110,9 +136,14 @@ export function HelperHomeScreen({ navigation }: Props) {
   useEffect(() => {
     const unsub = navigation.addListener('focus', () => {
       loadProfile();
+      loadOffersFromStorage();
     });
     return unsub;
-  }, [loadProfile, navigation]);
+  }, [loadOffersFromStorage, loadProfile, navigation]);
+
+  useEffect(() => {
+    loadOffersFromStorage();
+  }, [loadOffersFromStorage]);
 
   useEffect(() => {
     if (!autoKycDone && profile && profile.kycStatus !== 'APPROVED') {
@@ -141,8 +172,10 @@ export function HelperHomeScreen({ navigation }: Props) {
           lastCoords.current = { lat, lng };
           await withAuth((t) => api.helperSetOnline(t, true, lat, lng));
           setNotice('GPS unavailable. Using demo fallback location.');
-          setIsOnline(true);
+          await setLastCoords({ lat, lng });
+          await setOnline(true);
           setOffers([]);
+          await persistOffers([]);
           return true;
         }
         setNotice('Location is turned off. Enable Location in device settings and try again.');
@@ -156,8 +189,10 @@ export function HelperHomeScreen({ navigation }: Props) {
           lastCoords.current = { lat, lng };
           await withAuth((t) => api.helperSetOnline(t, true, lat, lng));
           setNotice('Location permission missing. Using demo fallback location.');
-          setIsOnline(true);
+          await setLastCoords({ lat, lng });
+          await setOnline(true);
           setOffers([]);
+          await persistOffers([]);
           return true;
         }
         setNotice('Location permission is required to go online.');
@@ -177,8 +212,10 @@ export function HelperHomeScreen({ navigation }: Props) {
       const pos = last ?? (await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }));
       lastCoords.current = { lat: pos.coords.latitude, lng: pos.coords.longitude };
       await withAuth((t) => api.helperSetOnline(t, true, pos.coords.latitude, pos.coords.longitude));
-      setIsOnline(true);
+      await setLastCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+      await setOnline(true);
       setOffers([]);
+      await persistOffers([]);
       return true;
     } catch (e) {
       if (e instanceof ApiError && e.status === 403) {
@@ -191,8 +228,10 @@ export function HelperHomeScreen({ navigation }: Props) {
           lastCoords.current = { lat, lng };
           await withAuth((t) => api.helperSetOnline(t, true, lat, lng));
           setNotice('Current location unavailable. Using demo fallback location.');
-          setIsOnline(true);
+          await setLastCoords({ lat, lng });
+          await setOnline(true);
           setOffers([]);
+          await persistOffers([]);
           return true;
         } catch {
           // fall through
@@ -211,9 +250,10 @@ export function HelperHomeScreen({ navigation }: Props) {
     } catch {
       // best-effort
     }
-    setIsOnline(false);
+    await setOnline(false);
     setOffers([]);
-  }, [withAuth]);
+    await persistOffers([]);
+  }, [persistOffers, setOnline, withAuth]);
 
   const toggleOnline = useCallback(async () => {
     if (isOnline) {
@@ -228,17 +268,22 @@ export function HelperHomeScreen({ navigation }: Props) {
       setError(null);
       try {
         await withAuth((t) => api.acceptTask(t, taskId));
+        await setActiveTaskId(taskId);
         navigation.navigate('HelperTask', { taskId });
       } catch (e) {
         if (e instanceof ApiError && e.status === 409) {
           setNotice('Offer expired or task already taken.');
-          setOffers((prev) => prev.filter((o) => o.taskId !== taskId));
+          setOffers((prev) => {
+            const next = prev.filter((o) => o.taskId !== taskId);
+            persistOffers(next).catch(() => {});
+            return next;
+          });
           return;
         }
         setError('Could not accept task.');
       }
     },
-    [navigation, withAuth],
+    [navigation, persistOffers, setActiveTaskId, withAuth],
   );
 
   useEffect(() => {
@@ -246,89 +291,32 @@ export function HelperHomeScreen({ navigation }: Props) {
     const onOffered = (evt: TaskOfferedEvent) => {
       if (!evt || !evt.taskId) return;
       const normalized = normalizeOffer(evt);
+      if (isOfferExpired(normalized)) return;
       setOffers((prev) => {
         if (prev.some((p) => p.taskId === normalized.taskId)) return prev;
-        return [normalized, ...prev].slice(0, 20);
+        const next = [normalized, ...prev].slice(0, 20);
+        persistOffers(next).catch(() => {});
+        return next;
       });
     };
     socket.on('task.offered', onOffered);
     return () => {
       socket.off('task.offered', onOffered);
     };
-  }, [socket]);
+  }, [persistOffers, socket]);
 
   useEffect(() => {
-    if (!socket || !isOnline) return;
-
-    let cancelled = false;
-    let heartbeat: ReturnType<typeof setInterval> | null = null;
-
-    const start = async () => {
-      try {
-        locationSub.current?.remove();
-        locationSub.current = await Location.watchPositionAsync(
-          {
-            accuracy: Location.Accuracy.Balanced,
-            timeInterval: 15_000,
-            distanceInterval: 25,
-          },
-          (pos) => {
-            if (cancelled) return;
-            const now = Date.now();
-            if (now - lastEmitAt.current < 5_000) return;
-            lastEmitAt.current = now;
-            const lat = pos.coords.latitude;
-            const lng = pos.coords.longitude;
-            lastCoords.current = { lat, lng };
-            socket.emit('location.update', { lat, lng });
-          },
-        );
-      } catch {
-        setNotice('Location tracking unavailable. You may not receive offers reliably.');
-      }
-    };
-
-    start();
-    const startHeartbeat = () => {
-      if (heartbeat) return;
-      heartbeat = setInterval(() => {
-        if (cancelled) return;
-        const c = lastCoords.current;
-        if (!c) return;
-        const now = Date.now();
-        if (now - lastEmitAt.current < 12_000) return;
-        lastEmitAt.current = now;
-        socket.emit('location.update', { lat: c.lat, lng: c.lng });
-      }, 15_000);
-    };
-
-    const stopHeartbeat = () => {
-      if (!heartbeat) return;
-      clearInterval(heartbeat);
-      heartbeat = null;
-    };
-
-    startHeartbeat();
-
-    const appSub = AppState.addEventListener('change', (state) => {
-      if (state !== 'active') {
-        locationSub.current?.remove();
-        locationSub.current = null;
-        stopHeartbeat();
-      } else {
-        start();
-        startHeartbeat();
-      }
-    });
-
-    return () => {
-      cancelled = true;
-      appSub.remove();
-      if (heartbeat) clearInterval(heartbeat);
-      locationSub.current?.remove();
-      locationSub.current = null;
-    };
-  }, [isOnline, socket]);
+    const timer = setInterval(() => {
+      setOffers((prev) => {
+        const next = prev.filter((o) => !isOfferExpired(o));
+        if (next.length !== prev.length) {
+          persistOffers(next).catch(() => {});
+        }
+        return next;
+      });
+    }, 10_000);
+    return () => clearInterval(timer);
+  }, [persistOffers]);
 
   const sortedOffers = useMemo(() => {
     const list = [...offers];
@@ -395,7 +383,7 @@ export function HelperHomeScreen({ navigation }: Props) {
           </Pressable>
         </View>
         <FlatList
-          data={sortedOffers}
+          data={sortedOffers.filter((o) => !isOfferExpired(o))}
           keyExtractor={(o) => o.taskId}
           renderItem={({ item }) => <OfferRow offer={item} onAccept={acceptOffer} />}
           contentContainerStyle={styles.offerList}
