@@ -21,9 +21,9 @@ import { useActiveTask } from '../../state/ActiveTaskContext';
 type Props = NativeStackScreenProps<BuyerStackParamList, 'BuyerTask'>;
 
 function statusLabel(s: TaskStatus) {
-  if (s === 'SEARCHING') return 'Searching for helpers…';
-  if (s === 'ASSIGNED') return 'Helper assigned';
-  if (s === 'ARRIVED') return 'Helper arrived';
+  if (s === 'SEARCHING') return 'Searching for Superheroos…';
+  if (s === 'ASSIGNED') return 'Superheroo assigned';
+  if (s === 'ARRIVED') return 'Superheroo arrived';
   if (s === 'STARTED') return 'Work started';
   if (s === 'COMPLETED') return 'Completed';
   if (s === 'CANCELLED') return 'Cancelled';
@@ -98,7 +98,12 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
   const [ratingBusy, setRatingBusy] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
   const [cancelBusy, setCancelBusy] = useState(false);
-  const helperPhone = task?.helperPhone?.trim() || '';
+  const helperPhone = useMemo(() => {
+    const raw = task?.helperPhone;
+    if (typeof raw === 'string') return raw.trim();
+    if (raw == null) return '';
+    return String(raw);
+  }, [task?.helperPhone]);
   const canRenderMap = Boolean(GOOGLE_MAPS_API_KEY);
   const mapProvider = canRenderMap ? PROVIDER_GOOGLE : undefined;
 
@@ -312,12 +317,12 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
       {helperPhone ? (
         <View style={styles.contactRow}>
           <View>
-            <Text style={styles.label}>Helper</Text>
+            <Text style={styles.label}>Superheroo</Text>
             <Text style={styles.value}>{task?.helperName ?? helperPhone}</Text>
             <Text style={styles.value}>{helperPhone}</Text>
           </View>
           <PrimaryButton
-            label="Call helper"
+            label="Call Superheroo"
             onPress={() => Linking.openURL(`tel:${helperPhone}`)}
             variant="ghost"
             style={styles.callButton}
@@ -345,7 +350,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
               <Marker
                 ref={helperMarkerRef}
                 coordinate={{ latitude: helperLoc.lat, longitude: helperLoc.lng }}
-                title="Helper"
+                title="Superheroo"
               />
             ) : null}
             {routeCoords.length > 1 ? (
@@ -358,8 +363,8 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
       )}
 
       <View style={styles.liveCard}>
-        <Text style={styles.liveTitle}>Helper on the way</Text>
-        <Text style={styles.liveSub}>Live location updates while helper is en route.</Text>
+        <Text style={styles.liveTitle}>Superheroo on the way</Text>
+        <Text style={styles.liveSub}>Live location updates while Superheroo is en route.</Text>
         <View style={styles.liveRow}>
           <View style={styles.liveStat}>
             <Text style={styles.liveLabel}>Distance</Text>
@@ -380,10 +385,10 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
 
       <View style={styles.card}>
         <Text style={styles.status}>{statusLabel(status)}</Text>
-        {helperArrived ? <Notice kind="success" text="Helper has arrived at your location." /> : null}
+        {helperArrived ? <Notice kind="success" text="Superheroo has arrived at your location." /> : null}
         {task?.title ? <Text style={styles.title}>{task.title}</Text> : null}
         {helperId ? (
-          <Text style={styles.muted}>Helper: {task?.helperName ?? task?.helperPhone ?? 'Assigned'}</Text>
+          <Text style={styles.muted}>Superheroo: {task?.helperName ?? task?.helperPhone ?? 'Assigned'}</Text>
         ) : null}
         {task?.addressText ? <Text style={styles.muted}>Address: {task.addressText}</Text> : null}
         {task?.description ? <Text style={styles.desc}>{task.description}</Text> : null}
@@ -412,7 +417,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
         ) : null}
       </View>
 
-      {canDone ? <Notice kind="success" text="Marked as completed by helper." /> : null}
+      {canDone ? <Notice kind="success" text="Marked as completed by Superheroo." /> : null}
 
       {status === 'COMPLETED' ? (
         <View style={styles.ratingCard}>

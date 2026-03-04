@@ -76,7 +76,12 @@ export function HelperTaskScreen({ route, navigation }: Props) {
   const [ratingBusy, setRatingBusy] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
   const [cancelBusy, setCancelBusy] = useState(false);
-  const buyerPhone = task?.buyerPhone?.trim() || '';
+  const buyerPhone = useMemo(() => {
+    const raw = task?.buyerPhone;
+    if (typeof raw === 'string') return raw.trim();
+    if (raw == null) return '';
+    return String(raw);
+  }, [task?.buyerPhone]);
 
   const locationSub = useRef<Location.LocationSubscription | null>(null);
   const lastEmitAt = useRef<number>(0);
@@ -508,12 +513,12 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       {buyerPhone ? (
         <View style={styles.contactRow}>
           <View>
-            <Text style={styles.label}>Buyer</Text>
+            <Text style={styles.label}>Super-customer</Text>
             <Text style={styles.value}>{task?.buyerName ?? buyerPhone}</Text>
             <Text style={styles.value}>{buyerPhone}</Text>
           </View>
           <PrimaryButton
-            label="Call buyer"
+            label="Call super-customer"
             onPress={() => Linking.openURL(`tel:${buyerPhone}`)}
             variant="ghost"
             style={styles.callButton}
@@ -536,7 +541,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
             longitudeDelta: 0.02,
           }}
         >
-          {hasTaskCoords ? <Marker coordinate={{ latitude: taskLat, longitude: taskLng }} title="Buyer" /> : null}
+          {hasTaskCoords ? <Marker coordinate={{ latitude: taskLat, longitude: taskLng }} title="Super-customer" /> : null}
           {helperLoc ? <Marker coordinate={{ latitude: helperLoc.lat, longitude: helperLoc.lng }} title="You" /> : null}
           {routeCoords.length > 1 ? (
             <Polyline coordinates={routeCoords} strokeColor={theme.colors.primary} strokeWidth={4} />
@@ -547,7 +552,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       <View style={styles.card}>
         <Text style={styles.status}>{statusLabel(status)}</Text>
         {task?.title ? <Text style={styles.title}>{task.title}</Text> : null}
-        {task?.buyerName ? <Text style={styles.muted}>Buyer: {task.buyerName}</Text> : null}
+        {task?.buyerName ? <Text style={styles.muted}>Super-customer: {task.buyerName}</Text> : null}
         {task?.addressText ? <Text style={styles.muted}>Address: {task.addressText}</Text> : null}
         {task?.description ? <Text style={styles.desc}>{task.description}</Text> : null}
         <Text style={styles.muted}>
@@ -614,7 +619,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
 
         {status === 'COMPLETED' ? (
           <View style={styles.ratingCard}>
-            <Text style={styles.muted}>Rate buyer</Text>
+            <Text style={styles.muted}>Rate super-customer</Text>
             {task?.helperRating ? (
               <Text style={styles.muted}>Your rating: {task.helperRating.toFixed(1)} / 5</Text>
             ) : (

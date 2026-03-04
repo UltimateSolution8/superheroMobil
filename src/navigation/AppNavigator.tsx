@@ -29,6 +29,7 @@ import { HistoryScreen } from '../screens/common/HistoryScreen';
 import { PaymentsScreen } from '../screens/common/PaymentsScreen';
 import { SettingsScreen } from '../screens/common/SettingsScreen';
 import { DiagnosticsScreen } from '../screens/common/DiagnosticsScreen';
+import { PinLockScreen } from '../screens/common/PinLockScreen';
 import { SosScreen } from '../screens/common/SosScreen';
 import { TermsScreen } from '../screens/common/TermsScreen';
 import type { AuthStackParamList, BuyerStackParamList, HelperStackParamList } from './types';
@@ -39,7 +40,7 @@ const BuyerStack = createNativeStackNavigator<BuyerStackParamList>();
 const HelperStack = createNativeStackNavigator<HelperStackParamList>();
 
 export function AppNavigator() {
-  const { status, user } = useAuth();
+  const { status, user, pinRequired, pinVerified } = useAuth();
 
   if (status === 'loading') {
     return (
@@ -64,6 +65,8 @@ export function AppNavigator() {
           <AuthStack.Screen name="Otp" component={OtpScreen} />
           <AuthStack.Screen name="Diagnostics" component={DiagnosticsScreen} />
         </AuthStack.Navigator>
+      ) : pinRequired && !pinVerified ? (
+        <PinLockScreen />
       ) : (
         <SocketProvider>
           <ActiveTaskProvider>

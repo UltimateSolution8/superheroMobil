@@ -40,7 +40,9 @@ export function MenuScreen({ navigation }: Props) {
       {user ? (
         <View style={styles.profileCard}>
           <Text style={styles.profileName}>{user.displayName || 'Superheroo User'}</Text>
-          <Text style={styles.profileMeta}>{user.role} • {user.phone}</Text>
+          <Text style={styles.profileMeta}>
+            {user.role === 'HELPER' ? 'Superheroo' : 'Super-customer'} • {user.phone}
+          </Text>
         </View>
       ) : null}
 
