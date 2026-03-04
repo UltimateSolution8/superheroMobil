@@ -22,6 +22,7 @@ import { theme } from '../../ui/theme';
 import { DEMO_FALLBACK_LOCATION, GOOGLE_MAPS_API_KEY } from '../../config';
 import type { BuyerStackParamList } from '../../navigation/types';
 import { useI18n } from '../../i18n/I18nProvider';
+import { useActiveTask } from '../../state/ActiveTaskContext';
 
 type Props = NativeStackScreenProps<BuyerStackParamList, 'BuyerHome'>;
 
@@ -35,6 +36,7 @@ const URGENCY_OPTIONS: { label: string; key: TaskUrgency }[] = [
 export function BuyerHomeScreen({ navigation }: Props) {
   const { withAuth } = useAuth();
   const { t } = useI18n();
+  const { setActiveTaskId } = useActiveTask();
   const online = useIsOnline();
   const insets = useSafeAreaInsets();
 
@@ -332,6 +334,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
           addressText: addressText.trim() || null,
         }),
       );
+      await setActiveTaskId(res.taskId);
       navigation.navigate('BuyerTask', { taskId: res.taskId });
     } catch (e) {
       if (e instanceof ApiError && e.status === 401) return;

@@ -16,6 +16,7 @@ import { TextField } from '../../ui/TextField';
 import { theme } from '../../ui/theme';
 import { DEMO_FALLBACK_LOCATION, GOOGLE_MAPS_API_KEY } from '../../config';
 import type { BuyerStackParamList } from '../../navigation/types';
+import { useActiveTask } from '../../state/ActiveTaskContext';
 
 type Props = NativeStackScreenProps<BuyerStackParamList, 'BuyerTask'>;
 
@@ -84,6 +85,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
   const { taskId } = route.params;
   const { withAuth } = useAuth();
   const socket = useSocket();
+  const { setActiveTaskId } = useActiveTask();
 
   const [task, setTask] = useState<Task | null>(null);
   const [busy, setBusy] = useState(false);
@@ -234,6 +236,12 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
   const status = task?.status ?? 'SEARCHING';
   const helperId = task?.assignedHelperId ?? null;
   const canCancel = status === 'SEARCHING' || status === 'ASSIGNED';
+
+  useEffect(() => {
+    if (status === 'COMPLETED' || status === 'CANCELLED') {
+      setActiveTaskId(null);
+    }
+  }, [setActiveTaskId, status]);
   const canDone = useMemo(() => status === 'COMPLETED', [status]);
   const helperDistance = useMemo(() => {
     if (!task || !helperLoc || !hasTaskCoords) return null;
