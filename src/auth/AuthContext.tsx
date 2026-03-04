@@ -1,4 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { AppState } from 'react-native';
+import * as SecureStore from 'expo-secure-store';
 
 import * as api from '../api/client';
 import { ApiError } from '../api/http';
@@ -28,9 +30,15 @@ type AuthContextValue = AuthState & {
   ) => Promise<void>;
   signOut: () => Promise<void>;
   withAuth: <T>(fn: (accessToken: string) => Promise<T>) => Promise<T>;
+  pinRequired: boolean;
+  pinVerified: boolean;
+  setPin: (pin: string) => Promise<void>;
+  clearPin: () => Promise<void>;
+  verifyPin: (pin: string) => Promise<boolean>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
+const PIN_KEY = 'superheroo.pin';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AuthState>({
@@ -39,15 +47,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refreshToken: null,
     user: null,
   });
+  const [pinRequired, setPinRequired] = useState(false);
+  const [pinVerified, setPinVerified] = useState(true);
 
   const accessRef = useRef<string | null>(null);
   const refreshRef = useRef<string | null>(null);
   const refreshInFlight = useRef<Promise<AuthResponse> | null>(null);
+  const pinRef = useRef<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const auth = await loadAuth();
+      const pin = await SecureStore.getItemAsync(PIN_KEY);
+      if (!cancelled) {
+        pinRef.current = pin;
+        setPinRequired(Boolean(pin));
+        setPinVerified(!pin);
+      }
       if (cancelled) return;
       if (!auth) {
         accessRef.current = null;
@@ -114,6 +131,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refreshRef.current = null;
     refreshInFlight.current = null;
     setState({ status: 'signedOut', accessToken: null, refreshToken: null, user: null });
+    setPinVerified(!pinRef.current);
+  }, []);
+
+  const setPin = useCallback(async (pin: string) => {
+    const clean = pin.trim();
+    if (clean.length !== 4) {
+      throw new Error('PIN must be 4 digits.');
+    }
+    await SecureStore.setItemAsync(PIN_KEY, clean);
+    pinRef.current = clean;
+    setPinRequired(true);
+    setPinVerified(true);
+  }, []);
+
+  const clearPin = useCallback(async () => {
+    await SecureStore.deleteItemAsync(PIN_KEY);
+    pinRef.current = null;
+    setPinRequired(false);
+    setPinVerified(true);
+  }, []);
+
+  const verifyPin = useCallback(async (pin: string) => {
+    const stored = pinRef.current ?? (await SecureStore.getItemAsync(PIN_KEY));
+    if (!stored) {
+      setPinRequired(false);
+      setPinVerified(true);
+      return true;
+    }
+    if (pin.trim() === stored) {
+      setPinVerified(true);
+      return true;
+    }
+    return false;
   }, []);
 
   const refreshTokens = useCallback(async (): Promise<AuthResponse> => {
@@ -155,6 +205,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [refreshTokens, signOut],
   );
 
+  useEffect(() => {
+    if (state.status !== 'signedIn') return;
+    const sub = AppState.addEventListener('change', async (next) => {
+      if (next !== 'active') return;
+      try {
+        await refreshTokens();
+      } catch {
+        await signOut();
+      }
+    });
+    return () => sub.remove();
+  }, [refreshTokens, signOut, state.status]);
+
   const value = useMemo<AuthContextValue>(
     () => ({
       ...state,
@@ -164,8 +227,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signupWithPassword,
       signOut,
       withAuth,
+      pinRequired,
+      pinVerified,
+      setPin,
+      clearPin,
+      verifyPin,
     }),
-    [state, startOtp, verifyOtp, loginWithPassword, signupWithPassword, signOut, withAuth],
+    [
+      state,
+      startOtp,
+      verifyOtp,
+      loginWithPassword,
+      signupWithPassword,
+      signOut,
+      withAuth,
+      pinRequired,
+      pinVerified,
+      setPin,
+      clearPin,
+      verifyPin,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

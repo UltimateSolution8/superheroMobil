@@ -263,11 +263,24 @@ export async function uploadTaskSelfie(
   if (req.capturedAt) body.append('capturedAt', req.capturedAt);
   appendFile('selfie', req.selfie);
 
-  const res = await fetch(url(`/api/v1/tasks/${taskId}/selfie`), {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${accessToken}` },
-    body,
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 45_000);
+  let res: Response;
+  try {
+    res = await fetch(url(`/api/v1/tasks/${taskId}/selfie`), {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${accessToken}` },
+      body,
+      signal: controller.signal,
+    });
+  } catch (err: any) {
+    if (err?.name === 'AbortError') {
+      throw new ApiError('Upload timed out. Please try again.', { status: 408 });
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeout);
+  }
 
   const text = await res.text();
   let parsed: any = null;

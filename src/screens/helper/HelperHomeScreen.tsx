@@ -81,7 +81,7 @@ export function HelperHomeScreen({ navigation }: Props) {
   const socket = useSocket();
   const online = useIsOnline();
   const { isOnline, setOnline, setLastCoords } = useHelperPresence();
-  const { setActiveTaskId } = useActiveTask();
+  const { activeTaskId, setActiveTaskId } = useActiveTask();
 
   const [profile, setProfile] = useState<HelperProfile | null>(null);
   const [offers, setOffers] = useState<TaskOfferedEvent[]>([]);
@@ -266,6 +266,10 @@ export function HelperHomeScreen({ navigation }: Props) {
   const acceptOffer = useCallback(
     async (taskId: string) => {
       setError(null);
+      if (activeTaskId && activeTaskId !== taskId) {
+        setNotice('You already have an active task. Complete it before accepting another.');
+        return;
+      }
       try {
         await withAuth((t) => api.acceptTask(t, taskId));
         await setActiveTaskId(taskId);
@@ -283,7 +287,7 @@ export function HelperHomeScreen({ navigation }: Props) {
         setError('Could not accept task.');
       }
     },
-    [navigation, persistOffers, setActiveTaskId, withAuth],
+    [activeTaskId, navigation, persistOffers, setActiveTaskId, withAuth],
   );
 
   useEffect(() => {

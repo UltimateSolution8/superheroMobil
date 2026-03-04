@@ -31,15 +31,17 @@ import { SettingsScreen } from '../screens/common/SettingsScreen';
 import { DiagnosticsScreen } from '../screens/common/DiagnosticsScreen';
 import { SosScreen } from '../screens/common/SosScreen';
 import { TermsScreen } from '../screens/common/TermsScreen';
+import { PinLockScreen } from '../screens/common/PinLockScreen';
 import type { AuthStackParamList, BuyerStackParamList, HelperStackParamList } from './types';
 import { theme } from '../ui/theme';
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const BuyerStack = createNativeStackNavigator<BuyerStackParamList>();
 const HelperStack = createNativeStackNavigator<HelperStackParamList>();
+const PinStack = createNativeStackNavigator();
 
 export function AppNavigator() {
-  const { status, user } = useAuth();
+  const { status, user, pinRequired, pinVerified } = useAuth();
 
   if (status === 'loading') {
     return (
@@ -64,6 +66,10 @@ export function AppNavigator() {
           <AuthStack.Screen name="Otp" component={OtpScreen} />
           <AuthStack.Screen name="Diagnostics" component={DiagnosticsScreen} />
         </AuthStack.Navigator>
+      ) : pinRequired && !pinVerified ? (
+        <PinStack.Navigator screenOptions={{ headerShown: false }}>
+          <PinStack.Screen name="PinLock" component={PinLockScreen} />
+        </PinStack.Navigator>
       ) : (
         <SocketProvider>
           <ActiveTaskProvider>

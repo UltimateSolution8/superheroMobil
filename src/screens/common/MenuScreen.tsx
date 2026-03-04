@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { useAuth } from '../../auth/AuthContext';
@@ -37,29 +37,33 @@ export function MenuScreen({ navigation }: Props) {
         </Text>
       </View>
 
+      <ScrollView contentContainerStyle={styles.scroll}>
       {user ? (
         <View style={styles.profileCard}>
           <Text style={styles.profileName}>{user.displayName || 'Superheroo User'}</Text>
-          <Text style={styles.profileMeta}>{user.role} • {user.phone}</Text>
+          <Text style={styles.profileMeta}>
+            {(user.role === 'HELPER' ? 'Superheroo' : user.role === 'BUYER' ? 'Super-customer' : user.role)} • {user.phone}
+          </Text>
         </View>
       ) : null}
 
-      <View style={styles.card}>
-        {items.map((item) => (
-          <Pressable
-            key={item.key}
-            style={styles.row}
-            onPress={() => navigation.navigate(item.screen as any)}
-          >
-            <Text style={styles.rowText}>{item.label}</Text>
-            <Text style={styles.rowArrow}>›</Text>
-          </Pressable>
-        ))}
-      </View>
+        <View style={styles.card}>
+          {items.map((item) => (
+            <Pressable
+              key={item.key}
+              style={styles.row}
+              onPress={() => navigation.navigate(item.screen as any)}
+            >
+              <Text style={styles.rowText}>{item.label}</Text>
+              <Text style={styles.rowArrow}>›</Text>
+            </Pressable>
+          ))}
+        </View>
 
-      <Pressable style={[styles.row, styles.signOut]} onPress={signOut}>
-        <Text style={styles.signOutText}>Sign out</Text>
-      </Pressable>
+        <Pressable style={[styles.row, styles.signOut]} onPress={signOut}>
+          <Text style={styles.signOutText}>Sign out</Text>
+        </Pressable>
+      </ScrollView>
     </Screen>
   );
 }
@@ -68,6 +72,7 @@ const styles = StyleSheet.create({
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   h1: { color: theme.colors.text, fontSize: 20, fontWeight: '900' },
   link: { color: theme.colors.primary, fontWeight: '800' },
+  scroll: { paddingBottom: theme.space.xl, gap: theme.space.md },
   card: {
     borderWidth: 1,
     borderColor: theme.colors.border,

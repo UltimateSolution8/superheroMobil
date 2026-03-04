@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, AppState, Linking, Platform, StyleSheet, Text, View } from 'react-native';
+import { Alert, AppState, Linking, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { Asset } from 'react-native-image-picker';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import * as Location from 'expo-location';
@@ -99,6 +99,12 @@ export function HelperTaskScreen({ route, navigation }: Props) {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    if (taskId) {
+      setActiveTaskId(taskId);
+    }
+  }, [setActiveTaskId, taskId]);
 
   useFocusEffect(
     useCallback(() => {
@@ -270,17 +276,30 @@ export function HelperTaskScreen({ route, navigation }: Props) {
 
       try {
         const perm = await Location.requestForegroundPermissionsAsync();
-        if (perm.status !== 'granted') {
-          throw new Error('Location permission missing');
-        }
-        const p = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-        lat = p.coords.latitude;
-        lng = p.coords.longitude;
-        const rev = await Location.reverseGeocodeAsync({ latitude: lat, longitude: lng });
-        const first = rev[0];
-        if (first) {
-          const parts = [first.name, first.street, first.city, first.region, first.postalCode].filter(Boolean);
-          address = parts.join(', ');
+        if (perm.status === 'granted') {
+          const pos = await Promise.race([
+            Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
+            new Promise<Location.LocationObject>((_, reject) =>
+              setTimeout(() => reject(new Error('Location timeout')), 5_000),
+            ),
+          ]);
+          lat = pos.coords.latitude;
+          lng = pos.coords.longitude;
+          try {
+            const rev = await Promise.race([
+              Location.reverseGeocodeAsync({ latitude: lat, longitude: lng }),
+              new Promise<Location.LocationGeocodedAddress[]>((_, reject) =>
+                setTimeout(() => reject(new Error('Reverse geocode timeout')), 5_000),
+              ),
+            ]);
+            const first = rev[0];
+            if (first) {
+              const parts = [first.name, first.street, first.city, first.region, first.postalCode].filter(Boolean);
+              address = parts.join(', ');
+            }
+          } catch {
+            // ignore reverse geocode errors
+          }
         }
       } catch {
         // best effort
@@ -310,6 +329,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       if (next === 'ARRIVED') {
         const done = await uploadCheckpointSelfie('ARRIVAL');
         if (!done) {
+          setNotice('Arrival selfie was not captured. Task is still active.');
           setBusy(false);
           return;
         }
@@ -324,6 +344,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       if (next === 'COMPLETED') {
         const done = await uploadCheckpointSelfie('COMPLETION');
         if (!done) {
+          setNotice('Completion selfie was not captured. Task is still active.');
           setBusy(false);
           return;
         }
@@ -496,24 +517,25 @@ export function HelperTaskScreen({ route, navigation }: Props) {
 
   return (
     <Screen>
-      <View style={styles.topBar}>
+      <ScrollView contentContainerStyle={styles.scroll}>
+        <View style={styles.topBar}>
         <MenuButton onPress={() => navigation.navigate('Menu')} />
         <Text style={styles.h1}>Job</Text>
         <View style={styles.topActions}>
           <Text onPress={load} style={styles.link}>Refresh</Text>
           <Text onPress={backHome} style={styles.link}>Back</Text>
         </View>
-      </View>
+        </View>
 
       {buyerPhone ? (
         <View style={styles.contactRow}>
           <View>
-            <Text style={styles.label}>Buyer</Text>
+            <Text style={styles.label}>Super-customer</Text>
             <Text style={styles.value}>{task?.buyerName ?? buyerPhone}</Text>
             <Text style={styles.value}>{buyerPhone}</Text>
           </View>
           <PrimaryButton
-            label="Call buyer"
+            label="Call customer"
             onPress={() => Linking.openURL(`tel:${buyerPhone}`)}
             variant="ghost"
             style={styles.callButton}
@@ -536,7 +558,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
             longitudeDelta: 0.02,
           }}
         >
-          {hasTaskCoords ? <Marker coordinate={{ latitude: taskLat, longitude: taskLng }} title="Buyer" /> : null}
+          {hasTaskCoords ? <Marker coordinate={{ latitude: taskLat, longitude: taskLng }} title="Super-customer" /> : null}
           {helperLoc ? <Marker coordinate={{ latitude: helperLoc.lat, longitude: helperLoc.lng }} title="You" /> : null}
           {routeCoords.length > 1 ? (
             <Polyline coordinates={routeCoords} strokeColor={theme.colors.primary} strokeWidth={4} />
@@ -547,7 +569,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       <View style={styles.card}>
         <Text style={styles.status}>{statusLabel(status)}</Text>
         {task?.title ? <Text style={styles.title}>{task.title}</Text> : null}
-        {task?.buyerName ? <Text style={styles.muted}>Buyer: {task.buyerName}</Text> : null}
+        {task?.buyerName ? <Text style={styles.muted}>Super-customer: {task.buyerName}</Text> : null}
         {task?.addressText ? <Text style={styles.muted}>Address: {task.addressText}</Text> : null}
         {task?.description ? <Text style={styles.desc}>{task.description}</Text> : null}
         <Text style={styles.muted}>
@@ -559,7 +581,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
         {next === 'STARTED' ? (
           <View>
             <Text style={styles.muted}>Arrival OTP</Text>
-            <Text style={styles.otpHint}>Ask buyer for the arrival OTP to start work.</Text>
+            <Text style={styles.otpHint}>Ask the super-customer for the arrival OTP to start work.</Text>
             <TextField
               label="Arrival OTP"
               value={arrivalOtp}
@@ -573,7 +595,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
         {next === 'COMPLETED' ? (
           <View>
             <Text style={styles.muted}>Completion OTP</Text>
-            <Text style={styles.otpHint}>Ask buyer for the completion OTP to finish work.</Text>
+            <Text style={styles.otpHint}>Ask the super-customer for the completion OTP to finish work.</Text>
             <TextField
               label="Completion OTP"
               value={completionOtp}
@@ -614,7 +636,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
 
         {status === 'COMPLETED' ? (
           <View style={styles.ratingCard}>
-            <Text style={styles.muted}>Rate buyer</Text>
+            <Text style={styles.muted}>Rate super-customer</Text>
             {task?.helperRating ? (
               <Text style={styles.muted}>Your rating: {task.helperRating.toFixed(1)} / 5</Text>
             ) : (
@@ -642,6 +664,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
           </View>
         ) : null}
       </View>
+      </ScrollView>
     </Screen>
   );
 }
@@ -666,6 +689,7 @@ const styles = StyleSheet.create({
   callButton: { paddingHorizontal: theme.space.md },
   h1: { color: theme.colors.text, fontSize: 20, fontWeight: '900' },
   link: { color: theme.colors.primary, fontWeight: '800' },
+  scroll: { paddingBottom: theme.space.xl, gap: theme.space.md },
   mapWrap: {
     marginTop: theme.space.md,
     borderWidth: 1,
