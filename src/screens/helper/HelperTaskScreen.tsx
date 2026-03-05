@@ -564,7 +564,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
         {next === 'STARTED' ? (
           <View>
             <Text style={styles.muted}>Arrival OTP</Text>
-            <Text style={styles.otpHint}>Ask buyer for the arrival OTP to start work.</Text>
+            <Text style={styles.otpHint}>Ask the super-customer for the arrival OTP to start work.</Text>
             <TextField
               label="Arrival OTP"
               value={arrivalOtp}
@@ -578,7 +578,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
         {next === 'COMPLETED' ? (
           <View>
             <Text style={styles.muted}>Completion OTP</Text>
-            <Text style={styles.otpHint}>Ask buyer for the completion OTP to finish work.</Text>
+            <Text style={styles.otpHint}>Ask the super-customer for the completion OTP to finish work.</Text>
             <TextField
               label="Completion OTP"
               value={completionOtp}
