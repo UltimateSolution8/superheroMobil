@@ -52,57 +52,57 @@ export function AppNavigator() {
   }
 
   return (
-    <NavigationContainer>
-      {status !== 'signedIn' || !user ? (
-        <AuthStack.Navigator screenOptions={{ headerShown: false, animation: 'fade' }}>
-          <AuthStack.Screen name="Splash" component={SplashScreen} />
-          <AuthStack.Screen name="Onboarding" component={OnboardingScreen} />
-          <AuthStack.Screen name="RoleSelection" component={RoleSelectionScreen} />
-          <AuthStack.Screen name="Login" component={LoginScreen} />
-          <AuthStack.Screen name="EmailLogin" component={EmailLoginScreen} />
-          <AuthStack.Screen name="BuyerSignup" component={BuyerSignupScreen} />
-          <AuthStack.Screen name="HelperSignup" component={HelperSignupScreen} />
-          <AuthStack.Screen name="Otp" component={OtpScreen} />
-          <AuthStack.Screen name="Diagnostics" component={DiagnosticsScreen} />
-        </AuthStack.Navigator>
-      ) : pinRequired && !pinVerified ? (
-        <PinLockScreen />
-      ) : (
-        <SocketProvider>
-          <ActiveTaskProvider>
+    <ActiveTaskProvider>
+      <NavigationContainer>
+        {status !== 'signedIn' || !user ? (
+          <AuthStack.Navigator screenOptions={{ headerShown: false, animation: 'fade' }}>
+            <AuthStack.Screen name="Splash" component={SplashScreen} />
+            <AuthStack.Screen name="Onboarding" component={OnboardingScreen} />
+            <AuthStack.Screen name="RoleSelection" component={RoleSelectionScreen} />
+            <AuthStack.Screen name="Login" component={LoginScreen} />
+            <AuthStack.Screen name="EmailLogin" component={EmailLoginScreen} />
+            <AuthStack.Screen name="BuyerSignup" component={BuyerSignupScreen} />
+            <AuthStack.Screen name="HelperSignup" component={HelperSignupScreen} />
+            <AuthStack.Screen name="Otp" component={OtpScreen} />
+            <AuthStack.Screen name="Diagnostics" component={DiagnosticsScreen} />
+          </AuthStack.Navigator>
+        ) : pinRequired && !pinVerified ? (
+          <PinLockScreen />
+        ) : (
+          <SocketProvider>
             <HelperPresenceProvider>
               {user.role === 'BUYER' ? (
                 <BuyerStack.Navigator screenOptions={{ headerShown: false }}>
                   <BuyerStack.Screen name="BuyerHome" component={BuyerHomeScreen} />
                   <BuyerStack.Screen name="BuyerTask" component={BuyerTaskScreen} />
-              <BuyerStack.Screen name="Menu" component={MenuScreen} />
-              <BuyerStack.Screen name="Profile" component={ProfileScreen} />
-              <BuyerStack.Screen name="History" component={HistoryScreen} />
-              <BuyerStack.Screen name="Payments" component={PaymentsScreen} />
-              <BuyerStack.Screen name="Settings" component={SettingsScreen} />
-              <BuyerStack.Screen name="SOS" component={SosScreen} />
-              <BuyerStack.Screen name="Terms" component={TermsScreen} />
-              <BuyerStack.Screen name="Diagnostics" component={DiagnosticsScreen} />
-              <BuyerStack.Screen name="SupportTickets" component={SupportTicketsScreen} />
-              <BuyerStack.Screen name="SupportNewTicket" component={SupportNewTicketScreen} />
-              <BuyerStack.Screen name="SupportTicket" component={SupportTicketScreen} />
+                  <BuyerStack.Screen name="Menu" component={MenuScreen} />
+                  <BuyerStack.Screen name="Profile" component={ProfileScreen} />
+                  <BuyerStack.Screen name="History" component={HistoryScreen} />
+                  <BuyerStack.Screen name="Payments" component={PaymentsScreen} />
+                  <BuyerStack.Screen name="Settings" component={SettingsScreen} />
+                  <BuyerStack.Screen name="SOS" component={SosScreen} />
+                  <BuyerStack.Screen name="Terms" component={TermsScreen} />
+                  <BuyerStack.Screen name="Diagnostics" component={DiagnosticsScreen} />
+                  <BuyerStack.Screen name="SupportTickets" component={SupportTicketsScreen} />
+                  <BuyerStack.Screen name="SupportNewTicket" component={SupportNewTicketScreen} />
+                  <BuyerStack.Screen name="SupportTicket" component={SupportTicketScreen} />
                 </BuyerStack.Navigator>
               ) : user.role === 'HELPER' ? (
                 <HelperStack.Navigator screenOptions={{ headerShown: false }}>
                   <HelperStack.Screen name="HelperHome" component={HelperHomeScreen} />
                   <HelperStack.Screen name="HelperKyc" component={HelperKycScreen} />
                   <HelperStack.Screen name="HelperTask" component={HelperTaskScreen} />
-              <HelperStack.Screen name="Menu" component={MenuScreen} />
-              <HelperStack.Screen name="Profile" component={ProfileScreen} />
-              <HelperStack.Screen name="History" component={HistoryScreen} />
-              <HelperStack.Screen name="Payments" component={PaymentsScreen} />
-              <HelperStack.Screen name="Settings" component={SettingsScreen} />
-              <HelperStack.Screen name="SOS" component={SosScreen} />
-              <HelperStack.Screen name="Terms" component={TermsScreen} />
-              <HelperStack.Screen name="Diagnostics" component={DiagnosticsScreen} />
-              <HelperStack.Screen name="SupportTickets" component={SupportTicketsScreen} />
-              <HelperStack.Screen name="SupportNewTicket" component={SupportNewTicketScreen} />
-              <HelperStack.Screen name="SupportTicket" component={SupportTicketScreen} />
+                  <HelperStack.Screen name="Menu" component={MenuScreen} />
+                  <HelperStack.Screen name="Profile" component={ProfileScreen} />
+                  <HelperStack.Screen name="History" component={HistoryScreen} />
+                  <HelperStack.Screen name="Payments" component={PaymentsScreen} />
+                  <HelperStack.Screen name="Settings" component={SettingsScreen} />
+                  <HelperStack.Screen name="SOS" component={SosScreen} />
+                  <HelperStack.Screen name="Terms" component={TermsScreen} />
+                  <HelperStack.Screen name="Diagnostics" component={DiagnosticsScreen} />
+                  <HelperStack.Screen name="SupportTickets" component={SupportTicketsScreen} />
+                  <HelperStack.Screen name="SupportNewTicket" component={SupportNewTicketScreen} />
+                  <HelperStack.Screen name="SupportTicket" component={SupportTicketScreen} />
                 </HelperStack.Navigator>
               ) : (
                 <View style={styles.loading}>
@@ -110,10 +110,10 @@ export function AppNavigator() {
                 </View>
               )}
             </HelperPresenceProvider>
-          </ActiveTaskProvider>
-        </SocketProvider>
-      )}
-    </NavigationContainer>
+          </SocketProvider>
+        )}
+      </NavigationContainer>
+    </ActiveTaskProvider>
   );
 }
 
