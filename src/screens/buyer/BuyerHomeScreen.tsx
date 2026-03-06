@@ -73,6 +73,8 @@ export function BuyerHomeScreen({ navigation }: Props) {
 
   const lastLocationTs = useRef<number>(0);
   const voiceActiveRef = useRef(false);
+  const voiceResultsRef = useRef<Set<string>>(new Set());
+  const lastSpeechTimeRef = useRef<number>(0);
 
   const resolveAddress = useCallback(async (latitude: number, longitude: number) => {
     try {
@@ -176,28 +178,61 @@ export function BuyerHomeScreen({ navigation }: Props) {
   );
 
   useEffect(() => {
+    let isMounted = true;
+
     Voice.onSpeechResults = (event) => {
+      if (!isMounted) return;
       const text = event.value?.[0] ?? '';
-      if (text) {
-        setDescription((prev) => (prev ? `${prev} ${text}` : text));
+      if (text && text.trim()) {
+        const timestamp = Date.now();
+        // Prevent duplicate results within same speech session
+        if (timestamp - lastSpeechTimeRef.current < 2000) {
+          // Check if we've already processed this exact text
+          if (voiceResultsRef.current.has(text)) {
+            return;
+          }
+          voiceResultsRef.current.add(text);
+        } else {
+          // New speech session - clear previous results
+          voiceResultsRef.current.clear();
+          voiceResultsRef.current.add(text);
+          lastSpeechTimeRef.current = timestamp;
+        }
+        // Only append if it's genuinely new content
+        setDescription((prev) => {
+          const trimmedText = text.trim();
+          if (!trimmedText) return prev;
+          // Check if the new text is already at the end to avoid duplicates
+          if (prev && prev.trim().endsWith(trimmedText)) {
+            return prev;
+          }
+          return prev ? `${prev.trim()} ${trimmedText}` : trimmedText;
+        });
       }
     };
+
     Voice.onSpeechPartialResults = (event) => {
-      const text = event.value?.[0] ?? '';
-      if (text) {
-        setDescription((prev) => (prev ? `${prev} ${text}` : text));
-      }
+      // Don't append partial results to avoid duplicates - only use final results
+      // This callback is useful for showing interim results but we skip appending
     };
+
     Voice.onSpeechError = () => {
+      if (!isMounted) return;
       setVoiceError('Voice input failed. Please try again.');
       setVoiceActive(false);
       voiceActiveRef.current = false;
+      voiceResultsRef.current.clear();
     };
+
     Voice.onSpeechEnd = () => {
+      if (!isMounted) return;
       setVoiceActive(false);
       voiceActiveRef.current = false;
+      voiceResultsRef.current.clear();
     };
+
     return () => {
+      isMounted = false;
       Voice.destroy().then(Voice.removeAllListeners);
     };
   }, []);
@@ -354,9 +389,13 @@ export function BuyerHomeScreen({ navigation }: Props) {
       await Voice.stop();
       setVoiceActive(false);
       voiceActiveRef.current = false;
+      voiceResultsRef.current.clear();
       return;
     }
     try {
+      // Clear previous results before starting new recording
+      voiceResultsRef.current.clear();
+      lastSpeechTimeRef.current = Date.now();
       await Voice.start('en-IN');
       setVoiceActive(true);
       voiceActiveRef.current = true;
@@ -501,6 +540,7 @@ const styles = StyleSheet.create({
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   topLinks: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   h1: { color: theme.colors.text, fontSize: 20, fontWeight: '900' },
+  muted: { color: theme.colors.muted, fontSize: 12 },
   link: { color: theme.colors.primary, fontWeight: '800' },
   card: {
     borderWidth: 1,

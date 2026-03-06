@@ -19,24 +19,16 @@ import { theme } from '../../ui/theme';
 import { DEMO_FALLBACK_LOCATION, GOOGLE_MAPS_API_KEY } from '../../config';
 import type { BuyerStackParamList } from '../../navigation/types';
 import { useActiveTask } from '../../state/ActiveTaskContext';
+import { useI18n } from '../../i18n/I18nProvider';
 
 type Props = NativeStackScreenProps<BuyerStackParamList, 'BuyerTask'>;
-
-function statusLabel(s: TaskStatus) {
-  if (s === 'SEARCHING') return 'Searching for Superheroos…';
-  if (s === 'ASSIGNED') return 'Superheroo assigned';
-  if (s === 'ARRIVED') return 'Superheroo arrived';
-  if (s === 'STARTED') return 'Work started';
-  if (s === 'COMPLETED') return 'Completed';
-  if (s === 'CANCELLED') return 'Cancelled';
-  return s;
-}
 
 export function BuyerTaskScreen({ route, navigation }: Props) {
   const { taskId } = route.params;
   const { withAuth } = useAuth();
   const socket = useSocket();
   const { setActiveTaskId } = useActiveTask();
+  const { t } = useI18n();
 
   const [task, setTask] = useState<Task | null>(null);
   const [busy, setBusy] = useState(false);
@@ -78,7 +70,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
       const t = await withAuth((at) => api.getTask(at, taskId));
       setTask(t);
     } catch {
-      setError('Could not load task details.');
+      setError(t('error.load_task'));
     } finally {
       setBusy(false);
       setInitialLoad(false);
@@ -235,7 +227,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
       const updated = await withAuth((at) => api.rateTask(at, taskId, rating, ratingComment.trim() || null));
       setTask(updated);
     } catch {
-      setError('Could not submit rating.');
+      setError(t('error.submit_rating'));
     } finally {
       setRatingBusy(false);
     }
@@ -245,7 +237,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
     if (!canCancel || cancelBusy) return;
     const reason = cancelReason.trim();
     if (!reason) {
-      setError('Please add a cancellation reason.');
+      setError(t('buyer.task.please_cancel'));
       return;
     }
     setCancelBusy(true);
@@ -255,7 +247,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
       setTask(updated);
       setCancelReason('');
     } catch {
-      setError('Could not cancel the task.');
+      setError(t('error.cancel_task'));
     } finally {
       setCancelBusy(false);
     }
@@ -266,7 +258,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
       <Screen style={styles.screen}>
         <View style={styles.topBar}>
           <MenuButton onPress={() => navigation.navigate('Menu')} />
-          <Text style={styles.h1}>Task</Text>
+          <Text style={styles.h1}>{t('task.title')}</Text>
           <View style={styles.topActions} />
         </View>
         <TaskSkeleton />
@@ -288,12 +280,12 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
       {helperPhone ? (
         <View style={styles.contactRow}>
           <View>
-            <Text style={styles.label}>Superheroo</Text>
+            <Text style={styles.label}>{t('buyer.task.hero_label')}</Text>
             <Text style={styles.value}>{task?.helperName ?? helperPhone}</Text>
             <Text style={styles.value}>{helperPhone}</Text>
           </View>
           <PrimaryButton
-            label="Call Superheroo"
+            label={t('task.call_hero')}
             onPress={() => Linking.openURL(`tel:${helperPhone}`)}
             variant="ghost"
             style={styles.callButton}
@@ -330,56 +322,56 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
           </MapView>
         </View>
       ) : (
-        <Notice kind="warning" text="Map unavailable: missing Google Maps API key." />
+        <Notice kind="warning" text={t('error.maps_api_key')} />
       )}
 
       <View style={styles.liveCard}>
-        <Text style={styles.liveTitle}>Superheroo on the way</Text>
-        <Text style={styles.liveSub}>Live location updates while Superheroo is en route.</Text>
+        <Text style={styles.liveTitle}>{t('task.hero_on_the_way')}</Text>
+        <Text style={styles.liveSub}>{t('task.live_location')}</Text>
         <View style={styles.liveRow}>
           <View style={styles.liveStat}>
-            <Text style={styles.liveLabel}>Distance</Text>
+            <Text style={styles.liveLabel}>{t('task.distance')}</Text>
             <Text style={styles.liveValue}>
               {helperDistance == null ? '--' : `${(helperDistance / 1000).toFixed(2)} km`}
             </Text>
           </View>
           <View style={styles.liveStat}>
-            <Text style={styles.liveLabel}>ETA</Text>
+            <Text style={styles.liveLabel}>{t('task.eta_label')}</Text>
             <Text style={styles.liveValue}>{helperEta == null ? '--' : `${helperEta} min`}</Text>
           </View>
           <View style={styles.liveStat}>
-            <Text style={styles.liveLabel}>Updated</Text>
+            <Text style={styles.liveLabel}>{t('task.updated')}</Text>
             <Text style={styles.liveValue}>{helperLastSeen == null ? '--' : `${helperLastSeen}s`}</Text>
           </View>
         </View>
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.status}>{statusLabel(status)}</Text>
-        {helperArrived ? <Notice kind="success" text="Superheroo has arrived at your location." /> : null}
+        <Text style={styles.status}>{status === 'SEARCHING' ? t('buyer.task.searching') : status === 'ASSIGNED' ? t('buyer.task.assigned') : status === 'ARRIVED' ? t('buyer.task.arrived') : status === 'STARTED' ? t('buyer.task.started') : status === 'COMPLETED' ? t('buyer.task.completed') : status === 'CANCELLED' ? t('buyer.task.cancelled') : status}</Text>
+        {helperArrived ? <Notice kind="success" text={t('buyer.task.hero_arrived')} /> : null}
         {task?.title ? <Text style={styles.title}>{task.title}</Text> : null}
         {helperId ? (
-          <Text style={styles.muted}>Superheroo: {task?.helperName ?? task?.helperPhone ?? 'Assigned'}</Text>
+          <Text style={styles.muted}>{t('buyer.task.hero_label')}: {task?.helperName ?? task?.helperPhone ?? t('buyer.task.assigned')}</Text>
         ) : null}
-        {task?.addressText ? <Text style={styles.muted}>Address: {task.addressText}</Text> : null}
+        {task?.addressText ? <Text style={styles.muted}>{t('buyer.address_optional')}: {task.addressText}</Text> : null}
         {task?.description ? <Text style={styles.desc}>{task.description}</Text> : null}
-        <Text style={styles.muted}>Urgency: {task?.urgency ?? '-'} | ETA: {task?.timeMinutes ?? '-'} min</Text>
-        <Text style={styles.muted}>Budget: INR {task ? (task.budgetPaise / 100).toFixed(0) : '-'}</Text>
-        {task?.arrivalOtp ? <Text style={styles.otp}>Arrival OTP: {task.arrivalOtp}</Text> : null}
-        {task?.completionOtp ? <Text style={styles.otp}>Completion OTP: {task.completionOtp}</Text> : null}
+        <Text style={styles.muted}>{t('buyer.task.urgency')}: {task?.urgency ?? '-'} | {t('buyer.task.eta')}: {task?.timeMinutes ?? '-'} {t('buyer.task.minutes')}</Text>
+        <Text style={styles.muted}>{t('buyer.task.budget')}: INR {task ? (task.budgetPaise / 100).toFixed(0) : '-'}</Text>
+        {task?.arrivalOtp ? <Text style={styles.otp}>{t('buyer.task.arrival_otp')}: {task.arrivalOtp}</Text> : null}
+        {task?.completionOtp ? <Text style={styles.otp}>{t('buyer.task.completion_otp')}: {task.completionOtp}</Text> : null}
 
-        <PrimaryButton label="Refresh" onPress={load} loading={busy} variant="ghost" />
+        <PrimaryButton label={t('task.refresh')} onPress={load} loading={busy} variant="ghost" />
 
         {canCancel ? (
           <>
             <TextField
-              label="Cancellation reason"
+              label={t('task.cancellation_reason')}
               value={cancelReason}
               onChangeText={setCancelReason}
-              placeholder="Share why you are cancelling"
+              placeholder={t('task.share_cancelling')}
             />
             <PrimaryButton
-              label="Cancel task"
+              label={t('task.cancel_task')}
               onPress={submitCancel}
               loading={cancelBusy}
               variant="danger"
@@ -388,15 +380,15 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
         ) : null}
       </View>
 
-      {canDone ? <Notice kind="success" text="Marked as completed by Superheroo." /> : null}
+      {canDone ? <Notice kind="success" text={t('buyer.task.completed_notice')} /> : null}
 
       {showCelebration ? (
         <View style={styles.celebrateWrap}>
           <View style={styles.celebrateCard}>
-            <Text style={styles.celebrateTitle}>Task completed</Text>
-            <Text style={styles.celebrateBody}>Your Superheroo finished the task. Please rate the experience.</Text>
+            <Text style={styles.celebrateTitle}>{t('task.completed_title')}</Text>
+            <Text style={styles.celebrateBody}>{t('task.rate_experience')}</Text>
             <PrimaryButton
-              label="Continue"
+              label={t('task.continue')}
               onPress={() => {
                 setShowCelebration(false);
                 setRatingReady(true);
@@ -408,9 +400,9 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
 
       {status === 'COMPLETED' && ratingReady ? (
         <View style={styles.ratingCard}>
-          <Text style={styles.liveTitle}>Rate your Superheroo</Text>
+          <Text style={styles.liveTitle}>{t('task.rate_hero')}</Text>
           {task?.buyerRating ? (
-            <Text style={styles.muted}>Your rating: {task.buyerRating.toFixed(1)} / 5</Text>
+            <Text style={styles.muted}>{t('task.your_rating')}: {task.buyerRating.toFixed(1)} / 5</Text>
           ) : (
             <>
               <View style={styles.ratingRow}>
@@ -425,12 +417,12 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
                 ))}
               </View>
               <TextField
-                label="Comment (optional)"
+                label={t('task.comment_optional')}
                 value={ratingComment}
                 onChangeText={setRatingComment}
-                placeholder="Share feedback"
+                placeholder={t('task.share_feedback')}
               />
-              <PrimaryButton label="Submit rating" onPress={submitRating} loading={ratingBusy} />
+              <PrimaryButton label={t('task.submit_rating')} onPress={submitRating} loading={ratingBusy} />
             </>
           )}
         </View>

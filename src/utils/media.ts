@@ -10,7 +10,7 @@ const normalizeUri = (uri: string) => {
 
 export const assetToPickedFile = (asset: Asset | null | undefined, fallbackName: string): PickedFile | null => {
   if (!asset) return null;
-  const uri = normalizeUri(asset.fileCopyUri || asset.uri || '');
+  const uri = normalizeUri((asset as any).fileCopyUri || asset.uri || '');
   if (!uri) return null;
   return {
     uri,

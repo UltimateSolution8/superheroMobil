@@ -3,6 +3,7 @@ import { Alert, AppState, Linking, Platform, ScrollView, StyleSheet, Text, View 
 import type { Asset } from 'react-native-image-picker';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import * as Location from 'expo-location';
+import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
@@ -272,7 +273,19 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       const a = await pickSelfie();
       if (!a || !a.uri) return false;
 
-      const selfie = assetToPickedFile(a, `${stage.toLowerCase()}-selfie-${Date.now()}.jpg`);
+      let finalUri = a.uri;
+      try {
+        const manipResult = await manipulateAsync(
+          a.uri,
+          [{ resize: { width: 800 } }],
+          { compress: 0.7, format: SaveFormat.JPEG }
+        );
+        finalUri = manipResult.uri;
+      } catch (e) {
+        // use original if manipulation fails
+      }
+
+      const selfie = assetToPickedFile({ ...a, uri: finalUri, fileCopyUri: finalUri } as any, `${stage.toLowerCase()}-selfie-${Date.now()}.jpg`);
       if (!selfie) {
         setError('Could not access captured image.');
         return false;
@@ -283,10 +296,26 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       let address = task?.addressText ?? '';
 
       const withTimeout = async <T,>(promise: Promise<T>, ms: number): Promise<T> => {
-        return await Promise.race([
-          promise,
-          new Promise<T>((_, reject) => setTimeout(() => reject(new Error('timeout')), ms)),
-        ]);
+        return new Promise<T>((resolve, reject) => {
+          let finished = false;
+          const timer = setTimeout(() => {
+            finished = true;
+            reject(new Error('timeout'));
+          }, ms);
+          promise.then((v) => {
+            if (!finished) {
+              finished = true;
+              clearTimeout(timer);
+              resolve(v);
+            }
+          }).catch((e) => {
+            if (!finished) {
+              finished = true;
+              clearTimeout(timer);
+              reject(e);
+            }
+          });
+        });
       };
 
       try {
