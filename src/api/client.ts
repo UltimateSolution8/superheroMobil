@@ -158,6 +158,9 @@ export async function helperSubmitKyc(
   appendFile('idFront', req.idFront);
   appendFile('idBack', req.idBack);
   appendFile('selfie', req.selfie);
+  if (req.selfie?.uri) {
+    body.append('selfieUri', req.selfie.uri);
+  }
 
   const res = await fetch(url('/api/v1/helper/kyc/submit'), {
     method: 'POST',
@@ -264,7 +267,7 @@ export async function uploadTaskSelfie(
   appendFile('selfie', req.selfie);
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 45_000);
+  const timeout = setTimeout(() => controller.abort(), 30_000);
   let res: Response;
   try {
     res = await fetch(url(`/api/v1/tasks/${taskId}/selfie`), {

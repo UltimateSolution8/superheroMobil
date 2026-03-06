@@ -6,6 +6,7 @@ import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 
 import type { Task, TaskAssignedEvent, TaskStatusChangedEvent, TaskStatus } from '../../api/types';
 import * as api from '../../api/client';
+import { distanceMeters, decodePolyline } from '../../utils/geo';
 import { useAuth } from '../../auth/AuthContext';
 import { useSocket } from '../../realtime/SocketProvider';
 import { Screen } from '../../ui/Screen';
@@ -13,6 +14,7 @@ import { PrimaryButton } from '../../ui/PrimaryButton';
 import { Notice } from '../../ui/Notice';
 import { MenuButton } from '../../ui/MenuButton';
 import { TextField } from '../../ui/TextField';
+import { TaskSkeleton } from '../../ui/TaskSkeleton';
 import { theme } from '../../ui/theme';
 import { DEMO_FALLBACK_LOCATION, GOOGLE_MAPS_API_KEY } from '../../config';
 import type { BuyerStackParamList } from '../../navigation/types';
@@ -30,57 +32,6 @@ function statusLabel(s: TaskStatus) {
   return s;
 }
 
-function distanceMeters(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
-  const R = 6371e3;
-  const toRad = (d: number) => (d * Math.PI) / 180;
-  const dLat = toRad(b.lat - a.lat);
-  const dLng = toRad(b.lng - a.lng);
-  const lat1 = toRad(a.lat);
-  const lat2 = toRad(b.lat);
-  const sinDLat = Math.sin(dLat / 2);
-  const sinDLng = Math.sin(dLng / 2);
-  const h = sinDLat * sinDLat + Math.cos(lat1) * Math.cos(lat2) * sinDLng * sinDLng;
-  return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
-}
-
-function decodePolyline(encoded: string): { latitude: number; longitude: number }[] {
-  let index = 0;
-  const len = encoded.length;
-  let lat = 0;
-  let lng = 0;
-  const coords: { latitude: number; longitude: number }[] = [];
-
-  while (index < len) {
-    let b: number;
-    let shift = 0;
-    let result = 0;
-    do {
-      b = encoded.charCodeAt(index++) - 63;
-      result |= (b & 0x1f) << shift;
-      shift += 5;
-    } while (b >= 0x20);
-    const dlat = (result & 1) !== 0 ? ~(result >> 1) : result >> 1;
-    lat += dlat;
-
-    shift = 0;
-    result = 0;
-    do {
-      b = encoded.charCodeAt(index++) - 63;
-      result |= (b & 0x1f) << shift;
-      shift += 5;
-    } while (b >= 0x20);
-    const dlng = (result & 1) !== 0 ? ~(result >> 1) : result >> 1;
-    lng += dlng;
-
-    const latitude = lat / 1e5;
-    const longitude = lng / 1e5;
-    if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
-      coords.push({ latitude, longitude });
-    }
-  }
-  return coords;
-}
-
 export function BuyerTaskScreen({ route, navigation }: Props) {
   const { taskId } = route.params;
   const { withAuth } = useAuth();
@@ -89,6 +40,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
 
   const [task, setTask] = useState<Task | null>(null);
   const [busy, setBusy] = useState(false);
+  const [initialLoad, setInitialLoad] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [helperLoc, setHelperLoc] = useState<{ lat: number; lng: number; ts: number } | null>(null);
   const [routeCoords, setRouteCoords] = useState<{ latitude: number; longitude: number }[]>([]);
@@ -96,6 +48,8 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
   const [rating, setRating] = useState<number>(5);
   const [ratingComment, setRatingComment] = useState('');
   const [ratingBusy, setRatingBusy] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [ratingReady, setRatingReady] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
   const [cancelBusy, setCancelBusy] = useState(false);
   const helperPhone = useMemo(() => {
@@ -111,6 +65,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
   const helperMarkerRef = useRef<any>(null);
   const mapRef = useRef<MapView | null>(null);
   const lastFitAt = useRef(0);
+  const previousStatus = useRef<TaskStatus | null>(null);
 
   const taskLat = Number(task?.lat);
   const taskLng = Number(task?.lng);
@@ -126,13 +81,11 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
       setError('Could not load task details.');
     } finally {
       setBusy(false);
+      setInitialLoad(false);
     }
   }, [taskId, withAuth]);
 
-  useEffect(() => {
-    load();
-  }, [load]);
-
+  // Only useFocusEffect — fires on both mount + re-focus (fixes double load)
   useFocusEffect(
     useCallback(() => {
       load();
@@ -243,6 +196,11 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
   const canCancel = status === 'SEARCHING' || status === 'ASSIGNED';
 
   useEffect(() => {
+    if (previousStatus.current && previousStatus.current !== 'COMPLETED' && status === 'COMPLETED') {
+      setShowCelebration(true);
+      setRatingReady(false);
+    }
+    previousStatus.current = status;
     if (status === 'COMPLETED' || status === 'CANCELLED') {
       setActiveTaskId(null);
     }
@@ -302,6 +260,19 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
       setCancelBusy(false);
     }
   }, [canCancel, cancelBusy, cancelReason, taskId, withAuth]);
+
+  if (initialLoad) {
+    return (
+      <Screen style={styles.screen}>
+        <View style={styles.topBar}>
+          <MenuButton onPress={() => navigation.navigate('Menu')} />
+          <Text style={styles.h1}>Task</Text>
+          <View style={styles.topActions} />
+        </View>
+        <TaskSkeleton />
+      </Screen>
+    );
+  }
 
   return (
     <Screen style={styles.screen}>
@@ -419,7 +390,23 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
 
       {canDone ? <Notice kind="success" text="Marked as completed by Superheroo." /> : null}
 
-      {status === 'COMPLETED' ? (
+      {showCelebration ? (
+        <View style={styles.celebrateWrap}>
+          <View style={styles.celebrateCard}>
+            <Text style={styles.celebrateTitle}>Task completed</Text>
+            <Text style={styles.celebrateBody}>Your Superheroo finished the task. Please rate the experience.</Text>
+            <PrimaryButton
+              label="Continue"
+              onPress={() => {
+                setShowCelebration(false);
+                setRatingReady(true);
+              }}
+            />
+          </View>
+        </View>
+      ) : null}
+
+      {status === 'COMPLETED' && ratingReady ? (
         <View style={styles.ratingCard}>
           <Text style={styles.liveTitle}>Rate your Superheroo</Text>
           {task?.buyerRating ? (
@@ -453,7 +440,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  screen: { paddingBottom: theme.space.xl },
+  screen: { paddingBottom: theme.space.xl, position: 'relative' },
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   topActions: { flexDirection: 'row', gap: 12, alignItems: 'center' },
   contactRow: {
@@ -527,4 +514,26 @@ const styles = StyleSheet.create({
   star: { fontSize: 24 },
   starOn: { color: theme.colors.accent },
   starOff: { color: theme.colors.border },
+  celebrateWrap: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(8, 12, 22, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: theme.space.lg,
+    zIndex: 10,
+  },
+  celebrateCard: {
+    width: '100%',
+    borderRadius: theme.radius.lg,
+    backgroundColor: theme.colors.card,
+    padding: theme.space.lg,
+    gap: theme.space.sm,
+    ...theme.shadow.card,
+  },
+  celebrateTitle: { color: theme.colors.text, fontSize: 20, fontWeight: '900' },
+  celebrateBody: { color: theme.colors.muted, fontSize: 13, lineHeight: 20 },
 });

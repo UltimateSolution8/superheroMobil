@@ -269,6 +269,11 @@ export function HelperHomeScreen({ navigation }: Props) {
       try {
         await withAuth((t) => api.acceptTask(t, taskId));
         await setActiveTaskId(taskId);
+        setOffers((prev) => {
+          const next = prev.filter((o) => o.taskId !== taskId);
+          persistOffers(next).catch(() => {});
+          return next;
+        });
         navigation.navigate('HelperTask', { taskId });
       } catch (e) {
         if (e instanceof ApiError && e.status === 409) {
