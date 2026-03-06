@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, AppState, Linking, Platform, StyleSheet, Text, View } from 'react-native';
+import { Alert, AppState, Linking, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { Asset } from 'react-native-image-picker';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import * as Location from 'expo-location';
@@ -9,6 +9,7 @@ import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 
 import type { Task, TaskStatus, TaskStatusChangedEvent } from '../../api/types';
 import * as api from '../../api/client';
+import { distanceMeters, decodePolyline } from '../../utils/geo';
 import { useAuth } from '../../auth/AuthContext';
 import { useSocket } from '../../realtime/SocketProvider';
 import { Screen } from '../../ui/Screen';
@@ -16,8 +17,10 @@ import { PrimaryButton } from '../../ui/PrimaryButton';
 import { Notice } from '../../ui/Notice';
 import { TextField } from '../../ui/TextField';
 import { MenuButton } from '../../ui/MenuButton';
+import { TaskSkeleton } from '../../ui/TaskSkeleton';
 import { theme } from '../../ui/theme';
 import { ensureCameraPermissions, ensureGalleryPermissions } from '../../utils/permissions';
+import { assetToPickedFile } from '../../utils/media';
 import type { HelperStackParamList } from '../../navigation/types';
 import { DEMO_FALLBACK_LOCATION, GOOGLE_MAPS_API_KEY } from '../../config';
 import { useActiveTask } from '../../state/ActiveTaskContext';
@@ -43,19 +46,6 @@ function statusLabel(s: TaskStatus) {
   return s;
 }
 
-function distanceMeters(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
-  const R = 6371e3;
-  const toRad = (d: number) => (d * Math.PI) / 180;
-  const dLat = toRad(b.lat - a.lat);
-  const dLng = toRad(b.lng - a.lng);
-  const lat1 = toRad(a.lat);
-  const lat2 = toRad(b.lat);
-  const sinDLat = Math.sin(dLat / 2);
-  const sinDLng = Math.sin(dLng / 2);
-  const h = sinDLat * sinDLat + Math.cos(lat1) * Math.cos(lat2) * sinDLng * sinDLng;
-  return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
-}
-
 export function HelperTaskScreen({ route, navigation }: Props) {
   const { taskId } = route.params;
   const { withAuth } = useAuth();
@@ -64,6 +54,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
 
   const [task, setTask] = useState<Task | null>(null);
   const [busy, setBusy] = useState(false);
+  const [initialLoad, setInitialLoad] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [arrivalOtp, setArrivalOtp] = useState('');
@@ -74,14 +65,22 @@ export function HelperTaskScreen({ route, navigation }: Props) {
   const [rating, setRating] = useState<number>(5);
   const [ratingComment, setRatingComment] = useState('');
   const [ratingBusy, setRatingBusy] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [ratingReady, setRatingReady] = useState(false);
+  const [completionSelfieBusy, setCompletionSelfieBusy] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
   const [cancelBusy, setCancelBusy] = useState(false);
-  const buyerPhone = task?.buyerPhone?.trim() || '';
+  const arrivalSelfieDone = Boolean(task?.arrivalSelfieUrl);
+  const buyerPhone = useMemo(() => {
+    const raw = task?.buyerPhone;
+    if (typeof raw === 'string') return raw.trim();
+    if (raw == null) return '';
+    return String(raw);
+  }, [task?.buyerPhone]);
 
   const locationSub = useRef<Location.LocationSubscription | null>(null);
   const lastEmitAt = useRef<number>(0);
   const mapRef = useRef<MapView | null>(null);
-  const lastFitAt = useRef(0);
 
   const load = useCallback(async () => {
     setBusy(true);
@@ -93,13 +92,11 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       setError('Could not load task.');
     } finally {
       setBusy(false);
+      setInitialLoad(false);
     }
   }, [taskId, withAuth]);
 
-  useEffect(() => {
-    load();
-  }, [load]);
-
+  // Only useFocusEffect — fires on both mount + re-focus (fixes double load)
   useFocusEffect(
     useCallback(() => {
       load();
@@ -128,8 +125,15 @@ export function HelperTaskScreen({ route, navigation }: Props) {
   const status = task?.status ?? 'ASSIGNED';
   const next = useMemo(() => nextStatus(status), [status]);
   const canCancel = status === 'ASSIGNED' || status === 'SEARCHING';
+  const completionSelfieDone = Boolean(task?.completionSelfieUrl);
+  const previousStatus = useRef<TaskStatus | null>(null);
 
   useEffect(() => {
+    if (previousStatus.current && previousStatus.current !== 'COMPLETED' && status === 'COMPLETED') {
+      setShowCelebration(true);
+      setRatingReady(false);
+    }
+    previousStatus.current = status;
     if (status === 'COMPLETED' || status === 'CANCELLED') {
       setActiveTaskId(null);
     }
@@ -195,9 +199,12 @@ export function HelperTaskScreen({ route, navigation }: Props) {
         }
         const res = await launchCamera({
           mediaType: 'photo',
-          quality: 0.7,
+          quality: 0.6,
           cameraType: 'front',
           saveToPhotos: false,
+          includeExtra: true,
+          maxWidth: 960,
+          maxHeight: 960,
         });
         if (res.didCancel) return null;
         if (res.errorCode) {
@@ -218,7 +225,14 @@ export function HelperTaskScreen({ route, navigation }: Props) {
           setError('Gallery permission is required to select a selfie.');
           return null;
         }
-        const pick = await launchImageLibrary({ mediaType: 'photo', quality: 0.7, selectionLimit: 1 });
+        const pick = await launchImageLibrary({
+          mediaType: 'photo',
+          quality: 0.6,
+          selectionLimit: 1,
+          includeExtra: true,
+          maxWidth: 960,
+          maxHeight: 960,
+        });
         if (pick.didCancel) return null;
         if (pick.errorCode) {
           setError('Could not open gallery.');
@@ -258,25 +272,38 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       const a = await pickSelfie();
       if (!a || !a.uri) return false;
 
-      const selfie: PickedFile = {
-        uri: a.uri,
-        name: a.fileName ?? `${stage.toLowerCase()}-selfie-${Date.now()}.jpg`,
-        type: a.type ?? 'image/jpeg',
-      };
+      const selfie = assetToPickedFile(a, `${stage.toLowerCase()}-selfie-${Date.now()}.jpg`);
+      if (!selfie) {
+        setError('Could not access captured image.');
+        return false;
+      }
 
       let lat = task?.lat ?? 0;
       let lng = task?.lng ?? 0;
       let address = task?.addressText ?? '';
+
+      const withTimeout = async <T,>(promise: Promise<T>, ms: number): Promise<T> => {
+        return await Promise.race([
+          promise,
+          new Promise<T>((_, reject) => setTimeout(() => reject(new Error('timeout')), ms)),
+        ]);
+      };
 
       try {
         const perm = await Location.requestForegroundPermissionsAsync();
         if (perm.status !== 'granted') {
           throw new Error('Location permission missing');
         }
-        const p = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+        const p = await withTimeout(
+          Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
+          8000,
+        );
         lat = p.coords.latitude;
         lng = p.coords.longitude;
-        const rev = await Location.reverseGeocodeAsync({ latitude: lat, longitude: lng });
+        const rev = await withTimeout(
+          Location.reverseGeocodeAsync({ latitude: lat, longitude: lng }),
+          6000,
+        );
         const first = rev[0];
         if (first) {
           const parts = [first.name, first.street, first.city, first.region, first.postalCode].filter(Boolean);
@@ -286,17 +313,32 @@ export function HelperTaskScreen({ route, navigation }: Props) {
         // best effort
       }
 
-      await withAuth((at) =>
-        api.uploadTaskSelfie(at, taskId, {
-          stage,
-          lat,
-          lng,
-          addressText: address,
-          capturedAt: new Date().toISOString(),
-          selfie,
-        }),
-      );
-      return true;
+      try {
+        setNotice(`Uploading ${stage === 'ARRIVAL' ? 'arrival' : 'completion'} selfie...`);
+        setTimeout(() => setNotice(null), 2500);
+        const updated = await withTimeout(
+          withAuth((at) =>
+            api.uploadTaskSelfie(at, taskId, {
+              stage,
+              lat,
+              lng,
+              addressText: address,
+              capturedAt: new Date().toISOString(),
+              selfie,
+            }),
+          ),
+          25_000,
+        );
+        setTask(updated);
+        return true;
+      } catch (err) {
+        if (err instanceof Error && err.message) {
+          setError(err.message);
+        } else {
+          setError('Selfie upload failed. Please try again.');
+        }
+        return false;
+      }
     },
     [task, taskId, withAuth],
   );
@@ -308,10 +350,12 @@ export function HelperTaskScreen({ route, navigation }: Props) {
     setNotice(null);
     try {
       if (next === 'ARRIVED') {
-        const done = await uploadCheckpointSelfie('ARRIVAL');
-        if (!done) {
-          setBusy(false);
-          return;
+        if (!arrivalSelfieDone) {
+          const done = await uploadCheckpointSelfie('ARRIVAL');
+          if (!done) {
+            setBusy(false);
+            return;
+          }
         }
       }
       if (next === 'STARTED') {
@@ -322,8 +366,8 @@ export function HelperTaskScreen({ route, navigation }: Props) {
         }
       }
       if (next === 'COMPLETED') {
-        const done = await uploadCheckpointSelfie('COMPLETION');
-        if (!done) {
+        if (!completionSelfieDone) {
+          setError('Please upload the completion selfie first.');
           setBusy(false);
           return;
         }
@@ -339,12 +383,34 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       setTask(updated);
       setNotice(`Status updated: ${statusLabel(next)}`);
       setTimeout(() => setNotice(null), 1500);
-    } catch {
-      setError('Could not update status.');
+    } catch (e) {
+      if (e instanceof Error && e.message) {
+        setError(e.message);
+      } else {
+        setError('Could not update status.');
+      }
     } finally {
       setBusy(false);
     }
   }, [arrivalOtp, busy, completionOtp, next, taskId, uploadCheckpointSelfie, withAuth]);
+
+  const uploadCompletionSelfie = useCallback(async () => {
+    if (completionSelfieBusy || completionSelfieDone) return;
+    setCompletionSelfieBusy(true);
+    setError(null);
+    try {
+      const done = await uploadCheckpointSelfie('COMPLETION');
+      if (!done) return;
+      const refreshed = await withAuth((at) => api.getTask(at, taskId));
+      setTask(refreshed);
+      setNotice('Completion selfie uploaded. Enter OTP to finish.');
+      setTimeout(() => setNotice(null), 2000);
+    } catch {
+      setError('Selfie upload failed. Please try again.');
+    } finally {
+      setCompletionSelfieBusy(false);
+    }
+  }, [completionSelfieBusy, completionSelfieDone, taskId, uploadCheckpointSelfie, withAuth]);
 
   const backHome = useCallback(() => navigation.popToTop(), [navigation]);
 
@@ -358,6 +424,13 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       Linking.openURL(url);
     }
   }, [hasTaskCoords, taskLat, taskLng]);
+
+  const shouldUpdateLoc = useCallback((nextLoc: { lat: number; lng: number; ts: number }) => {
+    if (!helperLoc) return true;
+    const dist = distanceMeters({ lat: helperLoc.lat, lng: helperLoc.lng }, { lat: nextLoc.lat, lng: nextLoc.lng });
+    if (dist < 6 && Math.abs(nextLoc.ts - helperLoc.ts) < 8000) return false;
+    return true;
+  }, [helperLoc]);
 
   useEffect(() => {
     if (!socket) return;
@@ -382,21 +455,12 @@ export function HelperTaskScreen({ route, navigation }: Props) {
             lastEmitAt.current = now;
             const lat = pos.coords.latitude;
             const lng = pos.coords.longitude;
-            setHelperLoc({ lat, lng, ts: now });
-            // location updates are handled by the global presence tracker
-            if (hasTaskCoords && mapRef.current) {
-              const stamp = Date.now();
-              if (stamp - lastFitAt.current > 8_000) {
-                lastFitAt.current = stamp;
-                mapRef.current.fitToCoordinates(
-                  [
-                    { latitude: taskLat, longitude: taskLng },
-                    { latitude: lat, longitude: lng },
-                  ],
-                  { edgePadding: { top: 80, right: 60, bottom: 120, left: 60 }, animated: true },
-                );
-              }
+            const nextLoc = { lat, lng, ts: now };
+            if (shouldUpdateLoc(nextLoc)) {
+              setHelperLoc(nextLoc);
             }
+            // location updates are handled by the global presence tracker
+            // keep map stable to avoid UI flicker on some devices
           },
         );
       } catch {
@@ -439,10 +503,14 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       locationSub.current?.remove();
       locationSub.current = null;
     };
-  }, [hasTaskCoords, socket, task?.lat, task?.lng, taskId, taskLat, taskLng]);
+  }, [hasTaskCoords, shouldUpdateLoc, socket, task?.lat, task?.lng, taskId, taskLat, taskLng]);
 
+  const lastRouteFetch = useRef(0);
   useEffect(() => {
     if (!task || !helperLoc || !GOOGLE_MAPS_API_KEY || !hasTaskCoords) return;
+    const now = Date.now();
+    if (now - lastRouteFetch.current < 12_000) return;
+    lastRouteFetch.current = now;
     const fetchRoute = async () => {
       try {
         const url =
@@ -456,33 +524,8 @@ export function HelperTaskScreen({ route, navigation }: Props) {
         const poly = route?.overview_polyline?.points;
         const legs = route?.legs?.[0];
         if (poly && typeof poly === 'string') {
-          const points: { latitude: number; longitude: number }[] = [];
-          let index = 0;
-          let lat = 0;
-          let lng = 0;
-          while (index < poly.length) {
-            let b = 0;
-            let shift = 0;
-            let result = 0;
-            do {
-              b = poly.charCodeAt(index++) - 63;
-              result |= (b & 0x1f) << shift;
-              shift += 5;
-            } while (b >= 0x20);
-            const dlat = (result & 1) !== 0 ? ~(result >> 1) : result >> 1;
-            lat += dlat;
-            shift = 0;
-            result = 0;
-            do {
-              b = poly.charCodeAt(index++) - 63;
-              result |= (b & 0x1f) << shift;
-              shift += 5;
-            } while (b >= 0x20);
-            const dlng = (result & 1) !== 0 ? ~(result >> 1) : result >> 1;
-            lng += dlng;
-            points.push({ latitude: lat / 1e5, longitude: lng / 1e5 });
-          }
-          setRouteCoords(points.filter((p) => Number.isFinite(p.latitude) && Number.isFinite(p.longitude)));
+          const points = decodePolyline(poly);
+          setRouteCoords(points);
         }
         if (legs?.duration?.value) {
           setRouteEtaMin(Math.max(1, Math.round(legs.duration.value / 60)));
@@ -494,160 +537,204 @@ export function HelperTaskScreen({ route, navigation }: Props) {
     fetchRoute();
   }, [helperLoc, hasTaskCoords, task, taskLat, taskLng]);
 
+  if (initialLoad) {
+    return (
+      <Screen>
+        <View style={styles.topBar}>
+          <MenuButton onPress={() => navigation.navigate('Menu')} />
+          <Text style={styles.h1}>Job</Text>
+          <View style={styles.topActions} />
+        </View>
+        <TaskSkeleton />
+      </Screen>
+    );
+  }
+
   return (
     <Screen>
-      <View style={styles.topBar}>
-        <MenuButton onPress={() => navigation.navigate('Menu')} />
-        <Text style={styles.h1}>Job</Text>
-        <View style={styles.topActions}>
-          <Text onPress={load} style={styles.link}>Refresh</Text>
-          <Text onPress={backHome} style={styles.link}>Back</Text>
-        </View>
-      </View>
-
-      {buyerPhone ? (
-        <View style={styles.contactRow}>
-          <View>
-            <Text style={styles.label}>Buyer</Text>
-            <Text style={styles.value}>{task?.buyerName ?? buyerPhone}</Text>
-            <Text style={styles.value}>{buyerPhone}</Text>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
+      >
+        <View style={styles.topBar}>
+          <MenuButton onPress={() => navigation.navigate('Menu')} />
+          <Text style={styles.h1}>Job</Text>
+          <View style={styles.topActions}>
+            <Text onPress={load} style={styles.link}>Refresh</Text>
+            <Text onPress={backHome} style={styles.link}>Back</Text>
           </View>
-          <PrimaryButton
-            label="Call buyer"
-            onPress={() => Linking.openURL(`tel:${buyerPhone}`)}
-            variant="ghost"
-            style={styles.callButton}
-          />
-        </View>
-      ) : null}
-
-      {notice ? <Notice kind="success" text={notice} /> : null}
-      {error ? <Notice kind="danger" text={error} /> : null}
-
-      <View style={styles.mapWrap}>
-        <MapView
-          style={styles.map}
-          provider={PROVIDER_GOOGLE}
-          ref={mapRef}
-          initialRegion={{
-            latitude: hasTaskCoords ? taskLat : DEMO_FALLBACK_LOCATION?.lat ?? 12.9716,
-            longitude: hasTaskCoords ? taskLng : DEMO_FALLBACK_LOCATION?.lng ?? 77.5946,
-            latitudeDelta: 0.02,
-            longitudeDelta: 0.02,
-          }}
-        >
-          {hasTaskCoords ? <Marker coordinate={{ latitude: taskLat, longitude: taskLng }} title="Buyer" /> : null}
-          {helperLoc ? <Marker coordinate={{ latitude: helperLoc.lat, longitude: helperLoc.lng }} title="You" /> : null}
-          {routeCoords.length > 1 ? (
-            <Polyline coordinates={routeCoords} strokeColor={theme.colors.primary} strokeWidth={4} />
-          ) : null}
-        </MapView>
-      </View>
-
-      <View style={styles.card}>
-        <Text style={styles.status}>{statusLabel(status)}</Text>
-        {task?.title ? <Text style={styles.title}>{task.title}</Text> : null}
-        {task?.buyerName ? <Text style={styles.muted}>Buyer: {task.buyerName}</Text> : null}
-        {task?.addressText ? <Text style={styles.muted}>Address: {task.addressText}</Text> : null}
-        {task?.description ? <Text style={styles.desc}>{task.description}</Text> : null}
-        <Text style={styles.muted}>
-          Distance: {helperDistance == null ? '--' : `${(helperDistance / 1000).toFixed(2)} km`} • ETA:{' '}
-          {helperEta == null ? '--' : `${helperEta} min`}
-        </Text>
-        <PrimaryButton label="Open in Maps" onPress={openMaps} variant="ghost" />
-
-        {next === 'STARTED' ? (
-          <View>
-            <Text style={styles.muted}>Arrival OTP</Text>
-            <Text style={styles.otpHint}>Ask buyer for the arrival OTP to start work.</Text>
-            <TextField
-              label="Arrival OTP"
-              value={arrivalOtp}
-              onChangeText={setArrivalOtp}
-              placeholder="Enter arrival OTP"
-              keyboardType="number-pad"
-            />
-          </View>
-        ) : null}
-
-        {next === 'COMPLETED' ? (
-          <View>
-            <Text style={styles.muted}>Completion OTP</Text>
-            <Text style={styles.otpHint}>Ask buyer for the completion OTP to finish work.</Text>
-            <TextField
-              label="Completion OTP"
-              value={completionOtp}
-              onChangeText={setCompletionOtp}
-              placeholder="Enter completion OTP"
-              keyboardType="number-pad"
-            />
-          </View>
-        ) : null}
-
-        <View style={styles.actions}>
-          <PrimaryButton label="Refresh" onPress={load} variant="ghost" style={styles.half} />
-          <PrimaryButton
-            label={next ? `Mark ${statusLabel(next)}` : 'Done'}
-            onPress={advance}
-            disabled={!next}
-            loading={busy}
-            style={styles.half}
-          />
         </View>
 
-        {canCancel ? (
-          <>
-            <TextField
-              label="Cancellation reason"
-              value={cancelReason}
-              onChangeText={setCancelReason}
-              placeholder="Share why you are cancelling"
-            />
+        {buyerPhone ? (
+          <View style={styles.contactRow}>
+            <View>
+              <Text style={styles.label}>Super-customer</Text>
+              <Text style={styles.value}>{task?.buyerName ?? buyerPhone}</Text>
+              <Text style={styles.value}>{buyerPhone}</Text>
+            </View>
             <PrimaryButton
-              label="Cancel task"
-              onPress={submitCancel}
-              loading={cancelBusy}
-              variant="danger"
+              label="Call super-customer"
+              onPress={() => Linking.openURL(`tel:${buyerPhone}`)}
+              variant="ghost"
+              style={styles.callButton}
             />
-          </>
-        ) : null}
-
-        {status === 'COMPLETED' ? (
-          <View style={styles.ratingCard}>
-            <Text style={styles.muted}>Rate buyer</Text>
-            {task?.helperRating ? (
-              <Text style={styles.muted}>Your rating: {task.helperRating.toFixed(1)} / 5</Text>
-            ) : (
-              <>
-                <View style={styles.ratingRow}>
-                  {[1, 2, 3, 4, 5].map((r) => (
-                    <Text
-                      key={`rate-${r}`}
-                      style={[styles.star, r <= rating ? styles.starOn : styles.starOff]}
-                      onPress={() => setRating(r)}
-                    >
-                      ★
-                    </Text>
-                  ))}
-                </View>
-                <TextField
-                  label="Comment (optional)"
-                  value={ratingComment}
-                  onChangeText={setRatingComment}
-                  placeholder="Share feedback"
-                />
-                <PrimaryButton label="Submit rating" onPress={submitRating} loading={ratingBusy} />
-              </>
-            )}
           </View>
         ) : null}
-      </View>
+
+        {notice ? <Notice kind="success" text={notice} /> : null}
+        {error ? <Notice kind="danger" text={error} /> : null}
+
+        <View style={styles.mapWrap}>
+          <MapView
+            style={styles.map}
+            provider={PROVIDER_GOOGLE}
+            ref={mapRef}
+            initialRegion={{
+              latitude: hasTaskCoords ? taskLat : DEMO_FALLBACK_LOCATION?.lat ?? 12.9716,
+              longitude: hasTaskCoords ? taskLng : DEMO_FALLBACK_LOCATION?.lng ?? 77.5946,
+              latitudeDelta: 0.02,
+              longitudeDelta: 0.02,
+            }}
+          >
+            {hasTaskCoords ? <Marker coordinate={{ latitude: taskLat, longitude: taskLng }} title="Super-customer" /> : null}
+            {helperLoc ? <Marker coordinate={{ latitude: helperLoc.lat, longitude: helperLoc.lng }} title="You" /> : null}
+            {routeCoords.length > 1 ? (
+              <Polyline coordinates={routeCoords} strokeColor={theme.colors.primary} strokeWidth={4} />
+            ) : null}
+          </MapView>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.status}>{statusLabel(status)}</Text>
+          {task?.title ? <Text style={styles.title}>{task.title}</Text> : null}
+          {task?.buyerName ? <Text style={styles.muted}>Super-customer: {task.buyerName}</Text> : null}
+          {task?.addressText ? <Text style={styles.muted}>Address: {task.addressText}</Text> : null}
+          {task?.description ? <Text style={styles.desc}>{task.description}</Text> : null}
+          <Text style={styles.muted}>
+            Distance: {helperDistance == null ? '--' : `${(helperDistance / 1000).toFixed(2)} km`} • ETA:{' '}
+            {helperEta == null ? '--' : `${helperEta} min`}
+          </Text>
+          <PrimaryButton label="Open in Maps" onPress={openMaps} variant="ghost" />
+
+          {next === 'STARTED' ? (
+            <View>
+              <Text style={styles.muted}>Arrival OTP</Text>
+              <Text style={styles.otpHint}>Ask the super-customer for the arrival OTP to start work.</Text>
+              <TextField
+                label="Arrival OTP"
+                value={arrivalOtp}
+                onChangeText={setArrivalOtp}
+                placeholder="Enter arrival OTP"
+                keyboardType="number-pad"
+              />
+            </View>
+          ) : null}
+
+          {next === 'COMPLETED' ? (
+            <View>
+              <Text style={styles.muted}>Completion</Text>
+              <Text style={styles.otpHint}>Upload completion selfie first, then enter OTP to finish.</Text>
+              <PrimaryButton
+                label={completionSelfieDone ? 'Completion selfie uploaded' : 'Upload completion selfie'}
+                onPress={uploadCompletionSelfie}
+                loading={completionSelfieBusy}
+                disabled={completionSelfieDone}
+                variant="ghost"
+              />
+              <TextField
+                label="Completion OTP"
+                value={completionOtp}
+                onChangeText={setCompletionOtp}
+                placeholder="Enter completion OTP"
+                keyboardType="number-pad"
+              />
+            </View>
+          ) : null}
+
+          <View style={styles.actions}>
+            <PrimaryButton label="Refresh" onPress={load} variant="ghost" style={styles.half} />
+            <PrimaryButton
+              label={next ? `Mark ${statusLabel(next)}` : 'Done'}
+              onPress={advance}
+              disabled={!next || (next === 'COMPLETED' && !completionSelfieDone)}
+              loading={busy}
+              style={styles.half}
+            />
+          </View>
+
+          {canCancel ? (
+            <>
+              <TextField
+                label="Cancellation reason"
+                value={cancelReason}
+                onChangeText={setCancelReason}
+                placeholder="Share why you are cancelling"
+              />
+              <PrimaryButton
+                label="Cancel task"
+                onPress={submitCancel}
+                loading={cancelBusy}
+                variant="danger"
+              />
+            </>
+          ) : null}
+
+          {showCelebration ? (
+            <View style={styles.celebrateWrap}>
+              <View style={styles.celebrateCard}>
+                <Text style={styles.celebrateTitle}>Task completed</Text>
+                <Text style={styles.celebrateBody}>Great work! Please rate your super-customer.</Text>
+                <PrimaryButton
+                  label="Continue"
+                  onPress={() => {
+                    setShowCelebration(false);
+                    setRatingReady(true);
+                  }}
+                />
+              </View>
+            </View>
+          ) : null}
+
+          {status === 'COMPLETED' && ratingReady ? (
+            <View style={styles.ratingCard}>
+              <Text style={styles.muted}>Rate super-customer</Text>
+              {task?.helperRating ? (
+                <Text style={styles.muted}>Your rating: {task.helperRating.toFixed(1)} / 5</Text>
+              ) : (
+                <>
+                  <View style={styles.ratingRow}>
+                    {[1, 2, 3, 4, 5].map((r) => (
+                      <Text
+                        key={`rate-${r}`}
+                        style={[styles.star, r <= rating ? styles.starOn : styles.starOff]}
+                        onPress={() => setRating(r)}
+                      >
+                        ★
+                      </Text>
+                    ))}
+                  </View>
+                  <TextField
+                    label="Comment (optional)"
+                    value={ratingComment}
+                    onChangeText={setRatingComment}
+                    placeholder="Share feedback"
+                  />
+                  <PrimaryButton label="Submit rating" onPress={submitRating} loading={ratingBusy} />
+                </>
+              )}
+            </View>
+          ) : null}
+        </View>
+      </ScrollView>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  scrollContent: { gap: theme.space.md, paddingBottom: theme.space.xl, position: 'relative', minHeight: '100%' },
   topActions: { flexDirection: 'row', gap: 12, alignItems: 'center' },
   contactRow: {
     marginTop: theme.space.sm,
@@ -704,4 +791,26 @@ const styles = StyleSheet.create({
   star: { fontSize: 24 },
   starOn: { color: theme.colors.accent },
   starOff: { color: theme.colors.border },
+  celebrateWrap: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(8, 12, 22, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: theme.space.lg,
+    zIndex: 10,
+  },
+  celebrateCard: {
+    width: '100%',
+    borderRadius: theme.radius.lg,
+    backgroundColor: theme.colors.card,
+    padding: theme.space.lg,
+    gap: theme.space.sm,
+    ...theme.shadow.card,
+  },
+  celebrateTitle: { color: theme.colors.text, fontSize: 20, fontWeight: '900' },
+  celebrateBody: { color: theme.colors.muted, fontSize: 13, lineHeight: 20 },
 });

@@ -158,6 +158,9 @@ export async function helperSubmitKyc(
   appendFile('idFront', req.idFront);
   appendFile('idBack', req.idBack);
   appendFile('selfie', req.selfie);
+  if (req.selfie?.uri) {
+    body.append('selfieUri', req.selfie.uri);
+  }
 
   const res = await fetch(url('/api/v1/helper/kyc/submit'), {
     method: 'POST',
@@ -263,11 +266,25 @@ export async function uploadTaskSelfie(
   if (req.capturedAt) body.append('capturedAt', req.capturedAt);
   appendFile('selfie', req.selfie);
 
-  const res = await fetch(url(`/api/v1/tasks/${taskId}/selfie`), {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${accessToken}` },
-    body,
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30_000);
+  let res: Response;
+  try {
+    res = await fetch(url(`/api/v1/tasks/${taskId}/selfie`), {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${accessToken}` },
+      body,
+      signal: controller.signal,
+    });
+  } catch (e) {
+    clearTimeout(timeout);
+    if (e && (e as { name?: string }).name === 'AbortError') {
+      throw new ApiError('Selfie upload timed out. Please try again.', { status: 408 });
+    }
+    throw e;
+  } finally {
+    clearTimeout(timeout);
+  }
 
   const text = await res.text();
   let parsed: any = null;

@@ -60,7 +60,7 @@ export function PaymentsScreen({ navigation }: Props) {
         <Text style={styles.label}>Demo balance</Text>
         <Text style={styles.amount}>INR {balance}</Text>
         <Text style={styles.muted}>
-          Escrow is deducted when a task is created and released to the helper 5 minutes after completion.
+          Escrow is deducted when a task is created and released to the Superheroo 5 minutes after completion.
         </Text>
         <PrimaryButton label="Refresh" onPress={load} loading={busy} variant="ghost" />
       </View>

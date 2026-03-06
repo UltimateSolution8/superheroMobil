@@ -149,7 +149,9 @@ RUN set -eux; \
   elif [ "$APK_VARIANT" = "standalone" ]; then \
     # Bundle JS during the build so the APK does NOT require Metro (fixes "Unable to load script" on devices).
     # React Native's Gradle tasks differ across versions/plugins; try the common task names.
-    ./gradlew --no-daemon --max-workers 1 bundleDebugJsAndAssets -x lint -x test \
+    ./gradlew --no-daemon --max-workers 1 :app:bundleDebugJsAndAssets -x lint -x test \
+      || ./gradlew --no-daemon --max-workers 1 :app:createBundleDebugJsAndAssets -x lint -x test \
+      || ./gradlew --no-daemon --max-workers 1 bundleDebugJsAndAssets -x lint -x test \
       || ./gradlew --no-daemon --max-workers 1 createBundleDebugJsAndAssets -x lint -x test; \
     ./gradlew --no-daemon --max-workers 1 assembleDebug -x lint -x test; \
   else \
