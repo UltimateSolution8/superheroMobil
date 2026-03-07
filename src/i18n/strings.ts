@@ -379,6 +379,76 @@ export const strings: Record<LanguageCode, Dictionary> = {
 
     // Buyer App
     'buyer.user': 'Superheroo User',
+
+    // Additional - Task Screen
+    'task.title': 'Task',
+    'task.refresh': 'Refresh',
+    'task.back': 'Back',
+    'task.call_hero': 'Call Superheroo',
+    'task.hero_on_the_way': 'Superheroo on the way',
+    'task.live_location': 'Live location updates while Superheroo is en route.',
+    'task.distance': 'Distance',
+    'task.eta': 'ETA',
+    'task.updated': 'Updated',
+    'task.hero_arrived': 'Superheroo has arrived at your location.',
+    'task.urgency': 'Urgency',
+    'task.budget': 'Budget',
+    'task.arrival_otp': 'Arrival OTP',
+    'task.completion_otp': 'Completion OTP',
+    'task.cancellation_reason': 'Cancellation reason',
+    'task.share_cancelling': 'Share why you are cancelling',
+    'task.cancel_task': 'Cancel task',
+    'task.completed_notice': 'Marked as completed by Superheroo.',
+    'task.continue': 'Continue',
+    'task.completed_title': 'Task completed',
+    'task.rate_experience': 'Your Superheroo finished the task. Please rate the experience.',
+    'task.rate_hero': 'Rate your Superheroo',
+    'task.your_rating': 'Your rating',
+    'task.comment_optional': 'Comment (optional)',
+    'task.share_feedback': 'Share feedback',
+    'task.submit_rating': 'Submit rating',
+
+    // Additional - Helper Task Screen
+    'helper.task.super_customer': 'Super-customer',
+    'helper.task.arrival_otp_hint': 'Ask the super-customer for the arrival OTP to start work.',
+    'helper.task.completion': 'Completion',
+    'helper.task.completion_hint': 'Upload completion selfie first, then enter OTP to finish.',
+    'helper.task.upload_selfie': 'Upload completion selfie',
+    'helper.task.selfie_uploaded': 'Completion selfie uploaded',
+    'helper.task.mark_status': 'Mark',
+    'helper.task.great_work': 'Great work! Please rate your super-customer.',
+    'helper.task.rate_customer': 'Rate super-customer',
+
+    // Additional - Helper Home Screen
+    'helper.superheroo': 'Superheroo',
+    'helper.sort_by': 'Sort by',
+
+    // Additional - Helper KYC Screen
+    'helper.kyc.complete_kyc': 'Complete KYC',
+    'helper.kyc.back': 'Back',
+    'helper.kyc.upload_notice': 'Upload documents once. Admin approval enables online mode and task offers.',
+    'helper.kyc.name_label': 'Full name',
+    'helper.kyc.id_label': 'ID number',
+
+    // Additional - Menu Screen
+    'menu.menu': 'Menu',
+    'menu.back': 'Back',
+    'menu.superheroo_user': 'Superheroo User',
+    'menu.sign_out': 'Sign out',
+
+    // Additional - History Screen
+    'history.history': 'History',
+    'history.status': 'Status',
+    'history.back': 'Back',
+
+    // Additional - Support Tickets Screen
+    'support.support': 'Support',
+    'support.new': 'New',
+    'support.create_new': 'Create new ticket',
+
+    // Additional - Common
+    'common.loading': 'Loading…',
+    'common.no_results': 'No results',
   },
   hi: {
     // App
@@ -756,6 +826,77 @@ export const strings: Record<LanguageCode, Dictionary> = {
 
     // Buyer App
     'buyer.user': 'सुपरहीरो उपयोगकर्ता',
+
+    // Additional - Task Screen
+    'task.title': 'कार्य',
+    'task.refresh': 'रिफ्रेश',
+    'task.back': 'वापस',
+    'task.call_hero': 'सुपरहीरो को कॉल करें',
+    'task.hero_on_the_way': 'सुपरहीरो रास्ते में है',
+    'task.live_location': 'सुपरहीरो के रास्ते में होने पर लाइक लोकेशन अपडेट।',
+    'task.distance': 'दूरी',
+    'task.eta': 'अनुमानित समय',
+    'task.updated': 'अपडेट',
+    'task.hero_arrived': 'सुपरहीरो आपके स्थान पर पहुंच गया है।',
+    'task.urgency': 'तत्कालता',
+    'task.budget': 'बजट',
+    'task.arrival_otp': 'आगमन OTP',
+    'task.completion_otp': 'पूर्णता OTP',
+    'task.cancellation_reason': 'रद्दीकरण का कारण',
+    'task.share_cancelling': 'रद्द करने का कारण बताएं',
+    'task.cancel_task': 'कार्य रद्द करें',
+    'task.completed_notice': 'सुपरहीरो द्वारा पूर्ण चिह्नित किया गया।',
+    'task.continue': 'जारी रखें',
+    'task.completed_title': 'कार्य पूर्ण',
+    'task.rate_experience': 'आपका सुपरहीरो कार्य पूरा कर दिया। कृपया अनुभव का मूल्यांकन करें।',
+    'task.rate_hero': 'अपने सुपरहीरो को रेट करें',
+    'task.your_rating': 'आपकी रेटिंग',
+    'task.comment_optional': 'टिप्पणी (वैकल्पिक)',
+    'task.share_feedback': 'प्रतिक्रिया साझा करें',
+    'task.submit_rating': 'रेटिंग सबमिट करें',
+
+    // Additional - Helper Task Screen
+    'helper.task.job': 'कार्य',
+    'helper.task.super_customer': 'सुपर-कस्टमर',
+    'helper.task.arrival_otp_hint': 'काम शुरू करने के लिए सुपर-कस्टमर से आगमन OTP लें।',
+    'helper.task.completion': 'पूर्णता',
+    'helper.task.completion_hint': 'पहले पूर्णता सेल्फी अपलोड करें, फिर समाप्त करने के लिए OTP दर्ज करें।',
+    'helper.task.upload_selfie': 'पूर्णता सेल्फी अपलोड करें',
+    'helper.task.selfie_uploaded': 'पूर्णता सेल्फी अपलोड हो गई',
+    'helper.task.mark_status': 'चिह्नित करें',
+    'helper.task.great_work': 'बहुत अच्छा काम! कृपया अपने सुपर-कस्टमर को रेट करें।',
+    'helper.task.rate_customer': 'सुपर-कस्टमर को रेट करें',
+
+    // Additional - Helper Home Screen
+    'helper.superheroo': 'सुपरहीरो',
+    'helper.sort_by': 'क्रमबद्ध करें',
+
+    // Additional - Helper KYC Screen
+    'helper.kyc.complete_kyc': 'KYC पूरा करें',
+    'helper.kyc.back': 'वापस',
+    'helper.kyc.upload_notice': 'दस्तावेज़ एक बार अपलोड करें। व्यवस्थापक अनुमोदन ऑनलाइन मोड और कार्य ऑफर सक्षम करता है।',
+    'helper.kyc.name_label': 'पूरा नाम',
+    'helper.kyc.id_label': 'आईडी नंबर',
+
+    // Additional - Menu Screen
+    'menu.menu': 'मेन्यू',
+    'menu.back': 'वापस',
+    'menu.superheroo_user': 'सुपरहीरो उपयोगकर्ता',
+    'menu.sign_out': 'साइन आउट',
+
+    // Additional - History Screen
+    'history.history': 'इतिहास',
+    'history.status': 'स्थिति',
+    'history.back': 'वापस',
+
+    // Additional - Support Tickets Screen
+    'support.support': 'सहायता',
+    'support.new': 'नया',
+    'support.create_new': 'नया टिकट बनाएं',
+
+    // Additional - Common
+    'common.loading': 'लोड हो रहा है…',
+    'common.no_results': 'कोई परिणाम नहीं',
   },
   te: {
     // App
@@ -1104,5 +1245,76 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'error.maps_api_key': 'Maps API missing.',
     // Buyer App
     'buyer.user': 'User',
+
+    // Additional - Task Screen
+    'task.title': 'Task',
+    'task.refresh': 'Refresh',
+    'task.back': 'Back',
+    'task.call_hero': 'Call Hero',
+    'task.hero_on_the_way': 'Hero on the way',
+    'task.live_location': 'Live location updates while hero is en route.',
+    'task.distance': 'Distance',
+    'task.eta': 'ETA',
+    'task.updated': 'Updated',
+    'task.hero_arrived': 'Hero has arrived at your location.',
+    'task.urgency': 'Urgency',
+    'task.budget': 'Budget',
+    'task.arrival_otp': 'Arrival OTP',
+    'task.completion_otp': 'Completion OTP',
+    'task.cancellation_reason': 'Cancellation reason',
+    'task.share_cancelling': 'Why cancelling?',
+    'task.cancel_task': 'Cancel Task',
+    'task.completed_notice': 'Marked completed by hero.',
+    'task.continue': 'Continue',
+    'task.completed_title': 'Task completed',
+    'task.rate_experience': 'Hero finished the task. Please rate.',
+    'task.rate_hero': 'Rate your Hero',
+    'task.your_rating': 'Your rating',
+    'task.comment_optional': 'Comment',
+    'task.share_feedback': 'Feedback',
+    'task.submit_rating': 'Submit',
+
+    // Additional - Helper Task Screen
+    'helper.task.job': 'Job',
+    'helper.task.super_customer': 'Customer',
+    'helper.task.arrival_otp_hint': 'Ask customer for OTP.',
+    'helper.task.completion': 'Completion',
+    'helper.task.completion_hint': 'Upload selfie first.',
+    'helper.task.upload_selfie': 'Upload Selfie',
+    'helper.task.selfie_uploaded': 'Selfie uploaded',
+    'helper.task.mark_status': 'Mark',
+    'helper.task.great_work': 'Great work! Rate customer.',
+    'helper.task.rate_customer': 'Rate Customer',
+
+    // Additional - Helper Home Screen
+    'helper.superheroo': 'Hero',
+    'helper.sort_by': 'Sort',
+
+    // Additional - Helper KYC Screen
+    'helper.kyc.complete_kyc': 'Complete KYC',
+    'helper.kyc.back': 'Back',
+    'helper.kyc.upload_notice': 'Upload docs once.',
+    'helper.kyc.name_label': 'Name',
+    'helper.kyc.id_label': 'ID Number',
+
+    // Additional - Menu Screen
+    'menu.menu': 'Menu',
+    'menu.back': 'Back',
+    'menu.superheroo_user': 'User',
+    'menu.sign_out': 'Sign Out',
+
+    // Additional - History Screen
+    'history.history': 'History',
+    'history.status': 'Status',
+    'history.back': 'Back',
+
+    // Additional - Support Tickets Screen
+    'support.support': 'Support',
+    'support.new': 'New',
+    'support.create_new': 'New Ticket',
+
+    // Additional - Common
+    'common.loading': 'Loading...',
+    'common.no_results': 'No results',
   },
 };

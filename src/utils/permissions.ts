@@ -1,6 +1,6 @@
-import { PermissionsAndroid, Platform } from 'react-native';
+import { Permission, PermissionsAndroid, Platform } from 'react-native';
 
-async function requestAll(perms: string[]): Promise<boolean> {
+async function requestAll(perms: Permission[]): Promise<boolean> {
   if (Platform.OS !== 'android') return true;
   const results = await PermissionsAndroid.requestMultiple(perms);
   return perms.every((p) => results[p] === PermissionsAndroid.RESULTS.GRANTED);
