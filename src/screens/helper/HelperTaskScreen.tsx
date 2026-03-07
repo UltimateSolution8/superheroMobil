@@ -23,7 +23,7 @@ import { theme } from '../../ui/theme';
 import { ensureCameraPermissions, ensureGalleryPermissions } from '../../utils/permissions';
 import { assetToPickedFile } from '../../utils/media';
 import { enqueueUpload } from '../../utils/uploadQueue';
-import { API_BASE_URL } from '../../config';
+import { API_BASE_URL, ENABLE_PRESIGNED_SELFIES } from '../../config';
 import type { HelperStackParamList } from '../../navigation/types';
 import { DEMO_FALLBACK_LOCATION, GOOGLE_MAPS_API_KEY } from '../../config';
 import { useActiveTask } from '../../state/ActiveTaskContext';
@@ -424,19 +424,34 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       try {
         const at = await withAuth((t) => Promise.resolve(t));
         safeSetState(() => setNotice(`Queuing ${stage === 'ARRIVAL' ? 'arrival' : 'completion'} selfie...`));
-        await enqueueUpload({
-          id: `selfie-${taskId}-${stage}-${Date.now()}`,
-          url: `${API_BASE_URL}/api/v1/tasks/${taskId}/selfie`,
-          file: selfie,
-          formFields: {
-            stage,
-            lat: String(lat),
-            lng: String(lng),
-            addressText: address,
-            capturedAt: new Date().toISOString()
-          },
-          accessToken: at
-        });
+
+        if (ENABLE_PRESIGNED_SELFIES) {
+          await enqueueUpload({
+            type: 'presigned',
+            id: `selfie-${taskId}-${stage}-${Date.now()}`,
+            url: API_BASE_URL,
+            file: selfie,
+            formFields: {
+              jobId: taskId,
+              photoType: stage === 'ARRIVAL' ? 'arrival' : 'completion'
+            },
+            accessToken: at
+          });
+        } else {
+          await enqueueUpload({
+            id: `selfie-${taskId}-${stage}-${Date.now()}`,
+            url: `${API_BASE_URL}/api/v1/tasks/${taskId}/selfie`,
+            file: selfie,
+            formFields: {
+              stage,
+              lat: String(lat),
+              lng: String(lng),
+              addressText: address,
+              capturedAt: new Date().toISOString()
+            },
+            accessToken: at
+          });
+        }
 
         // Optimistic UI update to unblock the user immediately
         const optimisticTask = {

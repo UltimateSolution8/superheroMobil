@@ -13,6 +13,8 @@ const mapsFromExtra = typeof extra.googleMapsApiKey === 'string' ? extra.googleM
 export const API_BASE_URL =
   process.env.EXPO_PUBLIC_API_BASE_URL?.trim() || apiFromExtra || 'https://api.mysuperhero.xyz';
 
+export const ENABLE_PRESIGNED_SELFIES = false;
+
 export const SOCKET_URL =
   process.env.EXPO_PUBLIC_SOCKET_URL?.trim() ||
   socketFromExtra ||
