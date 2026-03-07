@@ -433,7 +433,11 @@ export function HelperTaskScreen({ route, navigation }: Props) {
             file: selfie,
             formFields: {
               jobId: taskId,
-              photoType: stage === 'ARRIVAL' ? 'arrival' : 'completion'
+              photoType: stage === 'ARRIVAL' ? 'arrival' : 'completion',
+              lat: String(lat),
+              lng: String(lng),
+              addressText: address,
+              capturedAt: new Date().toISOString()
             },
             accessToken: at
           });

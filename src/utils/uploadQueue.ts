@@ -89,6 +89,11 @@ async function attemptUpload(item: UploadItem): Promise<UploadResult> {
             }
 
             // 3. Confirm
+            const lat = item.formFields.lat ? Number(item.formFields.lat) : null;
+            const lng = item.formFields.lng ? Number(item.formFields.lng) : null;
+            const addressText = item.formFields.addressText || null;
+            const capturedAt = item.formFields.capturedAt || null;
+
             const confirmRes = await fetch(`${item.url}/api/v1/photos/confirm-upload`, {
                 method: 'POST',
                 headers: {
@@ -97,7 +102,11 @@ async function attemptUpload(item: UploadItem): Promise<UploadResult> {
                 },
                 body: JSON.stringify({
                     photoId,
-                    size: blob.size
+                    size: blob.size,
+                    lat: Number.isFinite(lat as number) ? lat : null,
+                    lng: Number.isFinite(lng as number) ? lng : null,
+                    addressText,
+                    capturedAt
                 }),
                 signal: controller.signal
             });
