@@ -202,12 +202,18 @@ export function HelperTaskScreen({ route, navigation }: Props) {
     }
   }, [canCancel, cancelBusy, cancelReason, taskId, withAuth]);
 
+  const safeSetState = useCallback((fn: () => void) => {
+    if (mountedRef.current) {
+      fn();
+    }
+  }, []);
+
   const pickSelfie = useCallback(async () => {
     const takeCamera = async (): Promise<Asset | null> => {
       try {
         const allowed = await ensureCameraPermissions();
         if (!allowed) {
-          setError('Camera permission is required to capture a selfie.');
+          safeSetState(() => setError('Camera permission is required to capture a selfie.'));
           return null;
         }
         const res = await launchCamera({
@@ -285,22 +291,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       const a = await pickSelfie();
       if (!a || !a.uri) return false;
 
-      let finalUri = a.uri;
-      try {
-        const manipResult = await Promise.race([
-          manipulateAsync(
-            a.uri,
-            [{ resize: { width: 800 } }],
-            { compress: 0.7, format: SaveFormat.JPEG },
-          ),
-          new Promise<never>((_, reject) => setTimeout(() => reject(new Error('manip-timeout')), 8000)),
-        ]);
-        finalUri = (manipResult as { uri?: string }).uri ?? finalUri;
-      } catch (e) {
-        // use original if manipulation fails
-      }
-
-      const selfie = assetToPickedFile({ ...a, uri: finalUri, fileCopyUri: finalUri } as any, `${stage.toLowerCase()}-selfie-${Date.now()}.jpg`);
+      const selfie = assetToPickedFile(a as any, `${stage.toLowerCase()}-selfie-${Date.now()}.jpg`);
       if (!selfie) {
         setError('Could not access captured image.');
         return false;
@@ -334,6 +325,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       };
 
       try {
+        safeSetState(() => setNotice('Getting location...'));
         const perm = await Location.requestForegroundPermissionsAsync();
         if (perm.status !== 'granted') {
           throw new Error('Location permission missing');
@@ -344,6 +336,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
         );
         lat = p.coords.latitude;
         lng = p.coords.longitude;
+        safeSetState(() => setNotice('Resolving address...'));
         const rev = await withTimeout(
           Location.reverseGeocodeAsync({ latitude: lat, longitude: lng }),
           6000,
@@ -358,8 +351,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       }
 
       try {
-        setNotice(`Uploading ${stage === 'ARRIVAL' ? 'arrival' : 'completion'} selfie...`);
-        setTimeout(() => setNotice(null), 2500);
+        safeSetState(() => setNotice(`Uploading ${stage === 'ARRIVAL' ? 'arrival' : 'completion'} selfie...`));
         const updated = await withTimeout(
           withAuth((at) =>
             api.uploadTaskSelfie(at, taskId, {
@@ -373,18 +365,22 @@ export function HelperTaskScreen({ route, navigation }: Props) {
           ),
           30_000,
         );
-        setTask(updated);
+        if (mountedRef.current) {
+          setTask(updated);
+        }
         return true;
       } catch (err) {
-        if (err instanceof Error && err.message) {
-          setError(err.message);
-        } else {
-          setError('Selfie upload failed. Please try again.');
-        }
+        safeSetState(() => {
+          if (err instanceof Error && err.message) {
+            setError(err.message);
+          } else {
+            setError('Selfie upload failed. Please try again.');
+          }
+        });
         return false;
       }
     },
-    [task, taskId, withAuth],
+    [safeSetState, task, taskId, withAuth],
   );
 
   const advance = useCallback(async () => {
@@ -485,7 +481,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
   const shouldUpdateLoc = useCallback((nextLoc: { lat: number; lng: number; ts: number }) => {
     if (!helperLoc) return true;
     const dist = distanceMeters({ lat: helperLoc.lat, lng: helperLoc.lng }, { lat: nextLoc.lat, lng: nextLoc.lng });
-    if (dist < 6 && Math.abs(nextLoc.ts - helperLoc.ts) < 8000) return false;
+    if (dist < 20 && Math.abs(nextLoc.ts - helperLoc.ts) < 15_000) return false;
     return true;
   }, [helperLoc]);
 
@@ -502,8 +498,8 @@ export function HelperTaskScreen({ route, navigation }: Props) {
         locationSub.current = await Location.watchPositionAsync(
           {
             accuracy: Location.Accuracy.Balanced,
-            timeInterval: 10_000,
-            distanceInterval: 15,
+            timeInterval: 15_000,
+            distanceInterval: 25,
           },
           (pos) => {
             if (cancelled) return;
