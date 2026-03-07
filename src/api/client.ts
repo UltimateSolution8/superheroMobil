@@ -54,6 +54,10 @@ function normalizeTask(raw: any): Task {
     completionSelfieLng: toOptionalNumber(raw.completionSelfieLng),
     buyerRating: toOptionalNumber(raw.buyerRating),
     helperRating: toOptionalNumber(raw.helperRating),
+    helperAvgRating: toOptionalNumber(raw.helperAvgRating),
+    helperCompletedCount: toOptionalNumber(raw.helperCompletedCount),
+    buyerAvgRating: toOptionalNumber(raw.buyerAvgRating),
+    buyerCompletedCount: toOptionalNumber(raw.buyerCompletedCount),
   } as Task;
 }
 

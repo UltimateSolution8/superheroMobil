@@ -22,6 +22,8 @@ import { TaskSkeleton } from '../../ui/TaskSkeleton';
 import { theme } from '../../ui/theme';
 import { ensureCameraPermissions, ensureGalleryPermissions } from '../../utils/permissions';
 import { assetToPickedFile } from '../../utils/media';
+import { enqueueUpload } from '../../utils/uploadQueue';
+import { API_BASE_URL } from '../../config';
 import type { HelperStackParamList } from '../../navigation/types';
 import { DEMO_FALLBACK_LOCATION, GOOGLE_MAPS_API_KEY } from '../../config';
 import { useActiveTask } from '../../state/ActiveTaskContext';
@@ -36,6 +38,77 @@ function nextStatus(s: TaskStatus): TaskStatus | null {
   if (s === 'STARTED') return 'COMPLETED';
   return null;
 }
+
+const ArrivalOtpForm = React.memo(function ArrivalOtpForm({ onSubmit, busy, load }: { onSubmit: (otp: string) => void; busy: boolean; load: () => void }) {
+  const [otp, setOtp] = useState('');
+  return (
+    <View style={styles.formWrap}>
+      <Text style={styles.muted}>Arrival OTP</Text>
+      <Text style={styles.otpHint}>Ask the super-customer for the arrival OTP to start work.</Text>
+      <TextField
+        label="Arrival OTP"
+        value={otp}
+        onChangeText={setOtp}
+        placeholder="Enter arrival OTP"
+        keyboardType="number-pad"
+      />
+      <View style={styles.actions}>
+        <PrimaryButton label="Refresh" onPress={load} variant="ghost" style={styles.half} />
+        <PrimaryButton label="Start Work" onPress={() => onSubmit(otp)} loading={busy} disabled={busy || otp.length < 4} style={styles.half} />
+      </View>
+    </View>
+  );
+});
+
+const CompletionOtpForm = React.memo(function CompletionOtpForm({
+  onSubmit,
+  busy,
+  load,
+  completionSelfieDone,
+  uploadCompletionSelfie,
+  completionSelfieBusy,
+}: {
+  onSubmit: (otp: string) => void;
+  busy: boolean;
+  load: () => void;
+  completionSelfieDone: boolean;
+  uploadCompletionSelfie: () => void;
+  completionSelfieBusy: boolean;
+}) {
+  const [otp, setOtp] = useState('');
+  return (
+    <View style={styles.formWrap}>
+      <Text style={styles.muted}>Completion</Text>
+      <Text style={styles.otpHint}>Upload completion selfie first, then enter OTP to finish.</Text>
+      <View style={{ marginBottom: 12 }}>
+        <PrimaryButton
+          label={completionSelfieDone ? 'Completion selfie uploaded' : 'Upload completion selfie'}
+          onPress={uploadCompletionSelfie}
+          loading={completionSelfieBusy}
+          disabled={completionSelfieDone}
+          variant="ghost"
+        />
+      </View>
+      <TextField
+        label="Completion OTP"
+        value={otp}
+        onChangeText={setOtp}
+        placeholder="Enter completion OTP"
+        keyboardType="number-pad"
+      />
+      <View style={styles.actions}>
+        <PrimaryButton label="Refresh" onPress={load} variant="ghost" style={styles.half} />
+        <PrimaryButton
+          label="Mark Completed"
+          onPress={() => onSubmit(otp)}
+          loading={busy}
+          disabled={busy || !completionSelfieDone || otp.length < 4}
+          style={styles.half}
+        />
+      </View>
+    </View>
+  );
+});
 
 function statusLabel(s: TaskStatus) {
   if (s === 'SEARCHING') return 'Searching';
@@ -58,8 +131,6 @@ export function HelperTaskScreen({ route, navigation }: Props) {
   const [initialLoad, setInitialLoad] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const [arrivalOtp, setArrivalOtp] = useState('');
-  const [completionOtp, setCompletionOtp] = useState('');
   const [helperLoc, setHelperLoc] = useState<{ lat: number; lng: number; ts: number } | null>(null);
   const [routeCoords, setRouteCoords] = useState<{ latitude: number; longitude: number }[]>([]);
   const [routeEtaMin, setRouteEtaMin] = useState<number | null>(null);
@@ -202,12 +273,18 @@ export function HelperTaskScreen({ route, navigation }: Props) {
     }
   }, [canCancel, cancelBusy, cancelReason, taskId, withAuth]);
 
+  const safeSetState = useCallback((fn: () => void) => {
+    if (mountedRef.current) {
+      fn();
+    }
+  }, []);
+
   const pickSelfie = useCallback(async () => {
     const takeCamera = async (): Promise<Asset | null> => {
       try {
         const allowed = await ensureCameraPermissions();
         if (!allowed) {
-          setError('Camera permission is required to capture a selfie.');
+          safeSetState(() => setError('Camera permission is required to capture a selfie.'));
           return null;
         }
         const res = await launchCamera({
@@ -285,22 +362,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       const a = await pickSelfie();
       if (!a || !a.uri) return false;
 
-      let finalUri = a.uri;
-      try {
-        const manipResult = await Promise.race([
-          manipulateAsync(
-            a.uri,
-            [{ resize: { width: 800 } }],
-            { compress: 0.7, format: SaveFormat.JPEG },
-          ),
-          new Promise<never>((_, reject) => setTimeout(() => reject(new Error('manip-timeout')), 8000)),
-        ]);
-        finalUri = (manipResult as { uri?: string }).uri ?? finalUri;
-      } catch (e) {
-        // use original if manipulation fails
-      }
-
-      const selfie = assetToPickedFile({ ...a, uri: finalUri, fileCopyUri: finalUri } as any, `${stage.toLowerCase()}-selfie-${Date.now()}.jpg`);
+      const selfie = assetToPickedFile(a as any, `${stage.toLowerCase()}-selfie-${Date.now()}.jpg`);
       if (!selfie) {
         setError('Could not access captured image.');
         return false;
@@ -334,6 +396,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       };
 
       try {
+        safeSetState(() => setNotice('Getting location...'));
         const perm = await Location.requestForegroundPermissionsAsync();
         if (perm.status !== 'granted') {
           throw new Error('Location permission missing');
@@ -344,6 +407,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
         );
         lat = p.coords.latitude;
         lng = p.coords.longitude;
+        safeSetState(() => setNotice('Resolving address...'));
         const rev = await withTimeout(
           Location.reverseGeocodeAsync({ latitude: lat, longitude: lng }),
           6000,
@@ -358,36 +422,47 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       }
 
       try {
-        setNotice(`Uploading ${stage === 'ARRIVAL' ? 'arrival' : 'completion'} selfie...`);
-        setTimeout(() => setNotice(null), 2500);
-        const updated = await withTimeout(
-          withAuth((at) =>
-            api.uploadTaskSelfie(at, taskId, {
-              stage,
-              lat,
-              lng,
-              addressText: address,
-              capturedAt: new Date().toISOString(),
-              selfie,
-            }),
-          ),
-          30_000,
-        );
-        setTask(updated);
+        const at = await withAuth((t) => Promise.resolve(t));
+        safeSetState(() => setNotice(`Queuing ${stage === 'ARRIVAL' ? 'arrival' : 'completion'} selfie...`));
+        await enqueueUpload({
+          id: `selfie-${taskId}-${stage}-${Date.now()}`,
+          url: `${API_BASE_URL}/api/v1/tasks/${taskId}/selfie`,
+          file: selfie,
+          formFields: {
+            stage,
+            lat: String(lat),
+            lng: String(lng),
+            addressText: address,
+            capturedAt: new Date().toISOString()
+          },
+          accessToken: at
+        });
+
+        // Optimistic UI update to unblock the user immediately
+        const optimisticTask = {
+          ...task,
+          [stage === 'ARRIVAL' ? 'arrivalSelfieUrl' : 'completionSelfieUrl']: 'pending_upload_in_background'
+        } as Task;
+
+        if (mountedRef.current) {
+          setTask(optimisticTask);
+        }
         return true;
       } catch (err) {
-        if (err instanceof Error && err.message) {
-          setError(err.message);
-        } else {
-          setError('Selfie upload failed. Please try again.');
-        }
+        safeSetState(() => {
+          if (err instanceof Error && err.message) {
+            setError(err.message);
+          } else {
+            setError('Selfie upload failed. Please try again.');
+          }
+        });
         return false;
       }
     },
-    [task, taskId, withAuth],
+    [safeSetState, task, taskId, withAuth],
   );
 
-  const advance = useCallback(async () => {
+  const advance = useCallback(async (providedOtp?: string) => {
     if (!next || busy) return;
     if (busyTimeoutRef.current) {
       clearTimeout(busyTimeoutRef.current);
@@ -399,7 +474,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
     busyTimeoutRef.current = setTimeout(() => {
       if (!mountedRef.current) return;
       setBusy(false);
-      setError('Selfie upload is taking too long. Please try again.');
+      setError('Upload is taking too long. Please try again.');
     }, 45_000);
     try {
       if (next === 'ARRIVED') {
@@ -412,7 +487,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
         }
       }
       if (next === 'STARTED') {
-        if (!arrivalOtp.trim()) {
+        if (!providedOtp || !providedOtp.trim()) {
           setError('Arrival OTP is required to start work.');
           setBusy(false);
           return;
@@ -424,14 +499,14 @@ export function HelperTaskScreen({ route, navigation }: Props) {
           setBusy(false);
           return;
         }
-        if (!completionOtp.trim()) {
+        if (!providedOtp || !providedOtp.trim()) {
           setError('Completion OTP is required to finish work.');
           setBusy(false);
           return;
         }
       }
 
-      const otp = next === 'STARTED' ? arrivalOtp.trim() : next === 'COMPLETED' ? completionOtp.trim() : null;
+      const otp = providedOtp?.trim() || null;
       const updated = await withAuth((at) => api.updateTaskStatus(at, taskId, next, otp));
       setTask(updated);
       setNotice(`Status updated: ${statusLabel(next)}`);
@@ -449,7 +524,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       }
       setBusy(false);
     }
-  }, [arrivalOtp, busy, completionOtp, next, taskId, uploadCheckpointSelfie, withAuth]);
+  }, [arrivalSelfieDone, busy, completionSelfieDone, next, statusLabel, taskId, uploadCheckpointSelfie, withAuth]);
 
   const uploadCompletionSelfie = useCallback(async () => {
     if (completionSelfieBusy || completionSelfieDone) return;
@@ -485,7 +560,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
   const shouldUpdateLoc = useCallback((nextLoc: { lat: number; lng: number; ts: number }) => {
     if (!helperLoc) return true;
     const dist = distanceMeters({ lat: helperLoc.lat, lng: helperLoc.lng }, { lat: nextLoc.lat, lng: nextLoc.lng });
-    if (dist < 6 && Math.abs(nextLoc.ts - helperLoc.ts) < 8000) return false;
+    if (dist < 20 && Math.abs(nextLoc.ts - helperLoc.ts) < 15_000) return false;
     return true;
   }, [helperLoc]);
 
@@ -502,8 +577,8 @@ export function HelperTaskScreen({ route, navigation }: Props) {
         locationSub.current = await Location.watchPositionAsync(
           {
             accuracy: Location.Accuracy.Balanced,
-            timeInterval: 10_000,
-            distanceInterval: 15,
+            timeInterval: 15_000,
+            distanceInterval: 25,
           },
           (pos) => {
             if (cancelled) return;
@@ -630,6 +705,12 @@ export function HelperTaskScreen({ route, navigation }: Props) {
               <Text style={styles.label}>Super-customer</Text>
               <Text style={styles.value}>{task?.buyerName ?? buyerPhone}</Text>
               <Text style={styles.value}>{buyerPhone}</Text>
+              {task?.buyerAvgRating != null ? (
+                <Text style={styles.muted}>
+                  Buyer rating: {task.buyerAvgRating.toFixed(1)} / 5
+                  {task.buyerCompletedCount != null ? ` · ${task.buyerCompletedCount} tasks` : ''}
+                </Text>
+              ) : null}
             </View>
             <PrimaryButton
               label="Call super-customer"
@@ -676,50 +757,32 @@ export function HelperTaskScreen({ route, navigation }: Props) {
           <PrimaryButton label="Open in Maps" onPress={openMaps} variant="ghost" />
 
           {next === 'STARTED' ? (
-            <View>
-              <Text style={styles.muted}>Arrival OTP</Text>
-              <Text style={styles.otpHint}>Ask the super-customer for the arrival OTP to start work.</Text>
-              <TextField
-                label="Arrival OTP"
-                value={arrivalOtp}
-                onChangeText={setArrivalOtp}
-                placeholder="Enter arrival OTP"
-                keyboardType="number-pad"
-              />
-            </View>
+            <ArrivalOtpForm onSubmit={(o) => advance(o)} busy={busy} load={load} />
           ) : null}
 
           {next === 'COMPLETED' ? (
-            <View>
-              <Text style={styles.muted}>Completion</Text>
-              <Text style={styles.otpHint}>Upload completion selfie first, then enter OTP to finish.</Text>
+            <CompletionOtpForm
+              onSubmit={(o) => advance(o)}
+              busy={busy}
+              load={load}
+              completionSelfieDone={completionSelfieDone}
+              uploadCompletionSelfie={uploadCompletionSelfie}
+              completionSelfieBusy={completionSelfieBusy}
+            />
+          ) : null}
+
+          {next !== 'STARTED' && next !== 'COMPLETED' ? (
+            <View style={styles.actions}>
+              <PrimaryButton label="Refresh" onPress={load} variant="ghost" style={styles.half} />
               <PrimaryButton
-                label={completionSelfieDone ? 'Completion selfie uploaded' : 'Upload completion selfie'}
-                onPress={uploadCompletionSelfie}
-                loading={completionSelfieBusy}
-                disabled={completionSelfieDone}
-                variant="ghost"
-              />
-              <TextField
-                label="Completion OTP"
-                value={completionOtp}
-                onChangeText={setCompletionOtp}
-                placeholder="Enter completion OTP"
-                keyboardType="number-pad"
+                label={next ? `Mark ${statusLabel(next)}` : 'Done'}
+                onPress={() => advance()}
+                disabled={!next || (next === 'COMPLETED' && !completionSelfieDone)}
+                loading={busy}
+                style={styles.half}
               />
             </View>
           ) : null}
-
-          <View style={styles.actions}>
-            <PrimaryButton label="Refresh" onPress={load} variant="ghost" style={styles.half} />
-            <PrimaryButton
-              label={next ? `Mark ${statusLabel(next)}` : 'Done'}
-              onPress={advance}
-              disabled={!next || (next === 'COMPLETED' && !completionSelfieDone)}
-              loading={busy}
-              style={styles.half}
-            />
-          </View>
 
           {canCancel ? (
             <>
@@ -870,4 +933,5 @@ const styles = StyleSheet.create({
   },
   celebrateTitle: { color: theme.colors.text, fontSize: 20, fontWeight: '900' },
   celebrateBody: { color: theme.colors.muted, fontSize: 13, lineHeight: 20 },
+  formWrap: { marginTop: 4 },
 });
