@@ -213,17 +213,34 @@ export async function updateTaskStatus(
   otp?: string | null,
 ): Promise<Task> {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 30_000);
-  let res: Response;
-  try {
-    res = await fetch(url(`/api/v1/tasks/${taskId}/status`), {
+  const timeoutMs = 30_000;
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  const fetchPromise = (async () => {
+    const res = await fetch(url(`/api/v1/tasks/${taskId}/status`), {
       method: 'POST',
       headers: authHeaders(accessToken),
       body: JSON.stringify({ status, otp: otp ?? null }),
       signal: controller.signal,
     });
+    const text = await res.text();
+    let parsed: any = null;
+    try {
+      parsed = text ? JSON.parse(text) : null;
+    } catch {
+      parsed = null;
+    }
+    if (!res.ok) {
+      const message = parsed?.message || `Request failed (${res.status})`;
+      throw new ApiError(message, { status: res.status, code: parsed?.code, details: parsed?.details });
+    }
+    return normalizeTask(parsed);
+  })();
+  const timeoutPromise = new Promise<Task>((_, reject) => {
+    setTimeout(() => reject(new ApiError('Status update timed out. Please try again.', { status: 408 })), timeoutMs);
+  });
+  try {
+    return await Promise.race([fetchPromise, timeoutPromise]);
   } catch (e) {
-    clearTimeout(timeout);
     if (e && (e as { name?: string }).name === 'AbortError') {
       throw new ApiError('Status update timed out. Please try again.', { status: 408 });
     }
@@ -231,19 +248,6 @@ export async function updateTaskStatus(
   } finally {
     clearTimeout(timeout);
   }
-
-  const text = await res.text();
-  let parsed: any = null;
-  try {
-    parsed = text ? JSON.parse(text) : null;
-  } catch {
-    parsed = null;
-  }
-  if (!res.ok) {
-    const message = parsed?.message || `Request failed (${res.status})`;
-    throw new ApiError(message, { status: res.status, code: parsed?.code, details: parsed?.details });
-  }
-  return normalizeTask(parsed);
 }
 
 export async function rateTask(
@@ -301,17 +305,34 @@ export async function uploadTaskSelfie(
   appendFile('selfie', req.selfie);
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 30_000);
-  let res: Response;
-  try {
-    res = await fetch(url(`/api/v1/tasks/${taskId}/selfie`), {
+  const timeoutMs = 30_000;
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  const fetchPromise = (async () => {
+    const res = await fetch(url(`/api/v1/tasks/${taskId}/selfie`), {
       method: 'POST',
       headers: { Authorization: `Bearer ${accessToken}` },
       body,
       signal: controller.signal,
     });
+    const text = await res.text();
+    let parsed: any = null;
+    try {
+      parsed = text ? JSON.parse(text) : null;
+    } catch {
+      parsed = null;
+    }
+    if (!res.ok) {
+      const message = parsed?.message || `Request failed (${res.status})`;
+      throw new ApiError(message, { status: res.status, code: parsed?.code, details: parsed?.details });
+    }
+    return normalizeTask(parsed);
+  })();
+  const timeoutPromise = new Promise<Task>((_, reject) => {
+    setTimeout(() => reject(new ApiError('Selfie upload timed out. Please try again.', { status: 408 })), timeoutMs);
+  });
+  try {
+    return await Promise.race([fetchPromise, timeoutPromise]);
   } catch (e) {
-    clearTimeout(timeout);
     if (e && (e as { name?: string }).name === 'AbortError') {
       throw new ApiError('Selfie upload timed out. Please try again.', { status: 408 });
     }
@@ -319,19 +340,6 @@ export async function uploadTaskSelfie(
   } finally {
     clearTimeout(timeout);
   }
-
-  const text = await res.text();
-  let parsed: any = null;
-  try {
-    parsed = text ? JSON.parse(text) : null;
-  } catch {
-    parsed = null;
-  }
-  if (!res.ok) {
-    const message = parsed?.message || `Request failed (${res.status})`;
-    throw new ApiError(message, { status: res.status, code: parsed?.code, details: parsed?.details });
-  }
-  return normalizeTask(parsed);
 }
 
 export async function getTask(accessToken: string, taskId: string): Promise<Task> {

@@ -71,6 +71,8 @@ export function HelperTaskScreen({ route, navigation }: Props) {
   const [completionSelfieBusy, setCompletionSelfieBusy] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
   const [cancelBusy, setCancelBusy] = useState(false);
+  const mountedRef = useRef(true);
+  const busyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const arrivalSelfieDone = Boolean(task?.arrivalSelfieUrl);
   const buyerPhone = useMemo(() => {
     const raw = task?.buyerPhone;
@@ -104,6 +106,16 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       return undefined;
     }, [load]),
   );
+
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+      if (busyTimeoutRef.current) {
+        clearTimeout(busyTimeoutRef.current);
+        busyTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!socket) return;
@@ -275,12 +287,15 @@ export function HelperTaskScreen({ route, navigation }: Props) {
 
       let finalUri = a.uri;
       try {
-        const manipResult = await manipulateAsync(
-          a.uri,
-          [{ resize: { width: 800 } }],
-          { compress: 0.7, format: SaveFormat.JPEG }
-        );
-        finalUri = manipResult.uri;
+        const manipResult = await Promise.race([
+          manipulateAsync(
+            a.uri,
+            [{ resize: { width: 800 } }],
+            { compress: 0.7, format: SaveFormat.JPEG },
+          ),
+          new Promise<never>((_, reject) => setTimeout(() => reject(new Error('manip-timeout')), 8000)),
+        ]);
+        finalUri = (manipResult as { uri?: string }).uri ?? finalUri;
       } catch (e) {
         // use original if manipulation fails
       }
@@ -356,7 +371,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
               selfie,
             }),
           ),
-          25_000,
+          30_000,
         );
         setTask(updated);
         return true;
@@ -374,9 +389,18 @@ export function HelperTaskScreen({ route, navigation }: Props) {
 
   const advance = useCallback(async () => {
     if (!next || busy) return;
+    if (busyTimeoutRef.current) {
+      clearTimeout(busyTimeoutRef.current);
+      busyTimeoutRef.current = null;
+    }
     setBusy(true);
     setError(null);
     setNotice(null);
+    busyTimeoutRef.current = setTimeout(() => {
+      if (!mountedRef.current) return;
+      setBusy(false);
+      setError('Selfie upload is taking too long. Please try again.');
+    }, 45_000);
     try {
       if (next === 'ARRIVED') {
         if (!arrivalSelfieDone) {
@@ -419,6 +443,10 @@ export function HelperTaskScreen({ route, navigation }: Props) {
         setError('Could not update status.');
       }
     } finally {
+      if (busyTimeoutRef.current) {
+        clearTimeout(busyTimeoutRef.current);
+        busyTimeoutRef.current = null;
+      }
       setBusy(false);
     }
   }, [arrivalOtp, busy, completionOtp, next, taskId, uploadCheckpointSelfie, withAuth]);
