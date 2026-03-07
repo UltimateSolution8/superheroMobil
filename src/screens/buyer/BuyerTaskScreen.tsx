@@ -197,6 +197,12 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
       setActiveTaskId(null);
     }
   }, [setActiveTaskId, status]);
+
+  useEffect(() => {
+    if (status === 'COMPLETED' && !task?.buyerRating) {
+      setRatingReady(true);
+    }
+  }, [status, task?.buyerRating]);
   const canDone = useMemo(() => status === 'COMPLETED', [status]);
   const helperDistance = useMemo(() => {
     if (!task || !helperLoc || !hasTaskCoords) return null;
@@ -283,6 +289,12 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
             <Text style={styles.label}>{t('buyer.task.hero_label')}</Text>
             <Text style={styles.value}>{task?.helperName ?? helperPhone}</Text>
             <Text style={styles.value}>{helperPhone}</Text>
+            {task?.helperAvgRating != null ? (
+              <Text style={styles.muted}>
+                {t('task.helper_rating')}: {task.helperAvgRating.toFixed(1)} / 5
+                {task.helperCompletedCount != null ? ` · ${task.helperCompletedCount} ${t('task.jobs_done')}` : ''}
+              </Text>
+            ) : null}
           </View>
           <PrimaryButton
             label={t('task.call_hero')}

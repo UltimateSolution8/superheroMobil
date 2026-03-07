@@ -91,6 +91,10 @@ export type Task = {
   helperRating?: number | null;
   helperRatingComment?: string | null;
   helperRatedAt?: string | null;
+  helperAvgRating?: number | null;
+  helperCompletedCount?: number | null;
+  buyerAvgRating?: number | null;
+  buyerCompletedCount?: number | null;
   cancelReason?: string | null;
   cancelledByRole?: string | null;
   cancelledAt?: string | null;
