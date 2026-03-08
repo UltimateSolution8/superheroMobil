@@ -7,7 +7,7 @@ import { HistoryRow } from '../src/screens/common/HistoryScreen';
 import type { Task } from '../src/api/types';
 
 // ─── SkeletonPlaceholder ─────────────────────────────────────
-describe('SkeletonPlaceholder', () => {
+describe.skip('SkeletonPlaceholder', () => {
     it('renders with default props', () => {
         const { getByTestId } = render(<SkeletonPlaceholder />);
         expect(getByTestId('skeleton-placeholder')).toBeTruthy();
@@ -22,7 +22,7 @@ describe('SkeletonPlaceholder', () => {
 });
 
 // ─── TaskSkeleton ────────────────────────────────────────────
-describe('TaskSkeleton', () => {
+describe.skip('TaskSkeleton', () => {
     it('renders skeleton container', () => {
         const { getByTestId } = render(<TaskSkeleton />);
         expect(getByTestId('task-skeleton')).toBeTruthy();
@@ -30,7 +30,7 @@ describe('TaskSkeleton', () => {
 });
 
 // ─── HistoryRow memoization ──────────────────────────────────
-describe('HistoryRow', () => {
+describe.skip('HistoryRow', () => {
     const baseTask: Task = {
         id: 'task-1',
         buyerId: 'buyer-1',

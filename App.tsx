@@ -3,6 +3,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AuthProvider } from './src/auth/AuthContext';
 import { I18nProvider } from './src/i18n/I18nProvider';
+import { ActiveTaskProvider } from './src/state/ActiveTaskContext';
 import { AppNavigator } from './src/navigation/AppNavigator';
 
 export default function App() {
@@ -11,7 +12,9 @@ export default function App() {
       <I18nProvider>
         <AuthProvider>
           <StatusBar style="dark" />
-          <AppNavigator />
+          <ActiveTaskProvider>
+            <AppNavigator />
+          </ActiveTaskProvider>
         </AuthProvider>
       </I18nProvider>
     </SafeAreaProvider>

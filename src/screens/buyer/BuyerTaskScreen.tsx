@@ -6,7 +6,6 @@ import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 
 import type { Task, TaskAssignedEvent, TaskStatusChangedEvent, TaskStatus } from '../../api/types';
 import * as api from '../../api/client';
-import { distanceMeters, decodePolyline } from '../../utils/geo';
 import { useAuth } from '../../auth/AuthContext';
 import { useSocket } from '../../realtime/SocketProvider';
 import { Screen } from '../../ui/Screen';
@@ -14,25 +13,82 @@ import { PrimaryButton } from '../../ui/PrimaryButton';
 import { Notice } from '../../ui/Notice';
 import { MenuButton } from '../../ui/MenuButton';
 import { TextField } from '../../ui/TextField';
-import { TaskSkeleton } from '../../ui/TaskSkeleton';
 import { theme } from '../../ui/theme';
 import { DEMO_FALLBACK_LOCATION, GOOGLE_MAPS_API_KEY } from '../../config';
 import type { BuyerStackParamList } from '../../navigation/types';
 import { useActiveTask } from '../../state/ActiveTaskContext';
-import { useI18n } from '../../i18n/I18nProvider';
 
 type Props = NativeStackScreenProps<BuyerStackParamList, 'BuyerTask'>;
+
+function statusLabel(s: TaskStatus) {
+  if (s === 'SEARCHING') return 'Searching for Superheroos…';
+  if (s === 'ASSIGNED') return 'Superheroo assigned';
+  if (s === 'ARRIVED') return 'Superheroo arrived';
+  if (s === 'STARTED') return 'Work started';
+  if (s === 'COMPLETED') return 'Completed';
+  if (s === 'CANCELLED') return 'Cancelled';
+  return s;
+}
+
+function distanceMeters(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
+  const R = 6371e3;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(b.lat - a.lat);
+  const dLng = toRad(b.lng - a.lng);
+  const lat1 = toRad(a.lat);
+  const lat2 = toRad(b.lat);
+  const sinDLat = Math.sin(dLat / 2);
+  const sinDLng = Math.sin(dLng / 2);
+  const h = sinDLat * sinDLat + Math.cos(lat1) * Math.cos(lat2) * sinDLng * sinDLng;
+  return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+}
+
+function decodePolyline(encoded: string): { latitude: number; longitude: number }[] {
+  let index = 0;
+  const len = encoded.length;
+  let lat = 0;
+  let lng = 0;
+  const coords: { latitude: number; longitude: number }[] = [];
+
+  while (index < len) {
+    let b: number;
+    let shift = 0;
+    let result = 0;
+    do {
+      b = encoded.charCodeAt(index++) - 63;
+      result |= (b & 0x1f) << shift;
+      shift += 5;
+    } while (b >= 0x20);
+    const dlat = (result & 1) !== 0 ? ~(result >> 1) : result >> 1;
+    lat += dlat;
+
+    shift = 0;
+    result = 0;
+    do {
+      b = encoded.charCodeAt(index++) - 63;
+      result |= (b & 0x1f) << shift;
+      shift += 5;
+    } while (b >= 0x20);
+    const dlng = (result & 1) !== 0 ? ~(result >> 1) : result >> 1;
+    lng += dlng;
+
+    const latitude = lat / 1e5;
+    const longitude = lng / 1e5;
+    if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
+      coords.push({ latitude, longitude });
+    }
+  }
+  return coords;
+}
 
 export function BuyerTaskScreen({ route, navigation }: Props) {
   const { taskId } = route.params;
   const { withAuth } = useAuth();
   const socket = useSocket();
   const { setActiveTaskId } = useActiveTask();
-  const { t } = useI18n();
 
   const [task, setTask] = useState<Task | null>(null);
   const [busy, setBusy] = useState(false);
-  const [initialLoad, setInitialLoad] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [helperLoc, setHelperLoc] = useState<{ lat: number; lng: number; ts: number } | null>(null);
   const [routeCoords, setRouteCoords] = useState<{ latitude: number; longitude: number }[]>([]);
@@ -40,16 +96,9 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
   const [rating, setRating] = useState<number>(5);
   const [ratingComment, setRatingComment] = useState('');
   const [ratingBusy, setRatingBusy] = useState(false);
-  const [showCelebration, setShowCelebration] = useState(false);
-  const [ratingReady, setRatingReady] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
   const [cancelBusy, setCancelBusy] = useState(false);
-  const helperPhone = useMemo(() => {
-    const raw = task?.helperPhone;
-    if (typeof raw === 'string') return raw.trim();
-    if (raw == null) return '';
-    return String(raw);
-  }, [task?.helperPhone]);
+  const helperPhone = task?.helperPhone?.trim() || '';
   const canRenderMap = Boolean(GOOGLE_MAPS_API_KEY);
   const mapProvider = canRenderMap ? PROVIDER_GOOGLE : undefined;
 
@@ -57,7 +106,6 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
   const helperMarkerRef = useRef<any>(null);
   const mapRef = useRef<MapView | null>(null);
   const lastFitAt = useRef(0);
-  const previousStatus = useRef<TaskStatus | null>(null);
 
   const taskLat = Number(task?.lat);
   const taskLng = Number(task?.lng);
@@ -70,14 +118,16 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
       const t = await withAuth((at) => api.getTask(at, taskId));
       setTask(t);
     } catch {
-      setError(t('error.load_task'));
+      setError('Could not load task details.');
     } finally {
       setBusy(false);
-      setInitialLoad(false);
     }
   }, [taskId, withAuth]);
 
-  // Only useFocusEffect — fires on both mount + re-focus (fixes double load)
+  useEffect(() => {
+    load();
+  }, [load]);
+
   useFocusEffect(
     useCallback(() => {
       load();
@@ -188,21 +238,10 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
   const canCancel = status === 'SEARCHING' || status === 'ASSIGNED';
 
   useEffect(() => {
-    if (previousStatus.current && previousStatus.current !== 'COMPLETED' && status === 'COMPLETED') {
-      setShowCelebration(true);
-      setRatingReady(false);
-    }
-    previousStatus.current = status;
     if (status === 'COMPLETED' || status === 'CANCELLED') {
       setActiveTaskId(null);
     }
   }, [setActiveTaskId, status]);
-
-  useEffect(() => {
-    if (status === 'COMPLETED' && !task?.buyerRating) {
-      setRatingReady(true);
-    }
-  }, [status, task?.buyerRating]);
   const canDone = useMemo(() => status === 'COMPLETED', [status]);
   const helperDistance = useMemo(() => {
     if (!task || !helperLoc || !hasTaskCoords) return null;
@@ -233,7 +272,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
       const updated = await withAuth((at) => api.rateTask(at, taskId, rating, ratingComment.trim() || null));
       setTask(updated);
     } catch {
-      setError(t('error.submit_rating'));
+      setError('Could not submit rating.');
     } finally {
       setRatingBusy(false);
     }
@@ -243,7 +282,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
     if (!canCancel || cancelBusy) return;
     const reason = cancelReason.trim();
     if (!reason) {
-      setError(t('buyer.task.please_cancel'));
+      setError('Please add a cancellation reason.');
       return;
     }
     setCancelBusy(true);
@@ -253,24 +292,11 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
       setTask(updated);
       setCancelReason('');
     } catch {
-      setError(t('error.cancel_task'));
+      setError('Could not cancel the task.');
     } finally {
       setCancelBusy(false);
     }
   }, [canCancel, cancelBusy, cancelReason, taskId, withAuth]);
-
-  if (initialLoad) {
-    return (
-      <Screen style={styles.screen}>
-        <View style={styles.topBar}>
-          <MenuButton onPress={() => navigation.navigate('Menu')} />
-          <Text style={styles.h1}>{t('task.title')}</Text>
-          <View style={styles.topActions} />
-        </View>
-        <TaskSkeleton />
-      </Screen>
-    );
-  }
 
   return (
     <Screen style={styles.screen}>
@@ -286,18 +312,12 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
       {helperPhone ? (
         <View style={styles.contactRow}>
           <View>
-            <Text style={styles.label}>{t('buyer.task.hero_label')}</Text>
+            <Text style={styles.label}>Superheroo</Text>
             <Text style={styles.value}>{task?.helperName ?? helperPhone}</Text>
             <Text style={styles.value}>{helperPhone}</Text>
-            {task?.helperAvgRating != null ? (
-              <Text style={styles.muted}>
-                {t('task.helper_rating')}: {task.helperAvgRating.toFixed(1)} / 5
-                {task.helperCompletedCount != null ? ` · ${task.helperCompletedCount} ${t('task.jobs_done')}` : ''}
-              </Text>
-            ) : null}
           </View>
           <PrimaryButton
-            label={t('task.call_hero')}
+            label="Call Superheroo"
             onPress={() => Linking.openURL(`tel:${helperPhone}`)}
             variant="ghost"
             style={styles.callButton}
@@ -334,56 +354,56 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
           </MapView>
         </View>
       ) : (
-        <Notice kind="warning" text={t('error.maps_api_key')} />
+        <Notice kind="warning" text="Map unavailable: missing Google Maps API key." />
       )}
 
       <View style={styles.liveCard}>
-        <Text style={styles.liveTitle}>{t('task.hero_on_the_way')}</Text>
-        <Text style={styles.liveSub}>{t('task.live_location')}</Text>
+        <Text style={styles.liveTitle}>Superheroo on the way</Text>
+        <Text style={styles.liveSub}>Live location updates while Superheroo is en route.</Text>
         <View style={styles.liveRow}>
           <View style={styles.liveStat}>
-            <Text style={styles.liveLabel}>{t('task.distance')}</Text>
+            <Text style={styles.liveLabel}>Distance</Text>
             <Text style={styles.liveValue}>
               {helperDistance == null ? '--' : `${(helperDistance / 1000).toFixed(2)} km`}
             </Text>
           </View>
           <View style={styles.liveStat}>
-            <Text style={styles.liveLabel}>{t('task.eta_label')}</Text>
+            <Text style={styles.liveLabel}>ETA</Text>
             <Text style={styles.liveValue}>{helperEta == null ? '--' : `${helperEta} min`}</Text>
           </View>
           <View style={styles.liveStat}>
-            <Text style={styles.liveLabel}>{t('task.updated')}</Text>
+            <Text style={styles.liveLabel}>Updated</Text>
             <Text style={styles.liveValue}>{helperLastSeen == null ? '--' : `${helperLastSeen}s`}</Text>
           </View>
         </View>
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.status}>{status === 'SEARCHING' ? t('buyer.task.searching') : status === 'ASSIGNED' ? t('buyer.task.assigned') : status === 'ARRIVED' ? t('buyer.task.arrived') : status === 'STARTED' ? t('buyer.task.started') : status === 'COMPLETED' ? t('buyer.task.completed') : status === 'CANCELLED' ? t('buyer.task.cancelled') : status}</Text>
-        {helperArrived ? <Notice kind="success" text={t('buyer.task.hero_arrived')} /> : null}
+        <Text style={styles.status}>{statusLabel(status)}</Text>
+        {helperArrived ? <Notice kind="success" text="Superheroo has arrived at your location." /> : null}
         {task?.title ? <Text style={styles.title}>{task.title}</Text> : null}
         {helperId ? (
-          <Text style={styles.muted}>{t('buyer.task.hero_label')}: {task?.helperName ?? task?.helperPhone ?? t('buyer.task.assigned')}</Text>
+          <Text style={styles.muted}>Superheroo: {task?.helperName ?? task?.helperPhone ?? 'Assigned'}</Text>
         ) : null}
-        {task?.addressText ? <Text style={styles.muted}>{t('buyer.address_optional')}: {task.addressText}</Text> : null}
+        {task?.addressText ? <Text style={styles.muted}>Address: {task.addressText}</Text> : null}
         {task?.description ? <Text style={styles.desc}>{task.description}</Text> : null}
-        <Text style={styles.muted}>{t('buyer.task.urgency')}: {task?.urgency ?? '-'} | {t('buyer.task.eta')}: {task?.timeMinutes ?? '-'} {t('buyer.task.minutes')}</Text>
-        <Text style={styles.muted}>{t('buyer.task.budget')}: INR {task ? (task.budgetPaise / 100).toFixed(0) : '-'}</Text>
-        {task?.arrivalOtp ? <Text style={styles.otp}>{t('buyer.task.arrival_otp')}: {task.arrivalOtp}</Text> : null}
-        {task?.completionOtp ? <Text style={styles.otp}>{t('buyer.task.completion_otp')}: {task.completionOtp}</Text> : null}
+        <Text style={styles.muted}>Urgency: {task?.urgency ?? '-'} | ETA: {task?.timeMinutes ?? '-'} min</Text>
+        <Text style={styles.muted}>Budget: INR {task ? (task.budgetPaise / 100).toFixed(0) : '-'}</Text>
+        {task?.arrivalOtp ? <Text style={styles.otp}>Arrival OTP: {task.arrivalOtp}</Text> : null}
+        {task?.completionOtp ? <Text style={styles.otp}>Completion OTP: {task.completionOtp}</Text> : null}
 
-        <PrimaryButton label={t('task.refresh')} onPress={load} loading={busy} variant="ghost" />
+        <PrimaryButton label="Refresh" onPress={load} loading={busy} variant="ghost" />
 
         {canCancel ? (
           <>
             <TextField
-              label={t('task.cancellation_reason')}
+              label="Cancellation reason"
               value={cancelReason}
               onChangeText={setCancelReason}
-              placeholder={t('task.share_cancelling')}
+              placeholder="Share why you are cancelling"
             />
             <PrimaryButton
-              label={t('task.cancel_task')}
+              label="Cancel task"
               onPress={submitCancel}
               loading={cancelBusy}
               variant="danger"
@@ -392,29 +412,13 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
         ) : null}
       </View>
 
-      {canDone ? <Notice kind="success" text={t('buyer.task.completed_notice')} /> : null}
+      {canDone ? <Notice kind="success" text="Marked as completed by helper." /> : null}
 
-      {showCelebration ? (
-        <View style={styles.celebrateWrap}>
-          <View style={styles.celebrateCard}>
-            <Text style={styles.celebrateTitle}>{t('task.completed_title')}</Text>
-            <Text style={styles.celebrateBody}>{t('task.rate_experience')}</Text>
-            <PrimaryButton
-              label={t('task.continue')}
-              onPress={() => {
-                setShowCelebration(false);
-                setRatingReady(true);
-              }}
-            />
-          </View>
-        </View>
-      ) : null}
-
-      {status === 'COMPLETED' && ratingReady ? (
+      {status === 'COMPLETED' ? (
         <View style={styles.ratingCard}>
-          <Text style={styles.liveTitle}>{t('task.rate_hero')}</Text>
+          <Text style={styles.liveTitle}>Rate your Superheroo</Text>
           {task?.buyerRating ? (
-            <Text style={styles.muted}>{t('task.your_rating')}: {task.buyerRating.toFixed(1)} / 5</Text>
+            <Text style={styles.muted}>Your rating: {task.buyerRating.toFixed(1)} / 5</Text>
           ) : (
             <>
               <View style={styles.ratingRow}>
@@ -429,12 +433,12 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
                 ))}
               </View>
               <TextField
-                label={t('task.comment_optional')}
+                label="Comment (optional)"
                 value={ratingComment}
                 onChangeText={setRatingComment}
-                placeholder={t('task.share_feedback')}
+                placeholder="Share feedback"
               />
-              <PrimaryButton label={t('task.submit_rating')} onPress={submitRating} loading={ratingBusy} />
+              <PrimaryButton label="Submit rating" onPress={submitRating} loading={ratingBusy} />
             </>
           )}
         </View>
@@ -444,7 +448,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  screen: { paddingBottom: theme.space.xl, position: 'relative' },
+  screen: { paddingBottom: theme.space.xl },
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   topActions: { flexDirection: 'row', gap: 12, alignItems: 'center' },
   contactRow: {
@@ -518,26 +522,4 @@ const styles = StyleSheet.create({
   star: { fontSize: 24 },
   starOn: { color: theme.colors.accent },
   starOff: { color: theme.colors.border },
-  celebrateWrap: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(8, 12, 22, 0.8)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: theme.space.lg,
-    zIndex: 10,
-  },
-  celebrateCard: {
-    width: '100%',
-    borderRadius: theme.radius.lg,
-    backgroundColor: theme.colors.card,
-    padding: theme.space.lg,
-    gap: theme.space.sm,
-    ...theme.shadow.card,
-  },
-  celebrateTitle: { color: theme.colors.text, fontSize: 20, fontWeight: '900' },
-  celebrateBody: { color: theme.colors.muted, fontSize: 13, lineHeight: 20 },
 });

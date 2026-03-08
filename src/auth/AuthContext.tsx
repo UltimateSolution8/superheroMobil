@@ -1,4 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { AppState } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 
 import * as api from '../api/client';
@@ -145,8 +146,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const clearAuthNotice = useCallback(() => setAuthNotice(null), []);
 
   const setPin = useCallback(async (pin: string) => {
-    await SecureStore.setItemAsync(PIN_KEY, pin);
-    pinRef.current = pin;
+    const clean = pin.trim();
+    if (clean.length !== 4) {
+      throw new Error('PIN must be 4 digits.');
+    }
+    await SecureStore.setItemAsync(PIN_KEY, clean);
+    pinRef.current = clean;
     setPinRequired(true);
     setPinVerified(true);
   }, []);
@@ -209,6 +214,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     },
     [refreshTokens, signOut],
   );
+
+  useEffect(() => {
+    if (state.status !== 'signedIn') return;
+    const sub = AppState.addEventListener('change', async (next) => {
+      if (next !== 'active') return;
+      try {
+        await refreshTokens();
+      } catch {
+        await signOut();
+      }
+    });
+    return () => sub.remove();
+  }, [refreshTokens, signOut, state.status]);
 
   const value = useMemo<AuthContextValue>(
     () => ({

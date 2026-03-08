@@ -1,9 +1,16 @@
 module.exports = {
-    preset: 'jest-expo',
-    transformIgnorePatterns: [
-        'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg|socket\\.io-client)',
-    ],
+    testEnvironment: 'node',
+    transform: {
+        '^.+\\.[jt]sx?$': ['babel-jest', { configFile: './babel.config.js' }],
+    },
+    transformIgnorePatterns: ['/node_modules/'],
     setupFilesAfterEnv: ['./jest.setup.js'],
+    moduleNameMapper: {
+        '^expo-constants$': '<rootDir>/__tests__/__mocks__/expo-constants.js',
+        '^react-native$': '<rootDir>/__tests__/__mocks__/react-native.js',
+        '^@react-navigation/native$': '<rootDir>/__tests__/__mocks__/react-navigation-native.js',
+        '^react-native-safe-area-context$': '<rootDir>/__tests__/__mocks__/react-native-safe-area-context.js',
+    },
     collectCoverageFrom: [
         'src/**/*.{ts,tsx}',
         '!src/**/*.d.ts',
