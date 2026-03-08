@@ -15,6 +15,7 @@ import { theme } from '../../ui/theme';
 import { ensureCameraPermissions, ensureGalleryPermissions } from '../../utils/permissions';
 import { assetToPickedFile } from '../../utils/media';
 import type { HelperProfile } from '../../api/types';
+import { useI18n } from '../../i18n/I18nProvider';
 
 type Props = NativeStackScreenProps<HelperStackParamList, 'HelperKyc'>;
 
@@ -22,6 +23,7 @@ type PickedFile = { uri: string; name: string; type: string };
 
 export function HelperKycScreen({ navigation }: Props) {
   const { withAuth } = useAuth();
+  const { t } = useI18n();
 
   const [fullName, setFullName] = useState('');
   const [idNumber, setIdNumber] = useState('');
@@ -232,6 +234,11 @@ export function HelperKycScreen({ navigation }: Props) {
         </View>
 
         <PrimaryButton label="Submit KYC" onPress={submit} disabled={!canSubmit} loading={busy} />
+        <PrimaryButton
+          label={t('helper.video_kyc.title')}
+          onPress={() => navigation.navigate('HelperVideoKyc')}
+          variant="ghost"
+        />
       </KeyboardAvoidingView>
     </Screen>
   );

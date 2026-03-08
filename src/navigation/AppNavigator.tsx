@@ -19,6 +19,7 @@ import { BuyerHomeScreen } from '../screens/buyer/BuyerHomeScreen';
 import { BuyerTaskScreen } from '../screens/buyer/BuyerTaskScreen';
 import { HelperHomeScreen } from '../screens/helper/HelperHomeScreen';
 import { HelperKycScreen } from '../screens/helper/HelperKycScreen';
+import { HelperVideoKycScreen } from '../screens/helper/HelperVideoKycScreen';
 import { HelperTaskScreen } from '../screens/helper/HelperTaskScreen';
 import { SupportTicketsScreen } from '../screens/support/SupportTicketsScreen';
 import { SupportNewTicketScreen } from '../screens/support/SupportNewTicketScreen';
@@ -91,6 +92,7 @@ export function AppNavigator() {
                 <HelperStack.Navigator screenOptions={{ headerShown: false }}>
                   <HelperStack.Screen name="HelperHome" component={HelperHomeScreen} />
                   <HelperStack.Screen name="HelperKyc" component={HelperKycScreen} />
+                  <HelperStack.Screen name="HelperVideoKyc" component={HelperVideoKycScreen} />
                   <HelperStack.Screen name="HelperTask" component={HelperTaskScreen} />
                   <HelperStack.Screen name="Menu" component={MenuScreen} />
                   <HelperStack.Screen name="Profile" component={ProfileScreen} />
