@@ -89,8 +89,8 @@ async function attemptUpload(item: UploadItem): Promise<UploadResult> {
             }
 
             // 3. Confirm
-            const lat = item.formFields.lat ? Number(item.formFields.lat) : null;
-            const lng = item.formFields.lng ? Number(item.formFields.lng) : null;
+            const lat = item.formFields.lat !== undefined ? Number(item.formFields.lat) : null;
+            const lng = item.formFields.lng !== undefined ? Number(item.formFields.lng) : null;
             const addressText = item.formFields.addressText || null;
             const capturedAt = item.formFields.capturedAt || null;
 

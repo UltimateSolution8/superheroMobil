@@ -21,7 +21,7 @@ function normalizePhone(raw: string) {
 }
 
 export function LoginScreen({ navigation, route }: Props) {
-  const { startOtp } = useAuth();
+  const { startOtp, authNotice, clearAuthNotice } = useAuth();
   const { t, lang, setLang } = useI18n();
   const [role, setRole] = useState<'BUYER' | 'HELPER'>(route.params?.role ?? 'BUYER');
   const [phone, setPhone] = useState('');
@@ -127,6 +127,7 @@ export function LoginScreen({ navigation, route }: Props) {
           />
 
           {error ? <Notice kind="danger" text={error} /> : null}
+          {authNotice ? <Notice kind="warning" text={authNotice} onClose={clearAuthNotice} /> : null}
 
           <View style={styles.footer}>
             <PrimaryButton label={t('login.send_otp')} onPress={onSend} disabled={!canSend} loading={busy} />
