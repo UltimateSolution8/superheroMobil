@@ -5,6 +5,8 @@ import type {
   CreateTaskRequest,
   CreateTaskResponse,
   HelperProfile,
+  VideoKycStartResponse,
+  VideoKycStatusResponse,
   OtpStartResponse,
   SupportMessage,
   SupportTicket,
@@ -192,6 +194,42 @@ export async function helperSubmitKyc(
     throw new ApiError(message, { status: res.status, code: parsed?.code, details: parsed?.details });
   }
   return parsed as HelperProfile;
+}
+
+export async function helperStartVideoKyc(
+  accessToken: string,
+  docType: string,
+): Promise<VideoKycStartResponse> {
+  return fetchJson(url('/api/v1/helper/video-kyc/start'), {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+    body: JSON.stringify({ docType, consent: true }),
+  });
+}
+
+export async function helperVideoKycUploaded(
+  accessToken: string,
+  kycId: string,
+  payload: {
+    s3Keys: { video: string; docFront: string; docBack?: string | null };
+    durationSeconds?: number | null;
+  },
+): Promise<void> {
+  await fetchJson(url(`/api/v1/helper/video-kyc/${kycId}/uploaded`), {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function helperVideoKycStatus(
+  accessToken: string,
+  kycId: string,
+): Promise<VideoKycStatusResponse> {
+  return fetchJson(url(`/api/v1/helper/video-kyc/${kycId}/status`), {
+    method: 'GET',
+    headers: authHeaders(accessToken),
+  });
 }
 
 export async function createTask(accessToken: string, req: CreateTaskRequest): Promise<CreateTaskResponse> {

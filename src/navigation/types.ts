@@ -31,6 +31,7 @@ export type BuyerStackParamList = {
 export type HelperStackParamList = {
   HelperHome: undefined;
   HelperKyc: undefined;
+  HelperVideoKyc: undefined;
   HelperTask: { taskId: string };
   Menu: undefined;
   Profile: undefined;

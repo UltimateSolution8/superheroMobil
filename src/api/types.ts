@@ -169,3 +169,30 @@ export type HelperProfile = {
   kycSelfieUrl?: string | null;
   kycSubmittedAt?: string | null;
 };
+
+export type VideoKycUploadUrl = {
+  url: string;
+  method: string;
+  expiresIn: number;
+  key: string;
+};
+
+export type VideoKycStartResponse = {
+  id: string;
+  uploadUrls: {
+    video: VideoKycUploadUrl;
+    docFront: VideoKycUploadUrl;
+    docBack: VideoKycUploadUrl;
+  };
+  status: string;
+};
+
+export type VideoKycStatusResponse = {
+  id: string;
+  status: string;
+  createdAt: string;
+  recommendation?: string | null;
+  faceMatchScore?: number | null;
+  livenessScore?: number | null;
+  reviewerNotes?: string | null;
+};
