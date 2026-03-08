@@ -33,6 +33,7 @@ export function HelperPresenceProvider({ children }: { children: React.ReactNode
   const [loaded, setLoaded] = useState(false);
   const locationSub = useRef<Location.LocationSubscription | null>(null);
   const lastEmitAt = useRef(0);
+  const lastApiPingAt = useRef(0);
   const syncingRef = useRef(false);
 
   useEffect(() => {
@@ -120,6 +121,22 @@ export function HelperPresenceProvider({ children }: { children: React.ReactNode
     })();
   }, [isOnline, lastCoords, loaded, status, user?.role, withAuth, setLastCoords]);
 
+  const maybePingApi = useCallback(
+    async (coords: HelperCoords | null) => {
+      if (!coords) return;
+      if (status !== 'signedIn' || user?.role !== 'HELPER' || !isOnline) return;
+      const now = Date.now();
+      if (now - lastApiPingAt.current < 12_000) return;
+      lastApiPingAt.current = now;
+      try {
+        await withAuth((t) => api.helperSetOnline(t, true, coords.lat, coords.lng));
+      } catch {
+        // best-effort
+      }
+    },
+    [isOnline, status, user?.role, withAuth],
+  );
+
   useEffect(() => {
     if (!loaded) return;
     if (status !== 'signedIn' || user?.role !== 'HELPER') return;
@@ -147,6 +164,7 @@ export function HelperPresenceProvider({ children }: { children: React.ReactNode
             setLastCoordsState({ lat, lng });
             AsyncStorage.setItem(STORAGE_COORDS, JSON.stringify({ lat, lng })).catch(() => {});
             socket.emit('location.update', { lat, lng, taskId: activeTaskId || undefined });
+            maybePingApi({ lat, lng });
           },
         );
       } catch {
@@ -164,6 +182,7 @@ export function HelperPresenceProvider({ children }: { children: React.ReactNode
         if (now - lastEmitAt.current < 10_000) return;
         lastEmitAt.current = now;
         socket.emit('location.update', { lat: c.lat, lng: c.lng, taskId: activeTaskId || undefined });
+        maybePingApi(c);
       }, 15_000);
     };
 
@@ -194,7 +213,7 @@ export function HelperPresenceProvider({ children }: { children: React.ReactNode
       locationSub.current?.remove();
       locationSub.current = null;
     };
-  }, [activeTaskId, isOnline, loaded, socket, status, user?.role, lastCoords]);
+  }, [activeTaskId, isOnline, loaded, socket, status, user?.role, lastCoords, maybePingApi]);
 
   const value = useMemo<HelperPresenceContextValue>(
     () => ({ isOnline, setOnline, lastCoords, setLastCoords }),
