@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, AppState, Linking, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { Asset } from 'react-native-image-picker';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
@@ -19,11 +19,12 @@ import { Notice } from '../../ui/Notice';
 import { TextField } from '../../ui/TextField';
 import { MenuButton } from '../../ui/MenuButton';
 import { TaskSkeleton } from '../../ui/TaskSkeleton';
+import { MemoizedMapView } from '../../ui/MemoizedMapView';
 import { theme } from '../../ui/theme';
 import { ensureCameraPermissions, ensureGalleryPermissions } from '../../utils/permissions';
 import { assetToPickedFile } from '../../utils/media';
 import { enqueueUpload } from '../../utils/uploadQueue';
-import { API_BASE_URL } from '../../config';
+import { API_BASE_URL, ENABLE_PRESIGNED_SELFIES } from '../../config';
 import type { HelperStackParamList } from '../../navigation/types';
 import { DEMO_FALLBACK_LOCATION, GOOGLE_MAPS_API_KEY } from '../../config';
 import { useActiveTask } from '../../state/ActiveTaskContext';
@@ -424,19 +425,38 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       try {
         const at = await withAuth((t) => Promise.resolve(t));
         safeSetState(() => setNotice(`Queuing ${stage === 'ARRIVAL' ? 'arrival' : 'completion'} selfie...`));
-        await enqueueUpload({
-          id: `selfie-${taskId}-${stage}-${Date.now()}`,
-          url: `${API_BASE_URL}/api/v1/tasks/${taskId}/selfie`,
-          file: selfie,
-          formFields: {
-            stage,
-            lat: String(lat),
-            lng: String(lng),
-            addressText: address,
-            capturedAt: new Date().toISOString()
-          },
-          accessToken: at
-        });
+
+        if (ENABLE_PRESIGNED_SELFIES) {
+          await enqueueUpload({
+            type: 'presigned',
+            id: `selfie-${taskId}-${stage}-${Date.now()}`,
+            url: API_BASE_URL,
+            file: selfie,
+            formFields: {
+              jobId: taskId,
+              photoType: stage === 'ARRIVAL' ? 'arrival' : 'completion',
+              lat: String(lat),
+              lng: String(lng),
+              addressText: address,
+              capturedAt: new Date().toISOString()
+            },
+            accessToken: at
+          });
+        } else {
+          await enqueueUpload({
+            id: `selfie-${taskId}-${stage}-${Date.now()}`,
+            url: `${API_BASE_URL}/api/v1/tasks/${taskId}/selfie`,
+            file: selfie,
+            formFields: {
+              stage,
+              lat: String(lat),
+              lng: String(lng),
+              addressText: address,
+              capturedAt: new Date().toISOString()
+            },
+            accessToken: at
+          });
+        }
 
         // Optimistic UI update to unblock the user immediately
         const optimisticTask = {
@@ -669,85 +689,65 @@ export function HelperTaskScreen({ route, navigation }: Props) {
     fetchRoute();
   }, [helperLoc, hasTaskCoords, task, taskLat, taskLng]);
 
+  const mapMarkers = useMemo(() => {
+    const list = [];
+    if (hasTaskCoords) {
+      list.push({ key: 'customer', coordinate: { latitude: taskLat, longitude: taskLng }, title: 'Super-customer' });
+    }
+    if (helperLoc) {
+      list.push({ key: 'helper', coordinate: { latitude: helperLoc.lat, longitude: helperLoc.lng }, title: 'You' });
+    }
+    return list;
+  }, [hasTaskCoords, taskLat, taskLng, helperLoc]);
+
   if (initialLoad) {
     return (
       <Screen>
-        <View style={styles.topBar}>
-          <MenuButton onPress={() => navigation.navigate('Menu')} />
-          <Text style={styles.h1}>Job</Text>
-          <View style={styles.topActions} />
-        </View>
+        <TaskHeader onMenu={() => navigation.navigate('Menu')} onRefresh={load} onBack={backHome} />
         <TaskSkeleton />
       </Screen>
     );
   }
 
+  const showStickyFooter = !!next && next !== 'STARTED' && next !== 'COMPLETED';
+
   return (
-    <Screen>
+    <Screen style={styles.screenPaddingFix}>
+      <TaskHeader onMenu={() => navigation.navigate('Menu')} onRefresh={load} onBack={backHome} />
+
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="interactive"
       >
-        <View style={styles.topBar}>
-          <MenuButton onPress={() => navigation.navigate('Menu')} />
-          <Text style={styles.h1}>Job</Text>
-          <View style={styles.topActions}>
-            <Text onPress={load} style={styles.link}>Refresh</Text>
-            <Text onPress={backHome} style={styles.link}>Back</Text>
-          </View>
-        </View>
-
         {buyerPhone ? (
-          <View style={styles.contactRow}>
-            <View>
-              <Text style={styles.label}>Super-customer</Text>
-              <Text style={styles.value}>{task?.buyerName ?? buyerPhone}</Text>
-              <Text style={styles.value}>{buyerPhone}</Text>
-              {task?.buyerAvgRating != null ? (
-                <Text style={styles.muted}>
-                  Buyer rating: {task.buyerAvgRating.toFixed(1)} / 5
-                  {task.buyerCompletedCount != null ? ` · ${task.buyerCompletedCount} tasks` : ''}
-                </Text>
-              ) : null}
-            </View>
-            <PrimaryButton
-              label="Call super-customer"
-              onPress={() => Linking.openURL(`tel:${buyerPhone}`)}
-              variant="ghost"
-              style={styles.callButton}
-            />
-          </View>
+          <CustomerContactCard
+            buyerPhone={buyerPhone}
+            name={task?.buyerName}
+            avgRating={task?.buyerAvgRating}
+            completedCount={task?.buyerCompletedCount}
+          />
         ) : null}
 
         {notice ? <Notice kind="success" text={notice} /> : null}
         {error ? <Notice kind="danger" text={error} /> : null}
 
-        <View style={styles.mapWrap}>
-          <MapView
-            style={styles.map}
-            provider={PROVIDER_GOOGLE}
-            ref={mapRef}
-            initialRegion={{
-              latitude: hasTaskCoords ? taskLat : DEMO_FALLBACK_LOCATION?.lat ?? 12.9716,
-              longitude: hasTaskCoords ? taskLng : DEMO_FALLBACK_LOCATION?.lng ?? 77.5946,
-              latitudeDelta: 0.02,
-              longitudeDelta: 0.02,
-            }}
-          >
-            {hasTaskCoords ? <Marker coordinate={{ latitude: taskLat, longitude: taskLng }} title="Super-customer" /> : null}
-            {helperLoc ? <Marker coordinate={{ latitude: helperLoc.lat, longitude: helperLoc.lng }} title="You" /> : null}
-            {routeCoords.length > 1 ? (
-              <Polyline coordinates={routeCoords} strokeColor={theme.colors.primary} strokeWidth={4} />
-            ) : null}
-          </MapView>
-        </View>
+        <MemoizedMapView
+          markers={mapMarkers}
+          routeCoords={routeCoords.map(c => ({ latitude: c.latitude, longitude: c.longitude }))}
+          initialRegion={{
+            latitude: hasTaskCoords ? taskLat : DEMO_FALLBACK_LOCATION?.lat ?? 12.9716,
+            longitude: hasTaskCoords ? taskLng : DEMO_FALLBACK_LOCATION?.lng ?? 77.5946,
+            latitudeDelta: 0.02,
+            longitudeDelta: 0.02,
+          }}
+          height={200}
+        />
 
         <View style={styles.card}>
           <Text style={styles.status}>{statusLabel(status)}</Text>
           {task?.title ? <Text style={styles.title}>{task.title}</Text> : null}
-          {task?.buyerName ? <Text style={styles.muted}>Super-customer: {task.buyerName}</Text> : null}
           {task?.addressText ? <Text style={styles.muted}>Address: {task.addressText}</Text> : null}
           {task?.description ? <Text style={styles.desc}>{task.description}</Text> : null}
           <Text style={styles.muted}>
@@ -771,21 +771,8 @@ export function HelperTaskScreen({ route, navigation }: Props) {
             />
           ) : null}
 
-          {next !== 'STARTED' && next !== 'COMPLETED' ? (
-            <View style={styles.actions}>
-              <PrimaryButton label="Refresh" onPress={load} variant="ghost" style={styles.half} />
-              <PrimaryButton
-                label={next ? `Mark ${statusLabel(next)}` : 'Done'}
-                onPress={() => advance()}
-                disabled={!next || (next === 'COMPLETED' && !completionSelfieDone)}
-                loading={busy}
-                style={styles.half}
-              />
-            </View>
-          ) : null}
-
           {canCancel ? (
-            <>
+            <View style={styles.cancelBox}>
               <TextField
                 label="Cancellation reason"
                 value={cancelReason}
@@ -798,59 +785,121 @@ export function HelperTaskScreen({ route, navigation }: Props) {
                 loading={cancelBusy}
                 variant="danger"
               />
-            </>
-          ) : null}
-
-          {showCelebration ? (
-            <View style={styles.celebrateWrap}>
-              <View style={styles.celebrateCard}>
-                <Text style={styles.celebrateTitle}>Task completed</Text>
-                <Text style={styles.celebrateBody}>Great work! Please rate your super-customer.</Text>
-                <PrimaryButton
-                  label="Continue"
-                  onPress={() => {
-                    setShowCelebration(false);
-                    setRatingReady(true);
-                  }}
-                />
-              </View>
             </View>
           ) : null}
 
           {status === 'COMPLETED' && ratingReady ? (
-            <View style={styles.ratingCard}>
-              <Text style={styles.muted}>Rate super-customer</Text>
-              {task?.helperRating ? (
-                <Text style={styles.muted}>Your rating: {task.helperRating.toFixed(1)} / 5</Text>
-              ) : (
-                <>
-                  <View style={styles.ratingRow}>
-                    {[1, 2, 3, 4, 5].map((r) => (
-                      <Text
-                        key={`rate-${r}`}
-                        style={[styles.star, r <= rating ? styles.starOn : styles.starOff]}
-                        onPress={() => setRating(r)}
-                      >
-                        ★
-                      </Text>
-                    ))}
-                  </View>
-                  <TextField
-                    label="Comment (optional)"
-                    value={ratingComment}
-                    onChangeText={setRatingComment}
-                    placeholder="Share feedback"
-                  />
-                  <PrimaryButton label="Submit rating" onPress={submitRating} loading={ratingBusy} />
-                </>
-              )}
-            </View>
+            <RatingCard
+              helperRating={task?.helperRating}
+              rating={rating}
+              setRating={setRating}
+              ratingComment={ratingComment}
+              setRatingComment={setRatingComment}
+              submitRating={submitRating}
+              ratingBusy={ratingBusy}
+            />
           ) : null}
         </View>
       </ScrollView>
+
+      {showStickyFooter ? (
+        <View style={styles.stickyFooter}>
+          <PrimaryButton
+            label={`Mark ${statusLabel(next)}`}
+            onPress={() => advance()}
+            disabled={!next || (next === 'COMPLETED' && !completionSelfieDone)}
+            loading={busy}
+            style={styles.stickyBtn}
+          />
+        </View>
+      ) : null}
+
+      {showCelebration ? (
+        <CelebrationOverlay
+          onContinue={() => {
+            setShowCelebration(false);
+            setRatingReady(true);
+          }}
+        />
+      ) : null}
     </Screen>
   );
 }
+
+// Sub-components
+
+const TaskHeader = memo(({ onMenu, onRefresh, onBack }: any) => (
+  <View style={styles.topBar}>
+    <MenuButton onPress={onMenu} />
+    <Text style={styles.h1}>Job</Text>
+    <View style={styles.topActions}>
+      <Text onPress={onRefresh} style={styles.link}>Refresh</Text>
+      <Text onPress={onBack} style={styles.link}>Back</Text>
+    </View>
+  </View>
+));
+
+const CustomerContactCard = memo(({ buyerPhone, name, avgRating, completedCount }: any) => (
+  <View style={styles.contactRow}>
+    <View style={styles.flex1}>
+      <Text style={styles.label}>Super-customer</Text>
+      <Text style={styles.value}>{name ?? buyerPhone}</Text>
+      <Text style={styles.value}>{buyerPhone}</Text>
+      {avgRating != null ? (
+        <Text style={styles.muted}>
+          Rating: {avgRating.toFixed(1)} / 5
+          {completedCount != null ? ` · ${completedCount} tasks` : ''}
+        </Text>
+      ) : null}
+    </View>
+    <PrimaryButton
+      label="Call"
+      onPress={() => Linking.openURL(`tel:${buyerPhone}`)}
+      variant="ghost"
+      style={styles.callButton}
+    />
+  </View>
+));
+
+const RatingCard = memo(({ helperRating, rating, setRating, ratingComment, setRatingComment, submitRating, ratingBusy }: any) => (
+  <View style={styles.ratingCard}>
+    <Text style={styles.muted}>Rate super-customer</Text>
+    {helperRating ? (
+      <Text style={styles.muted}>Your rating: {helperRating.toFixed(1)} / 5</Text>
+    ) : (
+      <>
+        <View style={styles.ratingRow}>
+          {[1, 2, 3, 4, 5].map((r) => (
+            <Text
+              key={`rate-${r}`}
+              style={[styles.star, r <= rating ? styles.starOn : styles.starOff]}
+              onPress={() => setRating(r)}
+            >
+              ★
+            </Text>
+          ))}
+        </View>
+        <TextField
+          label="Comment (optional)"
+          value={ratingComment}
+          onChangeText={setRatingComment}
+          placeholder="Share feedback"
+        />
+        <PrimaryButton label="Submit rating" onPress={submitRating} loading={ratingBusy} />
+      </>
+    )}
+  </View>
+));
+
+const CelebrationOverlay = memo(({ onContinue }: any) => (
+  <View style={styles.celebrateWrap}>
+    <View style={styles.celebrateCard}>
+      <Text style={styles.celebrateTitle}>Task completed</Text>
+      <Text style={styles.celebrateBody}>Great work! Please rate your super-customer.</Text>
+      <PrimaryButton label="Continue" onPress={onContinue} />
+    </View>
+  </View>
+));
 
 const styles = StyleSheet.create({
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
@@ -898,6 +947,17 @@ const styles = StyleSheet.create({
   otpHint: { color: theme.colors.muted, fontSize: 12, marginBottom: 6 },
   actions: { flexDirection: 'row', gap: theme.space.sm, paddingTop: 8 },
   half: { flex: 1 },
+  flex1: { flex: 1 },
+  screenPaddingFix: { paddingBottom: 0 },
+  stickyFooter: {
+    padding: theme.space.lg,
+    paddingTop: theme.space.sm,
+    backgroundColor: theme.colors.bg,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
+  },
+  stickyBtn: { height: 50 },
+  cancelBox: { marginTop: theme.space.md, gap: theme.space.sm, borderTopWidth: 1, borderTopColor: theme.colors.border, paddingTop: theme.space.md },
   ratingCard: {
     marginTop: theme.space.md,
     borderWidth: 1,
@@ -933,5 +993,4 @@ const styles = StyleSheet.create({
   },
   celebrateTitle: { color: theme.colors.text, fontSize: 20, fontWeight: '900' },
   celebrateBody: { color: theme.colors.muted, fontSize: 13, lineHeight: 20 },
-  formWrap: { marginTop: 4 },
 });

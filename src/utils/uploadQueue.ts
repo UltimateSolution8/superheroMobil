@@ -16,6 +16,7 @@ export type UploadItem = {
     accessToken: string;
     retries: number;
     createdAt: number;
+    type?: 'direct' | 'presigned';
 };
 
 export type UploadResult = {
@@ -42,6 +43,88 @@ function sleep(ms: number): Promise<void> {
 }
 
 async function attemptUpload(item: UploadItem): Promise<UploadResult> {
+    if (item.type === 'presigned') {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 30_000);
+
+        try {
+            // 1. Request presigned URL
+            const reqRes = await fetch(`${item.url}/api/v1/photos/request-upload`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${item.accessToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    jobId: item.formFields.jobId,
+                    photoType: item.formFields.photoType
+                }),
+                signal: controller.signal
+            });
+
+            if (!reqRes.ok) {
+                const text = await reqRes.text();
+                return { success: false, error: 'Request presign failed: ' + text };
+            }
+            const presignedData = await reqRes.json();
+            const { photoId, presignedUrl, uploadHeaders } = presignedData;
+
+            // 2. Upload (PUT)
+            const fileRes = await fetch(item.file.uri);
+            const blob = await fileRes.blob();
+
+            const putRes = await fetch(presignedUrl, {
+                method: 'PUT',
+                headers: {
+                    ...uploadHeaders,
+                    'Content-Length': blob.size.toString(),
+                    'Content-Type': item.file.type || 'image/jpeg'
+                },
+                body: blob,
+                signal: controller.signal
+            });
+
+            if (!putRes.ok) {
+                return { success: false, error: 'PUT presigned failed: ' + putRes.status };
+            }
+
+            // 3. Confirm
+            const lat = item.formFields.lat !== undefined ? Number(item.formFields.lat) : null;
+            const lng = item.formFields.lng !== undefined ? Number(item.formFields.lng) : null;
+            const addressText = item.formFields.addressText || null;
+            const capturedAt = item.formFields.capturedAt || null;
+
+            const confirmRes = await fetch(`${item.url}/api/v1/photos/confirm-upload`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${item.accessToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    photoId,
+                    size: blob.size,
+                    lat: Number.isFinite(lat as number) ? lat : null,
+                    lng: Number.isFinite(lng as number) ? lng : null,
+                    addressText,
+                    capturedAt
+                }),
+                signal: controller.signal
+            });
+
+            if (!confirmRes.ok) {
+                const text = await confirmRes.text();
+                return { success: false, error: 'Confirm failed: ' + text };
+            }
+
+            return { success: true, response: { message: 'Uploaded and confirmed' } };
+        } catch (e) {
+            const msg = e instanceof Error ? e.message : 'Presigned upload failed';
+            return { success: false, error: msg };
+        } finally {
+            clearTimeout(timeout);
+        }
+    }
+
     const body = new FormData();
     for (const [key, value] of Object.entries(item.formFields)) {
         body.append(key, value);
@@ -53,7 +136,7 @@ async function attemptUpload(item: UploadItem): Promise<UploadResult> {
     } as any);
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 20_000);
+    const timeout = setTimeout(() => controller.abort(), 30_000);
 
     try {
         const res = await fetch(item.url, {

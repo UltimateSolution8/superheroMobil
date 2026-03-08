@@ -17,6 +17,8 @@ type AuthState = {
 };
 
 type AuthContextValue = AuthState & {
+  authNotice: string | null;
+  clearAuthNotice: () => void;
   startOtp: (phone: string, role: UserRole, channel?: string | null) => Promise<{ otp?: string | null }>;
   verifyOtp: (phone: string, otp: string, role: UserRole) => Promise<void>;
   loginWithPassword: (email: string, password: string) => Promise<void>;
@@ -27,7 +29,7 @@ type AuthContextValue = AuthState & {
     phone?: string | null,
     displayName?: string | null,
   ) => Promise<void>;
-  signOut: () => Promise<void>;
+  signOut: (reason?: string) => Promise<void>;
   withAuth: <T>(fn: (accessToken: string) => Promise<T>) => Promise<T>;
   pinRequired: boolean;
   pinVerified: boolean;
@@ -50,6 +52,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [pinRequired, setPinRequired] = useState(false);
   const [pinVerified, setPinVerified] = useState(false);
   const pinRef = useRef<string | null>(null);
+
+  const [authNotice, setAuthNotice] = useState<string | null>(null);
 
   const accessRef = useRef<string | null>(null);
   const refreshRef = useRef<string | null>(null);
@@ -128,14 +132,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [],
   );
 
-  const signOut = useCallback(async () => {
+  const signOut = useCallback(async (reason?: string) => {
     await clearAuth();
     accessRef.current = null;
     refreshRef.current = null;
     refreshInFlight.current = null;
     setState({ status: 'signedOut', accessToken: null, refreshToken: null, user: null });
     setPinVerified(false);
+    if (reason) setAuthNotice(reason);
   }, []);
+
+  const clearAuthNotice = useCallback(() => setAuthNotice(null), []);
 
   const setPin = useCallback(async (pin: string) => {
     await SecureStore.setItemAsync(PIN_KEY, pin);
@@ -194,7 +201,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const refreshed = await refreshTokens();
             return await fn(refreshed.accessToken);
           } catch {
-            await signOut();
+            await signOut('Your session has expired. Please log in again.');
           }
         }
         throw e;
@@ -211,6 +218,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       loginWithPassword,
       signupWithPassword,
       signOut,
+      authNotice,
+      clearAuthNotice,
       withAuth,
       pinRequired,
       pinVerified,
@@ -226,6 +235,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       loginWithPassword,
       signupWithPassword,
       signOut,
+      authNotice,
+      clearAuthNotice,
       withAuth,
       pinRequired,
       pinVerified,
