@@ -18,6 +18,8 @@ type AuthState = {
 };
 
 type AuthContextValue = AuthState & {
+  authNotice: string | null;
+  clearAuthNotice: () => void;
   startOtp: (phone: string, role: UserRole, channel?: string | null) => Promise<{ otp?: string | null }>;
   verifyOtp: (phone: string, otp: string, role: UserRole) => Promise<void>;
   loginWithPassword: (email: string, password: string) => Promise<void>;
@@ -28,13 +30,14 @@ type AuthContextValue = AuthState & {
     phone?: string | null,
     displayName?: string | null,
   ) => Promise<void>;
-  signOut: () => Promise<void>;
+  signOut: (reason?: string) => Promise<void>;
   withAuth: <T>(fn: (accessToken: string) => Promise<T>) => Promise<T>;
   pinRequired: boolean;
   pinVerified: boolean;
   setPin: (pin: string) => Promise<void>;
   clearPin: () => Promise<void>;
   verifyPin: (pin: string) => Promise<boolean>;
+  resetPinVerification: () => void;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -48,23 +51,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user: null,
   });
   const [pinRequired, setPinRequired] = useState(false);
-  const [pinVerified, setPinVerified] = useState(true);
+  const [pinVerified, setPinVerified] = useState(false);
+  const pinRef = useRef<string | null>(null);
+
+  const [authNotice, setAuthNotice] = useState<string | null>(null);
 
   const accessRef = useRef<string | null>(null);
   const refreshRef = useRef<string | null>(null);
   const refreshInFlight = useRef<Promise<AuthResponse> | null>(null);
-  const pinRef = useRef<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const auth = await loadAuth();
-      const pin = await SecureStore.getItemAsync(PIN_KEY);
+      const storedPin = await SecureStore.getItemAsync(PIN_KEY);
       if (!cancelled) {
-        pinRef.current = pin;
-        setPinRequired(Boolean(pin));
-        setPinVerified(!pin);
+        pinRef.current = storedPin ?? null;
+        setPinRequired(Boolean(storedPin));
+        setPinVerified(false);
       }
+      const auth = await loadAuth();
       if (cancelled) return;
       if (!auth) {
         accessRef.current = null;
@@ -98,6 +103,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     accessRef.current = auth.accessToken;
     refreshRef.current = auth.refreshToken;
     setState({ status: 'signedIn', ...auth });
+    setPinVerified(false);
   }, []);
 
   const loginWithPassword = useCallback(async (email: string, password: string) => {
@@ -109,6 +115,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     accessRef.current = auth.accessToken;
     refreshRef.current = auth.refreshToken;
     setState({ status: 'signedIn', ...auth });
+    setPinVerified(false);
   }, []);
 
   const signupWithPassword = useCallback(
@@ -121,18 +128,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       accessRef.current = auth.accessToken;
       refreshRef.current = auth.refreshToken;
       setState({ status: 'signedIn', ...auth });
+      setPinVerified(false);
     },
     [],
   );
 
-  const signOut = useCallback(async () => {
+  const signOut = useCallback(async (reason?: string) => {
     await clearAuth();
     accessRef.current = null;
     refreshRef.current = null;
     refreshInFlight.current = null;
     setState({ status: 'signedOut', accessToken: null, refreshToken: null, user: null });
-    setPinVerified(!pinRef.current);
+    setPinVerified(false);
+    if (reason) setAuthNotice(reason);
   }, []);
+
+  const clearAuthNotice = useCallback(() => setAuthNotice(null), []);
 
   const setPin = useCallback(async (pin: string) => {
     const clean = pin.trim();
@@ -153,17 +164,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const verifyPin = useCallback(async (pin: string) => {
-    const stored = pinRef.current ?? (await SecureStore.getItemAsync(PIN_KEY));
-    if (!stored) {
-      setPinRequired(false);
-      setPinVerified(true);
-      return true;
+    if (!pinRef.current) return true;
+    const ok = pinRef.current === pin;
+    setPinVerified(ok);
+    return ok;
+  }, []);
+
+  const resetPinVerification = useCallback(() => {
+    if (pinRef.current) {
+      setPinVerified(false);
     }
-    if (pin.trim() === stored) {
-      setPinVerified(true);
-      return true;
-    }
-    return false;
   }, []);
 
   const refreshTokens = useCallback(async (): Promise<AuthResponse> => {
@@ -196,7 +206,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const refreshed = await refreshTokens();
             return await fn(refreshed.accessToken);
           } catch {
-            await signOut();
+            await signOut('Your session has expired. Please log in again.');
           }
         }
         throw e;
@@ -226,12 +236,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       loginWithPassword,
       signupWithPassword,
       signOut,
+      authNotice,
+      clearAuthNotice,
       withAuth,
       pinRequired,
       pinVerified,
       setPin,
       clearPin,
       verifyPin,
+      resetPinVerification,
     }),
     [
       state,
@@ -240,12 +253,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       loginWithPassword,
       signupWithPassword,
       signOut,
+      authNotice,
+      clearAuthNotice,
       withAuth,
       pinRequired,
       pinVerified,
       setPin,
       clearPin,
       verifyPin,
+      resetPinVerification,
     ],
   );
 

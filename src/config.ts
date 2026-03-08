@@ -9,9 +9,18 @@ const extra = (expoConfig && expoConfig.extra) || {};
 const apiFromExtra = typeof extra.apiBaseUrl === 'string' ? extra.apiBaseUrl.trim() : '';
 const socketFromExtra = typeof extra.socketUrl === 'string' ? extra.socketUrl.trim() : '';
 const mapsFromExtra = typeof extra.googleMapsApiKey === 'string' ? extra.googleMapsApiKey.trim() : '';
+const presignedFromExtra = typeof extra.enablePresignedSelfies === 'string'
+  ? extra.enablePresignedSelfies.trim()
+  : typeof extra.enablePresignedSelfies === 'boolean'
+  ? String(extra.enablePresignedSelfies)
+  : '';
 
 export const API_BASE_URL =
   process.env.EXPO_PUBLIC_API_BASE_URL?.trim() || apiFromExtra || 'https://api.mysuperhero.xyz';
+
+const presignedEnv = process.env.EXPO_PUBLIC_ENABLE_PRESIGNED_SELFIES?.trim();
+export const ENABLE_PRESIGNED_SELFIES =
+  presignedEnv ? presignedEnv === 'true' : presignedFromExtra ? presignedFromExtra === 'true' : true;
 
 export const SOCKET_URL =
   process.env.EXPO_PUBLIC_SOCKET_URL?.trim() ||

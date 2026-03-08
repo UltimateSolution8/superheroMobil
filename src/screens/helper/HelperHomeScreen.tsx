@@ -76,7 +76,7 @@ const OfferRow = React.memo(function OfferRow({ offer, onAccept }: OfferRowProps
 });
 
 export function HelperHomeScreen({ navigation }: Props) {
-  const { withAuth } = useAuth();
+  const { user, withAuth } = useAuth();
   const { t } = useI18n();
   const socket = useSocket();
   const online = useIsOnline();
@@ -141,9 +141,49 @@ export function HelperHomeScreen({ navigation }: Props) {
     return unsub;
   }, [loadOffersFromStorage, loadProfile, navigation]);
 
+  const loadValidTasks = useCallback(async () => {
+    try {
+      if (!isOnline) return;
+      const available = await withAuth((t) => api.helperGetAvailableTasks(t));
+      if (!Array.isArray(available) || available.length === 0) return;
+
+      const toEvent = (t: import('../../api/types').Task): TaskOfferedEvent => ({
+        helperId: user?.id ?? '', // We don't dispatch direct offers here, just list them
+        taskId: t.id,
+        title: t.title,
+        description: t.description ?? '',
+        urgency: t.urgency,
+        timeMinutes: t.timeMinutes,
+        budgetPaise: t.budgetPaise,
+        distanceMeters: (t as any).distanceMeters ?? 0,
+        lat: t.lat,
+        lng: t.lng,
+        expiresAt: new Date(Date.now() + 5 * 60000).toISOString() // Fake expiry for now
+      });
+
+      setOffers((prev) => {
+        const merged = [...available.map(toEvent)];
+        for (const p of prev) {
+          if (!merged.some((m) => m.taskId === p.taskId)) {
+            merged.push(p);
+          }
+        }
+        const next = merged.slice(0, 20);
+        persistOffers(next).catch(() => { });
+        return next;
+      });
+    } catch {
+      // ignore silently 
+    }
+  }, [isOnline, persistOffers, withAuth]);
+
   useEffect(() => {
     loadOffersFromStorage();
   }, [loadOffersFromStorage]);
+
+  useEffect(() => {
+    loadValidTasks();
+  }, [loadValidTasks]);
 
   useEffect(() => {
     if (!autoKycDone && profile && profile.kycStatus !== 'APPROVED') {
@@ -273,13 +313,18 @@ export function HelperHomeScreen({ navigation }: Props) {
       try {
         await withAuth((t) => api.acceptTask(t, taskId));
         await setActiveTaskId(taskId);
+        setOffers((prev) => {
+          const next = prev.filter((o) => o.taskId !== taskId);
+          persistOffers(next).catch(() => { });
+          return next;
+        });
         navigation.navigate('HelperTask', { taskId });
       } catch (e) {
         if (e instanceof ApiError && e.status === 409) {
           setNotice('Offer expired or task already taken.');
           setOffers((prev) => {
             const next = prev.filter((o) => o.taskId !== taskId);
-            persistOffers(next).catch(() => {});
+            persistOffers(next).catch(() => { });
             return next;
           });
           return;
@@ -299,7 +344,7 @@ export function HelperHomeScreen({ navigation }: Props) {
       setOffers((prev) => {
         if (prev.some((p) => p.taskId === normalized.taskId)) return prev;
         const next = [normalized, ...prev].slice(0, 20);
-        persistOffers(next).catch(() => {});
+        persistOffers(next).catch(() => { });
         return next;
       });
     };
@@ -314,7 +359,7 @@ export function HelperHomeScreen({ navigation }: Props) {
       setOffers((prev) => {
         const next = prev.filter((o) => !isOfferExpired(o));
         if (next.length !== prev.length) {
-          persistOffers(next).catch(() => {});
+          persistOffers(next).catch(() => { });
         }
         return next;
       });

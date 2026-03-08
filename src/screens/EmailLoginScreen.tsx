@@ -44,8 +44,8 @@ export function EmailLoginScreen({ navigation }: Props) {
 
   const onSignup = useCallback(() => {
     Alert.alert('Sign up', 'Choose account type', [
-      { text: 'Buyer', onPress: () => navigation.navigate('BuyerSignup') },
-      { text: 'Helper', onPress: () => navigation.navigate('HelperSignup') },
+      { text: 'Super-customer', onPress: () => navigation.navigate('BuyerSignup') },
+      { text: 'Superheroo', onPress: () => navigation.navigate('HelperSignup') },
       { text: 'Cancel', style: 'cancel' },
     ]);
   }, [navigation]);

@@ -5,6 +5,8 @@ import type {
   CreateTaskRequest,
   CreateTaskResponse,
   HelperProfile,
+  VideoKycStartResponse,
+  VideoKycStatusResponse,
   OtpStartResponse,
   SupportMessage,
   SupportTicket,
@@ -54,6 +56,10 @@ function normalizeTask(raw: any): Task {
     completionSelfieLng: toOptionalNumber(raw.completionSelfieLng),
     buyerRating: toOptionalNumber(raw.buyerRating),
     helperRating: toOptionalNumber(raw.helperRating),
+    helperAvgRating: toOptionalNumber(raw.helperAvgRating),
+    helperCompletedCount: toOptionalNumber(raw.helperCompletedCount),
+    buyerAvgRating: toOptionalNumber(raw.buyerAvgRating),
+    buyerCompletedCount: toOptionalNumber(raw.buyerCompletedCount),
   } as Task;
 }
 
@@ -135,6 +141,14 @@ export async function helperGetProfile(accessToken: string): Promise<HelperProfi
   });
 }
 
+export async function helperGetAvailableTasks(accessToken: string): Promise<Task[]> {
+  const tasks = await fetchJson<Task[]>(url('/api/v1/tasks/available'), {
+    method: 'GET',
+    headers: authHeaders(accessToken),
+  });
+  return Array.isArray(tasks) ? tasks.map(normalizeTask) : [];
+}
+
 export async function helperSubmitKyc(
   accessToken: string,
   req: {
@@ -158,6 +172,9 @@ export async function helperSubmitKyc(
   appendFile('idFront', req.idFront);
   appendFile('idBack', req.idBack);
   appendFile('selfie', req.selfie);
+  if (req.selfie?.uri) {
+    body.append('selfieUri', req.selfie.uri);
+  }
 
   const res = await fetch(url('/api/v1/helper/kyc/submit'), {
     method: 'POST',
@@ -177,6 +194,42 @@ export async function helperSubmitKyc(
     throw new ApiError(message, { status: res.status, code: parsed?.code, details: parsed?.details });
   }
   return parsed as HelperProfile;
+}
+
+export async function helperStartVideoKyc(
+  accessToken: string,
+  docType: string,
+): Promise<VideoKycStartResponse> {
+  return fetchJson(url('/api/v1/helper/video-kyc/start'), {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+    body: JSON.stringify({ docType, consent: true }),
+  });
+}
+
+export async function helperVideoKycUploaded(
+  accessToken: string,
+  kycId: string,
+  payload: {
+    s3Keys: { video: string; docFront: string; docBack?: string | null };
+    durationSeconds?: number | null;
+  },
+): Promise<void> {
+  await fetchJson(url(`/api/v1/helper/video-kyc/${kycId}/uploaded`), {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function helperVideoKycStatus(
+  accessToken: string,
+  kycId: string,
+): Promise<VideoKycStatusResponse> {
+  return fetchJson(url(`/api/v1/helper/video-kyc/${kycId}/status`), {
+    method: 'GET',
+    headers: authHeaders(accessToken),
+  });
 }
 
 export async function createTask(accessToken: string, req: CreateTaskRequest): Promise<CreateTaskResponse> {
@@ -201,12 +254,42 @@ export async function updateTaskStatus(
   status: TaskStatus,
   otp?: string | null,
 ): Promise<Task> {
-  const task = await fetchJson<Task>(url(`/api/v1/tasks/${taskId}/status`), {
-    method: 'POST',
-    headers: authHeaders(accessToken),
-    body: JSON.stringify({ status, otp: otp ?? null }),
+  const controller = new AbortController();
+  const timeoutMs = 30_000;
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  const fetchPromise = (async () => {
+    const res = await fetch(url(`/api/v1/tasks/${taskId}/status`), {
+      method: 'POST',
+      headers: authHeaders(accessToken),
+      body: JSON.stringify({ status, otp: otp ?? null }),
+      signal: controller.signal,
+    });
+    const text = await res.text();
+    let parsed: any = null;
+    try {
+      parsed = text ? JSON.parse(text) : null;
+    } catch {
+      parsed = null;
+    }
+    if (!res.ok) {
+      const message = parsed?.message || `Request failed (${res.status})`;
+      throw new ApiError(message, { status: res.status, code: parsed?.code, details: parsed?.details });
+    }
+    return normalizeTask(parsed);
+  })();
+  const timeoutPromise = new Promise<Task>((_, reject) => {
+    setTimeout(() => reject(new ApiError('Status update timed out. Please try again.', { status: 408 })), timeoutMs);
   });
-  return normalizeTask(task);
+  try {
+    return await Promise.race([fetchPromise, timeoutPromise]);
+  } catch (e) {
+    if (e && (e as { name?: string }).name === 'AbortError') {
+      throw new ApiError('Status update timed out. Please try again.', { status: 408 });
+    }
+    throw e;
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 export async function rateTask(
@@ -264,36 +347,41 @@ export async function uploadTaskSelfie(
   appendFile('selfie', req.selfie);
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 45_000);
-  let res: Response;
-  try {
-    res = await fetch(url(`/api/v1/tasks/${taskId}/selfie`), {
+  const timeoutMs = 30_000;
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  const fetchPromise = (async () => {
+    const res = await fetch(url(`/api/v1/tasks/${taskId}/selfie`), {
       method: 'POST',
       headers: { Authorization: `Bearer ${accessToken}` },
       body,
       signal: controller.signal,
     });
-  } catch (err: any) {
-    if (err?.name === 'AbortError') {
-      throw new ApiError('Upload timed out. Please try again.', { status: 408 });
+    const text = await res.text();
+    let parsed: any = null;
+    try {
+      parsed = text ? JSON.parse(text) : null;
+    } catch {
+      parsed = null;
     }
-    throw err;
+    if (!res.ok) {
+      const message = parsed?.message || `Request failed (${res.status})`;
+      throw new ApiError(message, { status: res.status, code: parsed?.code, details: parsed?.details });
+    }
+    return normalizeTask(parsed);
+  })();
+  const timeoutPromise = new Promise<Task>((_, reject) => {
+    setTimeout(() => reject(new ApiError('Selfie upload timed out. Please try again.', { status: 408 })), timeoutMs);
+  });
+  try {
+    return await Promise.race([fetchPromise, timeoutPromise]);
+  } catch (e) {
+    if (e && (e as { name?: string }).name === 'AbortError') {
+      throw new ApiError('Selfie upload timed out. Please try again.', { status: 408 });
+    }
+    throw e;
   } finally {
     clearTimeout(timeout);
   }
-
-  const text = await res.text();
-  let parsed: any = null;
-  try {
-    parsed = text ? JSON.parse(text) : null;
-  } catch {
-    parsed = null;
-  }
-  if (!res.ok) {
-    const message = parsed?.message || `Request failed (${res.status})`;
-    throw new ApiError(message, { status: res.status, code: parsed?.code, details: parsed?.details });
-  }
-  return normalizeTask(parsed);
 }
 
 export async function getTask(accessToken: string, taskId: string): Promise<Task> {

@@ -13,7 +13,9 @@ import { PrimaryButton } from '../../ui/PrimaryButton';
 import { Screen } from '../../ui/Screen';
 import { theme } from '../../ui/theme';
 import { ensureCameraPermissions, ensureGalleryPermissions } from '../../utils/permissions';
+import { assetToPickedFile } from '../../utils/media';
 import type { HelperProfile } from '../../api/types';
+import { useI18n } from '../../i18n/I18nProvider';
 
 type Props = NativeStackScreenProps<HelperStackParamList, 'HelperKyc'>;
 
@@ -21,6 +23,7 @@ type PickedFile = { uri: string; name: string; type: string };
 
 export function HelperKycScreen({ navigation }: Props) {
   const { withAuth } = useAuth();
+  const { t } = useI18n();
 
   const [fullName, setFullName] = useState('');
   const [idNumber, setIdNumber] = useState('');
@@ -78,22 +81,26 @@ export function HelperKycScreen({ navigation }: Props) {
           setError('Gallery permission is required to select a selfie.');
           return;
         }
-        const pick = await launchImageLibrary({ mediaType: 'photo', quality: 0.8, selectionLimit: 1 });
+        const pick = await launchImageLibrary({
+          mediaType: 'photo',
+          quality: 0.8,
+          selectionLimit: 1,
+          includeExtra: true,
+          maxWidth: 1280,
+          maxHeight: 1280,
+        });
         if (pick.didCancel) return;
         if (pick.errorCode) {
           setError('Could not open gallery.');
           return;
         }
         const a = pick.assets?.[0];
-        if (!a?.uri) {
+        const file = assetToPickedFile(a, `selfie-${Date.now()}.jpg`);
+        if (!file) {
           setError('Could not access selected image.');
           return;
         }
-        setSelfie({
-          uri: a.uri,
-          name: a.fileName ?? `selfie-${Date.now()}.jpg`,
-          type: a.type ?? 'image/jpeg',
-        });
+        setSelfie(file);
       } catch {
         setError('Could not open gallery.');
       }
@@ -110,6 +117,9 @@ export function HelperKycScreen({ navigation }: Props) {
         quality: 0.8,
         cameraType: 'front',
         saveToPhotos: false,
+        includeExtra: true,
+        maxWidth: 1280,
+        maxHeight: 1280,
       });
       if (res.didCancel) {
         // fall back to gallery prompt
@@ -117,15 +127,12 @@ export function HelperKycScreen({ navigation }: Props) {
         setError('Camera is unavailable. Please choose from gallery.');
       } else {
         const a = res.assets?.[0];
-        if (!a?.uri) {
+        const file = assetToPickedFile(a, `selfie-${Date.now()}.jpg`);
+        if (!file) {
           setError('Could not access captured image.');
           return;
         }
-        setSelfie({
-          uri: a.uri,
-          name: a.fileName ?? `selfie-${Date.now()}.jpg`,
-          type: a.type ?? 'image/jpeg',
-        });
+        setSelfie(file);
         return;
       }
     } catch {
@@ -227,6 +234,11 @@ export function HelperKycScreen({ navigation }: Props) {
         </View>
 
         <PrimaryButton label="Submit KYC" onPress={submit} disabled={!canSubmit} loading={busy} />
+        <PrimaryButton
+          label={t('helper.video_kyc.title')}
+          onPress={() => navigation.navigate('HelperVideoKyc')}
+          variant="ghost"
+        />
       </KeyboardAvoidingView>
     </Screen>
   );
