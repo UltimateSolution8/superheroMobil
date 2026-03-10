@@ -103,14 +103,14 @@ RUN set -eux; \
     printf '%s\n' 'reactNativeArchitectures=arm64-v8a' >> "$GP"; \
   fi; \
   if grep -q '^org.gradle.jvmargs=' "$GP"; then \
-    sed -i 's/^org.gradle.jvmargs=.*/org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=768m -Dfile.encoding=UTF-8/' "$GP"; \
+    sed -i 's/^org.gradle.jvmargs=.*/org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m -Dfile.encoding=UTF-8/' "$GP"; \
   else \
-    printf '%s\n' 'org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=768m -Dfile.encoding=UTF-8' >> "$GP"; \
+    printf '%s\n' 'org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m -Dfile.encoding=UTF-8' >> "$GP"; \
   fi; \
   if grep -q '^kotlin.daemon.jvmargs=' "$GP"; then \
-    sed -i 's/^kotlin.daemon.jvmargs=.*/kotlin.daemon.jvmargs=-Xmx768m/' "$GP"; \
+    sed -i 's/^kotlin.daemon.jvmargs=.*/kotlin.daemon.jvmargs=-Xmx2048m/' "$GP"; \
   else \
-    printf '%s\n' 'kotlin.daemon.jvmargs=-Xmx768m' >> "$GP"; \
+    printf '%s\n' 'kotlin.daemon.jvmargs=-Xmx2048m' >> "$GP"; \
   fi; \
   if grep -q '^org.gradle.workers.max=' "$GP"; then \
     sed -i 's/^org.gradle.workers.max=.*/org.gradle.workers.max=1/' "$GP"; \

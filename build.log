@@ -1,0 +1,110 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.apk
+#1 transferring dockerfile: 7.82kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for ghcr.io/cirruslabs/android-sdk:34
+#2 DONE 1.2s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [build  1/18] FROM ghcr.io/cirruslabs/android-sdk:34@sha256:1c2e7e9c4490dbc1f85364556aa08e550945e6dffb29baab86d5fe2c7be0773a
+#4 resolve ghcr.io/cirruslabs/android-sdk:34@sha256:1c2e7e9c4490dbc1f85364556aa08e550945e6dffb29baab86d5fe2c7be0773a done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 4.18kB done
+#5 DONE 0.0s
+
+#6 [build 16/18] WORKDIR /app/android
+#6 CACHED
+
+#7 [build  3/18] RUN apt-get update -qq   && apt-get install -y --no-install-recommends curl ca-certificates gnupg git openjdk-17-jdk   && curl -fsSL https://deb.nodesource.com/setup_22.x | bash -   && apt-get install -y --no-install-recommends nodejs   && rm -rf /var/lib/apt/lists/*
+#7 CACHED
+
+#8 [build 11/18] RUN CI=1 npx expo prebuild --platform android
+#8 CACHED
+
+#9 [build 10/18] RUN CI=1 npx expo prebuild --platform android --clean
+#9 CACHED
+
+#10 [build 12/18] RUN set -eux;   GP="/app/android/gradle.properties";   touch "$GP";   if ! grep -q '^android.useAndroidX=' "$GP"; then     printf '%s\n' 'android.useAndroidX=true' >> "$GP";   fi;   if ! grep -q '^android.enableJetifier=' "$GP"; then     printf '%s\n' 'android.enableJetifier=true' >> "$GP";   fi
+#10 CACHED
+
+#11 [build  2/18] WORKDIR /app
+#11 CACHED
+
+#12 [build 13/18] RUN set -eux;   APP_GRADLE="/app/android/app/build.gradle";   sed -i 's/\\\\n/\\n/g' "$APP_GRADLE" || true;   if ! grep -q "configurations.all" "$APP_GRADLE"; then     bash -c 'printf "%s\n" ""       "configurations.all {"       "    exclude group: \"com.android.support\", module: \"support-compat\""       "    exclude group: \"com.android.support\", module: \"support-v4\""       "    exclude group: \"com.android.support\", module: \"versionedparcelable\""       "}" >> "'"$APP_GRADLE"'"';   fi
+#12 CACHED
+
+#13 [build  6/18] RUN npm ci
+#13 CACHED
+
+#14 [build  5/18] COPY google-services.json ./google-services.json
+#14 CACHED
+
+#15 [build  7/18] COPY assets ./assets
+#15 CACHED
+
+#16 [build  8/18] COPY src ./src
+#16 CACHED
+
+#17 [build  4/18] COPY package.json package-lock.json app.json app.config.js tsconfig.json index.ts App.tsx ./
+#17 CACHED
+
+#18 [build 14/18] RUN set -eux;   if [ "debug" = "release" ]; then     SDKMANAGER="/opt/android-sdk-linux/cmdline-tools/latest/bin/sdkmanager";     test -x "$SDKMANAGER";     export ANDROID_SDK_ROOT="/opt/android-sdk-linux";     export ANDROID_HOME="/opt/android-sdk-linux";     for i in 1 2 3; do       yes | "$SDKMANAGER" --sdk_root="/opt/android-sdk-linux" --install         "platform-tools"         "platforms;android-36"         "build-tools;36.0.0"         && break;       echo "sdkmanager failed (attempt $i). Clearing caches and retrying..." >&2;       rm -rf /root/.android/cache || true;       rm -rf "/opt/android-sdk-linux/.android/cache" || true;       sleep 3;     done;     test -d "/opt/android-sdk-linux/build-tools/36.0.0";   fi
+#18 CACHED
+
+#19 [build  9/18] COPY gradle-dist/gradle-8.14.3-bin.zip /tmp/gradle-8.14.3-bin.zip
+#19 CACHED
+
+#20 [build 15/18] RUN set -eux;   GP="/app/android/gradle.properties";   touch "$GP";   if grep -q '^reactNativeArchitectures=' "$GP"; then     sed -i 's/^reactNativeArchitectures=.*/reactNativeArchitectures=arm64-v8a/' "$GP";   else     printf '%s\n' 'reactNativeArchitectures=arm64-v8a' >> "$GP";   fi;   if grep -q '^org.gradle.jvmargs=' "$GP"; then     sed -i 's/^org.gradle.jvmargs=.*/org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=768m -Dfile.encoding=UTF-8/' "$GP";   else     printf '%s\n' 'org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=768m -Dfile.encoding=UTF-8' >> "$GP";   fi;   if grep -q '^kotlin.daemon.jvmargs=' "$GP"; then     sed -i 's/^kotlin.daemon.jvmargs=.*/kotlin.daemon.jvmargs=-Xmx768m/' "$GP";   else     printf '%s\n' 'kotlin.daemon.jvmargs=-Xmx768m' >> "$GP";   fi;   if grep -q '^org.gradle.workers.max=' "$GP"; then     sed -i 's/^org.gradle.workers.max=.*/org.gradle.workers.max=1/' "$GP";   else     printf '%s\n' 'org.gradle.workers.max=1' >> "$GP";   fi;   if grep -q '^org.gradle.parallel=' "$GP"; then     sed -i 's/^org.gradle.parallel=.*/org.gradle.parallel=false/' "$GP";   else     printf '%s\n' 'org.gradle.parallel=false' >> "$GP";   fi;   if grep -q '^org.gradle.vfs.watch=' "$GP"; then     sed -i 's/^org.gradle.vfs.watch=.*/org.gradle.vfs.watch=false/' "$GP";   else     printf '%s\n' 'org.gradle.vfs.watch=false' >> "$GP";   fi
+#20 CACHED
+
+#21 [build 17/18] RUN set -eux;   GRADLE_DIST="gradle-8.14.3-bin.zip";   if [ ! -f "/tmp/${GRADLE_DIST}" ]; then     curl -L --retry 5 --retry-delay 5 --max-time 600       "https://services.gradle.org/distributions/${GRADLE_DIST}"       -o "/tmp/${GRADLE_DIST}";   fi;   if [ -f "/app/android/gradle/wrapper/gradle-wrapper.properties" ]; then     sed -i "s|distributionUrl=.*|distributionUrl=file:///tmp/${GRADLE_DIST}|" /app/android/gradle/wrapper/gradle-wrapper.properties;   fi
+#21 CACHED
+
+#22 [build 18/18] RUN set -eux;   if [ "debug" = "release" ]; then     sed -i 's/signingConfig signingConfigs\\.release/signingConfig signingConfigs.debug/g' /app/android/app/build.gradle || true;     ./gradlew --no-daemon --max-workers 1 assembleRelease -x lint -x test;   elif [ "debug" = "standalone" ]; then     ./gradlew --no-daemon --max-workers 1 :app:bundleDebugJsAndAssets -x lint -x test       || ./gradlew --no-daemon --max-workers 1 :app:createBundleDebugJsAndAssets -x lint -x test       || ./gradlew --no-daemon --max-workers 1 bundleDebugJsAndAssets -x lint -x test       || ./gradlew --no-daemon --max-workers 1 createBundleDebugJsAndAssets -x lint -x test;     ./gradlew --no-daemon --max-workers 1 assembleDebug -x lint -x test;   else     ./gradlew --no-daemon --max-workers 1 assembleDebug -x lint -x test;   fi
+#22 0.103 + [ debug = release ]
+#22 0.103 + [ debug = standalone ]
+#22 0.103 + ./gradlew --no-daemon --max-workers 1 assembleDebug -x lint -x test
+#22 0.197 Downloading file:/tmp/gradle-8.14.3-bin.zip
+#22 0.228 .............10%.............20%.............30%.............40%.............50%.............60%.............70%.............80%.............90%..............100%
+#22 1.780 
+#22 1.780 Welcome to Gradle 8.14.3!
+#22 1.780 
+#22 1.781 Here are the highlights of this release:
+#22 1.781  - Java 24 support
+#22 1.781  - GraalVM Native Image toolchain selection
+#22 1.781  - Enhancements to test reporting
+#22 1.781  - Build Authoring improvements
+#22 1.781 
+#22 1.782 For more details see https://docs.gradle.org/8.14.3/release-notes.html
+#22 1.782 
+#22 1.880 To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+#22 2.580 Daemon will be stopped at the end of the build 
+#22 42.18 
+#22 42.18 > Configure project :expo-gradle-plugin:expo-autolinking-plugin
+#22 42.18 w: file:///app/node_modules/expo-modules-autolinking/android/expo-gradle-plugin/expo-autolinking-plugin/build.gradle.kts:25:3: 'kotlinOptions(KotlinJvmOptionsDeprecated /* = KotlinJvmOptions */.() -> Unit): Unit' is deprecated. Please migrate to the compilerOptions DSL. More details are here: https://kotl.in/u1r8ln
+#22 43.68 
+#22 43.68 > Configure project :expo-gradle-plugin:expo-autolinking-settings-plugin
+#22 43.68 w: file:///app/node_modules/expo-modules-autolinking/android/expo-gradle-plugin/expo-autolinking-settings-plugin/build.gradle.kts:30:3: 'kotlinOptions(KotlinJvmOptionsDeprecated /* = KotlinJvmOptions */.() -> Unit): Unit' is deprecated. Please migrate to the compilerOptions DSL. More details are here: https://kotl.in/u1r8ln
+#22 44.18 
+#22 44.18 > Task :gradle-plugin:settings-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+#22 44.18 > Task :gradle-plugin:shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+#22 44.38 > Task :expo-gradle-plugin:expo-autolinking-plugin-shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+#22 73.28 > Task :expo-gradle-plugin:expo-autolinking-plugin-shared:compileKotlin
+#22 73.38 > Task :expo-gradle-plugin:expo-autolinking-plugin-shared:compileJava NO-SOURCE
+#22 73.38 > Task :expo-gradle-plugin:expo-autolinking-plugin-shared:processResources NO-SOURCE
+#22 73.38 > Task :expo-gradle-plugin:expo-autolinking-plugin-shared:classes UP-TO-DATE
+#22 73.38 > Task :expo-gradle-plugin:expo-autolinking-plugin-shared:jar
+#22 73.38 > Task :expo-gradle-plugin:expo-autolinking-settings-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+#22 73.58 > Task :gradle-plugin:shared:compileKotlin
+#22 73.58 > Task :gradle-plugin:shared:compileJava NO-SOURCE
+#22 73.58 > Task :gradle-plugin:shared:processResources NO-SOURCE
+#22 73.58 > Task :gradle-plugin:shared:classes UP-TO-DATE
+#22 73.58 > Task :gradle-plugin:shared:jar
+ERROR: failed to build: failed to receive status: rpc error: code = Unavailable desc = error reading from server: EOF

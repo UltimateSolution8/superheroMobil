@@ -15,7 +15,6 @@ export const strings: Record<LanguageCode, Dictionary> = {
     // Login
     'login.need_help': 'Book a Superherooo',
     'login.can_help': 'Be a Superherooo',
-    'role.title': 'Choose your path',
     'role.subtitle': 'Fast local help with escrow protection.',
     'role.book': 'Book a Superherooo',
     'role.be': 'Be a Superherooo',
@@ -551,24 +550,15 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'error.location_failed': 'Could not get your location',
 
     // Diagnostics
-    'diagnostics.title': 'Diagnostics',
     'diagnostics.api_base': 'API_BASE_URL',
     'diagnostics.socket_url': 'SOCKET_URL',
     'diagnostics.health_url': 'Health URL',
-    'diagnostics.ping': 'Ping /actuator/health',
     'diagnostics.empty_body': '(empty body)',
 
     // Menu
     'menu.title': 'Menu',
-    'menu.profile': 'Profile',
-    'menu.tasks': 'Tasks',
     'menu.earnings': 'Superherooo Earnings',
     'menu.wallet': 'Superherooo Wallet',
-    'menu.settings': 'Settings',
-    'menu.support': 'Support',
-    'menu.sos': 'SOS',
-    'menu.terms': 'Terms & Safety',
-    'menu.diagnostics': 'Diagnostics',
     'menu.default_name': 'Superherooo User',
 
     // Payments
@@ -581,11 +571,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'history.budget': 'Budget',
 
     // Settings
-    'settings.title': 'Settings',
-    'settings.language': 'Language',
     'settings.pin_label': '4-digit PIN',
-    'settings.pin_enabled': 'PIN is enabled for quick login.',
-    'settings.pin_disabled': 'Set a PIN for fast sign-in.',
     'settings.pin_input': 'PIN',
     'settings.pin_set': 'Set PIN',
     'settings.pin_remove': 'Remove PIN',
@@ -602,11 +588,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'pin.unlock': 'Unlock',
 
     // Support
-    'support.title': 'Support',
-    'support.new': 'New',
-    'support.load_error': 'Could not load tickets.',
     'support.empty': 'No tickets yet.',
-    'support.create_ticket': 'Create new ticket',
     'support.new_title': 'New Ticket',
     'support.ai_notice': 'AI will respond first. If needed, a human support agent will follow up.',
     'support.category': 'Category',
@@ -642,22 +624,11 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'helper.offer_expired': 'Offer expired or task already taken.',
     'helper.accept_error': 'Could not accept task.',
     'helper.task.arrival_otp_title': 'Arrival OTP',
-    'helper.task.arrival_otp_hint': 'Ask the citizen for the arrival OTP to start work.',
     'helper.task.arrival_otp_label': 'Arrival OTP',
-    'helper.task.arrival_otp_placeholder': 'Enter arrival OTP',
     'helper.task.start_work': 'Start work',
     'helper.task.completion_title': 'Completion',
-    'helper.task.completion_hint': 'Upload completion selfie first, then enter OTP to finish.',
-    'helper.task.completion_selfie_done': 'Completion selfie uploaded',
     'helper.task.upload_completion_selfie': 'Upload completion selfie',
     'helper.task.completion_otp_label': 'Completion OTP',
-    'helper.task.completion_otp_placeholder': 'Enter completion OTP',
-    'helper.task.mark_completed': 'Mark completed',
-    'helper.task.processing_selfie': 'Processing selfie...',
-    'helper.task.getting_location': 'Getting location...',
-    'helper.task.resolving_address': 'Resolving address...',
-    'helper.task.queue_arrival_selfie': 'Queuing arrival selfie...',
-    'helper.task.queue_completion_selfie': 'Queuing completion selfie...',
     'helper.task.mark': 'Mark',
     'helper.task.rate_citizen': 'Rate citizen',
     'helper.task.completed_body': 'Great work! Please rate the citizen.',
@@ -672,7 +643,6 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'task.open_maps': 'Open in Maps',
     'task.rating': 'Rating',
     'task.cancel_reason_required': 'Please add a cancellation reason.',
-    'task.share_cancelling': 'Share why you are cancelling',
     'task.eta_label': 'ETA',
 
     // Map
@@ -1230,24 +1200,15 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'error.location_failed': 'स्थान प्राप्त नहीं कर सका',
 
     // Diagnostics
-    'diagnostics.title': 'डायग्नोस्टिक्स',
     'diagnostics.api_base': 'API_BASE_URL',
     'diagnostics.socket_url': 'SOCKET_URL',
     'diagnostics.health_url': 'हेल्थ URL',
-    'diagnostics.ping': 'Ping /actuator/health',
     'diagnostics.empty_body': '(खाली बॉडी)',
 
     // Menu
     'menu.title': 'मेनू',
-    'menu.profile': 'प्रोफ़ाइल',
-    'menu.tasks': 'कार्य',
     'menu.earnings': 'Superherooo कमाई',
     'menu.wallet': 'Superherooo वॉलेट',
-    'menu.settings': 'सेटिंग्स',
-    'menu.support': 'सपोर्ट',
-    'menu.sos': 'SOS',
-    'menu.terms': 'नियम व सुरक्षा',
-    'menu.diagnostics': 'डायग्नोस्टिक्स',
     'menu.default_name': 'Superherooo यूज़र',
 
     // Payments
@@ -1260,11 +1221,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'history.budget': 'बजट',
 
     // Settings
-    'settings.title': 'सेटिंग्स',
-    'settings.language': 'भाषा',
     'settings.pin_label': '4-अंकों का PIN',
-    'settings.pin_enabled': 'त्वरित लॉगिन के लिए PIN सक्षम है।',
-    'settings.pin_disabled': 'तेज़ साइन-इन के लिए PIN सेट करें।',
     'settings.pin_input': 'PIN',
     'settings.pin_set': 'PIN सेट करें',
     'settings.pin_remove': 'PIN हटाएं',
@@ -1281,11 +1238,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'pin.unlock': 'अनलॉक करें',
 
     // Support
-    'support.title': 'सपोर्ट',
-    'support.new': 'नया',
-    'support.load_error': 'टिकट लोड नहीं कर सका।',
     'support.empty': 'कोई टिकट नहीं है।',
-    'support.create_ticket': 'नया टिकट बनाएं',
     'support.new_title': 'नया टिकट',
     'support.ai_notice': 'पहले AI जवाब देगा। जरूरत पड़ने पर सपोर्ट एजेंट जवाब देगा।',
     'support.category': 'श्रेणी',
@@ -1321,22 +1274,11 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'helper.offer_expired': 'ऑफर समाप्त हो गया या कार्य पहले ही लिया जा चुका है।',
     'helper.accept_error': 'कार्य स्वीकार नहीं कर सका।',
     'helper.task.arrival_otp_title': 'आगमन OTP',
-    'helper.task.arrival_otp_hint': 'काम शुरू करने के लिए नागरिक से आगमन OTP लें।',
     'helper.task.arrival_otp_label': 'आगमन OTP',
-    'helper.task.arrival_otp_placeholder': 'आगमन OTP दर्ज करें',
     'helper.task.start_work': 'काम शुरू करें',
     'helper.task.completion_title': 'पूर्णता',
-    'helper.task.completion_hint': 'पहले पूर्णता सेल्फी अपलोड करें, फिर OTP दर्ज करें।',
-    'helper.task.completion_selfie_done': 'पूर्णता सेल्फी अपलोड हो गई',
     'helper.task.upload_completion_selfie': 'पूर्णता सेल्फी अपलोड करें',
     'helper.task.completion_otp_label': 'पूर्णता OTP',
-    'helper.task.completion_otp_placeholder': 'पूर्णता OTP दर्ज करें',
-    'helper.task.mark_completed': 'पूर्ण हुआ',
-    'helper.task.processing_selfie': 'सेल्फी प्रोसेस हो रही है...',
-    'helper.task.getting_location': 'लोकेशन प्राप्त कर रहे हैं...',
-    'helper.task.resolving_address': 'पता ढूंढ रहे हैं...',
-    'helper.task.queue_arrival_selfie': 'आगमन सेल्फी कतार में डाल रहे हैं...',
-    'helper.task.queue_completion_selfie': 'पूर्णता सेल्फी कतार में डाल रहे हैं...',
     'helper.task.mark': 'चिह्नित करें',
     'helper.task.rate_citizen': 'नागरिक को रेट करें',
     'helper.task.completed_body': 'बहुत अच्छा! कृपया नागरिक को रेट करें।',
@@ -1351,7 +1293,6 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'task.open_maps': 'मानचित्र में खोलें',
     'task.rating': 'रेटिंग',
     'task.cancel_reason_required': 'कृपया रद्द करने का कारण लिखें।',
-    'task.share_cancelling': 'रद्द करने का कारण बताएं',
     'task.eta_label': 'ETA',
 
     // Map
@@ -1887,24 +1828,15 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'error.location_failed': 'స్థానం పొందలేకపోయాం',
 
     // Diagnostics
-    'diagnostics.title': 'డయాగ్నస్టిక్స్',
     'diagnostics.api_base': 'API_BASE_URL',
     'diagnostics.socket_url': 'SOCKET_URL',
     'diagnostics.health_url': 'హెల్త్ URL',
-    'diagnostics.ping': 'Ping /actuator/health',
     'diagnostics.empty_body': '(ఖాళీ బాడీ)',
 
     // Menu
     'menu.title': 'మెను',
-    'menu.profile': 'ప్రొఫైల్',
-    'menu.tasks': 'పనులు',
     'menu.earnings': 'Superherooo ఆదాయం',
     'menu.wallet': 'Superherooo వాలెట్',
-    'menu.settings': 'సెట్టింగ్స్',
-    'menu.support': 'సపోర్ట్',
-    'menu.sos': 'SOS',
-    'menu.terms': 'నియమాలు & భద్రత',
-    'menu.diagnostics': 'డయాగ్నస్టిక్స్',
     'menu.default_name': 'Superherooo యూజర్',
 
     // Payments
@@ -1917,11 +1849,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'history.budget': 'బడ్జెట్',
 
     // Settings
-    'settings.title': 'సెట్టింగ్స్',
-    'settings.language': 'భాష',
     'settings.pin_label': '4 అంకాల PIN',
-    'settings.pin_enabled': 'త్వరిత లాగిన్ కోసం PIN ఎనేబుల్ అయింది.',
-    'settings.pin_disabled': 'వేగవంతమైన సైన్-ఇన్ కోసం PIN సెటప్ చేయండి.',
     'settings.pin_input': 'PIN',
     'settings.pin_set': 'PIN సెట్ చేయండి',
     'settings.pin_remove': 'PIN తొలగించండి',
@@ -1938,11 +1866,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'pin.unlock': 'అన్‌లాక్',
 
     // Support
-    'support.title': 'సపోర్ట్',
-    'support.new': 'కొత్త',
-    'support.load_error': 'టికెట్లు లోడ్ చేయలేకపోయాం.',
     'support.empty': 'ఇప్పటికీ టికెట్లు లేవు.',
-    'support.create_ticket': 'కొత్త టికెట్ సృష్టించండి',
     'support.new_title': 'కొత్త టికెట్',
     'support.ai_notice': 'ముందుగా AI స్పందిస్తుంది. అవసరమైతే సపోర్ట్ ఏజెంట్ స్పందిస్తాడు.',
     'support.category': 'వర్గం',
@@ -1978,17 +1902,11 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'helper.offer_expired': 'ఆఫర్ గడువు ముగిసింది లేదా పని ఇప్పటికే తీసుకున్నారు.',
     'helper.accept_error': 'పని అంగీకరించలేకపోయాం.',
     'helper.task.arrival_otp_title': 'ఆగమనం OTP',
-    'helper.task.arrival_otp_hint': 'పని ప్రారంభించడానికి పౌరుని వద్ద ఆగమనం OTP అడగండి.',
     'helper.task.arrival_otp_label': 'ఆగమనం OTP',
-    'helper.task.arrival_otp_placeholder': 'ఆగమనం OTP నమోదు చేయండి',
     'helper.task.start_work': 'పని ప్రారంభించండి',
     'helper.task.completion_title': 'పూర్తి',
-    'helper.task.completion_hint': 'మొదట పూర్తి సెల్ఫీ అప్లోడ్ చేసి, తర్వాత OTP నమోదు చేయండి.',
-    'helper.task.completion_selfie_done': 'పూర్తి సెల్ఫీ అప్లోడ్ అయింది',
     'helper.task.upload_completion_selfie': 'పూర్తి సెల్ఫీ అప్లోడ్ చేయండి',
     'helper.task.completion_otp_label': 'పూర్తి OTP',
-    'helper.task.completion_otp_placeholder': 'పూర్తి OTP నమోదు చేయండి',
-    'helper.task.mark_completed': 'పూర్తి గా గుర్తించండి',
     'helper.task.processing_selfie': 'సెల్ఫీ ప్రాసెస్ అవుతోంది...',
     'helper.task.getting_location': 'లొకేషన్ పొందుతున్నాం...',
     'helper.task.resolving_address': 'చిరునామా కనుగొంటున్నాం...',
@@ -2008,7 +1926,6 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'task.open_maps': 'మ్యాప్స్‌లో తెరవండి',
     'task.rating': 'రేటింగ్',
     'task.cancel_reason_required': 'రద్దు కారణం నమోదు చేయండి.',
-    'task.share_cancelling': 'ఎందుకు రద్దు చేస్తున్నారో చెప్పండి',
     'task.eta_label': 'ETA',
 
     // Map

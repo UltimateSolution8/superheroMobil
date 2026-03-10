@@ -1,0 +1,99 @@
+src/i18n/strings.ts(554,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(558,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(563,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(564,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(567,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(568,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(569,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(570,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(571,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(584,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(585,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(587,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(588,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(605,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(606,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(607,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(609,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(645,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(647,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(650,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(651,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(654,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(655,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(656,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(657,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(658,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(659,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(660,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(675,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1233,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1237,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1242,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1243,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1246,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1247,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1248,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1249,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1250,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1263,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1264,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1266,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1267,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1284,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1285,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1286,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1288,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1324,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1326,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1329,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1330,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1333,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1334,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1335,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1336,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1337,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1338,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1339,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1354,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1890,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1894,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1899,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1900,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1903,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1904,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1905,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1906,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1907,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1920,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1921,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1923,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1924,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1941,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1942,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1943,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1945,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1981,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1983,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1986,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1987,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1990,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(1991,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/i18n/strings.ts(2011,5): error TS1117: An object literal cannot have multiple properties with the same name.
+src/screens/buyer/BuyerHomeScreen.tsx(575,23): error TS2322: Type '"numbers-and-punctuation"' is not assignable to type '"default" | "phone-pad" | "number-pad" | undefined'.
+src/screens/buyer/BuyerHomeScreen.tsx(584,23): error TS2322: Type '"numbers-and-punctuation"' is not assignable to type '"default" | "phone-pad" | "number-pad" | undefined'.
+src/screens/common/DiagnosticsScreen.tsx(32,67): error TS2349: This expression is not callable.
+  Type 'Timeout' has no call signatures.
+src/screens/common/DiagnosticsScreen.tsx(34,27): error TS2349: This expression is not callable.
+  Type 'Timeout' has no call signatures.
+src/screens/common/MenuScreen.tsx(63,59): error TS2322: Type '(reason?: string | undefined) => Promise<void>' is not assignable to type '(event: GestureResponderEvent) => void'.
+  Types of parameters 'reason' and 'event' are incompatible.
+    Type 'GestureResponderEvent' is not assignable to type 'string'.
+src/screens/common/SosScreen.tsx(29,18): error TS2349: This expression is not callable.
+  Type 'String' has no call signatures.
+src/screens/common/SosScreen.tsx(30,18): error TS2349: This expression is not callable.
+  Type 'String' has no call signatures.
+src/screens/helper/HelperTaskScreen.tsx(46,25): error TS2339: Property 'formWrap' does not exist on type '{ topBar: { flexDirection: "row"; alignItems: "center"; justifyContent: "space-between"; }; scrollContent: { gap: number; paddingBottom: number; position: "relative"; minHeight: "100%"; }; topActions: { ...; }; ... 29 more ...; celebrateBody: { ...; }; }'.
+src/screens/helper/HelperTaskScreen.tsx(82,25): error TS2339: Property 'formWrap' does not exist on type '{ topBar: { flexDirection: "row"; alignItems: "center"; justifyContent: "space-between"; }; scrollContent: { gap: number; paddingBottom: number; position: "relative"; minHeight: "100%"; }; topActions: { ...; }; ... 29 more ...; celebrateBody: { ...; }; }'.
+src/screens/helper/HelperTaskScreen.tsx(891,33): error TS2367: This comparison appears to be unintentional because the types '"SEARCHING" | "ASSIGNED" | "ARRIVED" | "CANCELLED"' and '"COMPLETED"' have no overlap.
+src/utils/media.ts(2,29): error TS2307: Cannot find module 'expo-file-system' or its corresponding type declarations.
