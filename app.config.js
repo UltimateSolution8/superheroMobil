@@ -8,7 +8,8 @@ const googleMapsApiKey = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || '';
 const apiBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL || 'https://api.mysuperhero.xyz';
 const socketUrl = process.env.EXPO_PUBLIC_SOCKET_URL || 'https://superheroorealtime.onrender.com';
 const googleServicesFile = path.join(__dirname, 'google-services.json');
-const hasGoogleServices = fs.existsSync(googleServicesFile);
+const hasGoogleServices =
+  fs.existsSync(googleServicesFile) && fs.statSync(googleServicesFile).size > 0;
 const basePlugins = Array.isArray(expo.plugins) ? expo.plugins : [];
 const plugins = Array.from(
   new Set([
