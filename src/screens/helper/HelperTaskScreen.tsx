@@ -471,6 +471,8 @@ export function HelperTaskScreen({ route, navigation }: Props) {
           setNotice(stage === 'ARRIVAL' ? t('helper.task.queue_arrival_selfie') : t('helper.task.queue_completion_selfie')),
         );
 
+        let uploadSuccess = false;
+
         if (ENABLE_PRESIGNED_SELFIES) {
           const res = await enqueueUpload({
             type: 'presigned',
@@ -487,7 +489,10 @@ export function HelperTaskScreen({ route, navigation }: Props) {
             },
             accessToken: at
           }, { enqueueOnFailure: false });
-          if (!res.success) {
+          if (res.success) {
+            uploadSuccess = true;
+          } else {
+            // Fallback to direct multipart upload
             const fallback = await enqueueUpload({
               id: `selfie-${taskId}-${stage}-${Date.now()}`,
               url: `${API_BASE_URL}/api/v1/tasks/${taskId}/selfie`,
@@ -501,7 +506,9 @@ export function HelperTaskScreen({ route, navigation }: Props) {
               },
               accessToken: at
             });
-            if (!fallback.success) {
+            if (fallback.success) {
+              uploadSuccess = true;
+            } else {
               throw new Error(fallback.error || t('error.upload_selfie'));
             }
           }
@@ -519,21 +526,29 @@ export function HelperTaskScreen({ route, navigation }: Props) {
             },
             accessToken: at
           });
-          if (!res.success) {
+          if (res.success) {
+            uploadSuccess = true;
+          } else {
             throw new Error(res.error || t('error.upload_selfie'));
           }
         }
 
-        // Optimistic UI update to unblock the user immediately
-        const optimisticTask = {
-          ...task,
-          [stage === 'ARRIVAL' ? 'arrivalSelfieUrl' : 'completionSelfieUrl']: 'pending_upload_in_background'
-        } as Task;
-
-        if (mountedRef.current) {
-          setTask(optimisticTask);
+        if (uploadSuccess && mountedRef.current) {
+          // Refresh the task from the server to get the real selfie URL
+          safeSetState(() => setNotice(t('helper.task.processing_selfie')));
+          try {
+            const refreshed = await withAuth((at) => api.getTask(at, taskId));
+            setTask(refreshed);
+          } catch {
+            // Even if refresh fails, the upload succeeded — set a flag so UI unblocks
+            const optimisticTask = {
+              ...task,
+              [stage === 'ARRIVAL' ? 'arrivalSelfieUrl' : 'completionSelfieUrl']: 'uploaded'
+            } as Task;
+            setTask(optimisticTask);
+          }
         }
-        return true;
+        return uploadSuccess;
       } catch (err) {
         safeSetState(() => {
           if (err instanceof Error && err.message) {

@@ -84,26 +84,37 @@ async function attemptUpload(item: UploadItem): Promise<UploadResult> {
                 const presignedData = await reqRes.json();
                 const { photoId, presignedUrl, uploadHeaders } = presignedData;
 
-                // 2. Upload (PUT)
-                const fileRes = await fetch(item.file.uri);
-                const blob = await fileRes.blob();
-
-                const headers = { ...uploadHeaders } as Record<string, string>;
-                if (!headers['Content-Type'] && !headers['content-type']) {
-                    headers['Content-Type'] = item.file.type || 'image/jpeg';
+                // 2. Upload file to presigned URL using XMLHttpRequest
+                // React Native's fetch().blob() does NOT work for local file URIs.
+                // XMLHttpRequest supports sending {uri, type, name} objects natively.
+                const putHeaders = { ...uploadHeaders } as Record<string, string>;
+                if (!putHeaders['Content-Type'] && !putHeaders['content-type']) {
+                    putHeaders['Content-Type'] = item.file.type || 'image/jpeg';
                 }
-                const putRes = await fetch(presignedUrl, {
-                    method: 'PUT',
-                    headers,
-                    body: blob,
-                    signal
+
+                const putResult = await new Promise<{ ok: boolean; status: number }>((resolve, reject) => {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('PUT', presignedUrl);
+                    for (const [k, v] of Object.entries(putHeaders)) {
+                        xhr.setRequestHeader(k, v);
+                    }
+                    xhr.onload = () => {
+                        resolve({ ok: xhr.status >= 200 && xhr.status < 300, status: xhr.status });
+                    };
+                    xhr.onerror = () => reject(new Error('Network error during PUT upload'));
+                    xhr.ontimeout = () => reject(new Error('PUT upload timed out'));
+                    if (signal) {
+                        signal.addEventListener('abort', () => xhr.abort());
+                    }
+                    // React Native XMLHttpRequest supports sending file URI objects directly
+                    xhr.send({ uri: item.file.uri, type: item.file.type || 'image/jpeg', name: item.file.name || 'selfie.jpg' } as any);
                 });
 
-                if (!putRes.ok) {
-                    return { success: false, error: 'PUT presigned failed: ' + putRes.status };
+                if (!putResult.ok) {
+                    return { success: false, error: 'PUT presigned failed: ' + putResult.status };
                 }
 
-                // 3. Confirm
+                // 3. Confirm upload
                 const lat = item.formFields.lat !== undefined ? Number(item.formFields.lat) : null;
                 const lng = item.formFields.lng !== undefined ? Number(item.formFields.lng) : null;
                 const addressText = item.formFields.addressText || null;
@@ -117,7 +128,6 @@ async function attemptUpload(item: UploadItem): Promise<UploadResult> {
                     },
                     body: JSON.stringify({
                         photoId,
-                        size: blob.size,
                         lat: Number.isFinite(lat as number) ? lat : null,
                         lng: Number.isFinite(lng as number) ? lng : null,
                         addressText,
