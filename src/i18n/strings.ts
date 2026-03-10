@@ -7,6 +7,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     // App
     'app.name': 'Superherooo',
     'app.tagline': 'Help in minutes',
+    'app.admin_not_supported': 'Admin role is not supported in the mobile app.',
     'language.en': 'EN',
     'language.hi': 'हिं',
     'language.te': 'తెల',
@@ -32,6 +33,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'login.otp_call': 'Get OTP on call',
     'login.diagnostics': 'Diagnostics',
     'login.terms': 'By continuing, you agree to our Terms and acknowledge our Privacy Policy.',
+    'auth.session_expired': 'Your session has expired. Please log in again.',
 
     // OTP
     'otp.title': 'Verify OTP',
@@ -63,7 +65,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
 
     // Signup - Helper
     'signup.helper.title': 'Sign up',
-    'signup.helper.subtitle': 'Create a helper account and complete KYC to go online.',
+    'signup.helper.subtitle': 'Create a Superherooo account and complete KYC to go online.',
     'signup.helper.kyc_notice': 'KYC documents are required after signup to accept tasks.',
 
     // Onboarding
@@ -191,6 +193,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
 
     // Helper - Task
     'helper.task.title': 'Job',
+    'helper.task.job': 'Job',
     'helper.task.call_customer': 'Call citizen',
     'helper.task.distance_eta': 'Distance',
     'helper.task.eta_label': 'ETA',
@@ -269,6 +272,13 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'helper.video_kyc.status': 'Current status',
     'helper.video_kyc.refresh': 'Refresh status',
     'helper.video_kyc.video_submitted': 'Video KYC submitted. Admin will review.',
+    'helper.live_kyc.title': 'Live KYC',
+    'helper.live_kyc.subtitle': 'Join a live verification call when the admin starts it.',
+    'helper.live_kyc.check': 'Check live session',
+    'helper.live_kyc.join': 'Join live KYC',
+    'helper.live_kyc.none': 'No live session is active yet.',
+    'helper.live_kyc.error': 'Could not check live session.',
+    'helper.live_kyc.status': 'Session status',
 
     // Helper - Notices
     'helper.notice.offline': 'You are offline.',
@@ -276,7 +286,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'helper.notice.location_off': 'Location is turned off. Enable Location in device settings and try again.',
     'helper.notice.location_permission': 'Location permission is required to go online.',
     'helper.notice.permission_missing': 'Location permission missing. Using demo fallback location.',
-    'helper.notice.pending_approval': 'Your helper account is pending approval. Please wait for admin verification.',
+    'helper.notice.pending_approval': 'మీ Superherooo ఖాతా అనుమతి కోసం పెండింగ్‌లో ఉంది. దయచేసి అడ్మిన్ ధృవీకరణ కోసం వేచి ఉండండి.',
     'helper.notice.offer_expired': 'Offer expired or task already taken.',
     'helper.notice.could_not_accept': 'Could not accept task.',
     'helper.notice.could_not_go_online': 'Could not go online. Try again.',
@@ -486,6 +496,10 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'support.new': 'New',
     'support.create_new': 'Create new ticket',
 
+    // Additional - Active Task
+    'active_task.title': 'Active Task',
+    'active_task.tap': 'Tap to open',
+
     // Additional - Common
     'common.loading': 'Loading…',
     'common.no_results': 'No results',
@@ -672,6 +686,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     // App
     'app.name': 'Superherooo',
     'app.tagline': 'मिनटों में मदद',
+    'app.admin_not_supported': 'मोबाइल ऐप में एडमिन रोल समर्थित नहीं है।',
     'language.en': 'EN',
     'language.hi': 'हिं',
     'language.te': 'తెల',
@@ -695,8 +710,9 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'login.backend_checking': 'बैकएंड जांच रहे हैं...',
     'login.otp_whatsapp': 'व्हाट्सऐप से भेजें',
     'login.otp_call': 'कॉल पर OTP पाएं',
-    'login.diagnostics': 'डायग्नोस्टिक्स',
+    'login.diagnostics': 'డయాగ్నస్టిక్స్',
     'login.terms': 'आगे बढ़कर, आप हमारे नियम और गोपनीयता नीति को स्वीकार करते हैं।',
+    'auth.session_expired': 'आपका सत्र समाप्त हो गया है। कृपया फिर से लॉग इन करें।',
 
     // OTP
     'otp.title': 'ओटीपी सत्यापित करें',
@@ -728,7 +744,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
 
     // Signup - Helper
     'signup.helper.title': 'साइन अप करें',
-    'signup.helper.subtitle': 'हेल्पर खाता बनाएं और ऑनलाइन होने के लिए KYC पूरा करें।',
+    'signup.helper.subtitle': 'Superherooo खाता बनाएं और ऑनलाइन होने के लिए KYC पूरा करें।',
     'signup.helper.kyc_notice': 'कार्य स्वीकार करने के लिए साइन अप के बाद KYC दस्तावेज़ आवश्यक हैं।',
 
     // Onboarding
@@ -934,6 +950,13 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'helper.video_kyc.status': 'वर्तमान स्थिति',
     'helper.video_kyc.refresh': 'स्थिति रीफ़्रेश करें',
     'helper.video_kyc.video_submitted': 'वीडियो KYC सबमिट किया। प्रशासक समीक्षा करेगा।',
+    'helper.live_kyc.title': 'लाइव KYC',
+    'helper.live_kyc.subtitle': 'जब एडमिन लाइव सत्यापन शुरू करें, कॉल जॉइन करें।',
+    'helper.live_kyc.check': 'लाइव सेशन जांचें',
+    'helper.live_kyc.join': 'लाइव KYC जॉइन करें',
+    'helper.live_kyc.none': 'अभी कोई लाइव सेशन नहीं है।',
+    'helper.live_kyc.error': 'लाइव सेशन जांच नहीं सका।',
+    'helper.live_kyc.status': 'सेशन स्थिति',
 
     // Helper - Notices
     'helper.notice.offline': 'आप ऑफलाइन हैं।',
@@ -941,7 +964,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'helper.notice.location_off': 'लोकेशन बंद है। कृपया डिवाइस सेटिंग्स में लोकेशन चालू करें।',
     'helper.notice.location_permission': 'ऑनलाइन होने के लिए लोकेशन अनुमति आवश्यक है।',
     'helper.notice.permission_missing': 'लोकेशन अनुमति गायब है। डेमो फ़ॉलबैक लोकेशन का उपयोग कर रहे हैं।',
-    'helper.notice.pending_approval': 'आपका हेल्पर खाता अनुमोदन लंबित है। कृपया प्रशासक के सत्यापन की प्रतीक्षा करें।',
+    'helper.notice.pending_approval': 'आपका Superherooo खाता अनुमोदन लंबित है। कृपया प्रशासक के सत्यापन की प्रतीक्षा करें।',
     'helper.notice.offer_expired': 'ऑफर समाप्त हो गया या कार्य पहले ही ले लिया गया।',
     'helper.notice.could_not_accept': 'कार्य स्वीकार नहीं कर सका।',
     'helper.notice.could_not_go_online': 'ऑनलाइन नहीं हो सका। पुनः प्रयास करें।',
@@ -1152,6 +1175,10 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'support.new': 'नया',
     'support.create_new': 'नया टिकट बनाएं',
 
+    // Additional - Active Task
+    'active_task.title': 'सक्रिय कार्य',
+    'active_task.tap': 'खोलने के लिए टैप करें',
+
     // Additional - Common
     'common.loading': 'लोड हो रहा है…',
     'common.no_results': 'कोई परिणाम नहीं',
@@ -1338,6 +1365,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     // App
     'app.name': 'Superherooo',
     'app.tagline': 'నిమిషాల్లో సహాయం',
+    'app.admin_not_supported': 'మొబైల్ యాప్‌లో అడ్మిన్ రోల్‌కు మద్దతు లేదు.',
     'language.en': 'EN',
     'language.hi': 'హిందీ',
     'language.te': 'తెలుగు',
@@ -1348,7 +1376,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'role.title': 'మీ పాత్రను ఎంచుకోండి',
     'role.subtitle': 'త్వరిత స్థానిక సహాయం, ఎస్క్రో రక్షణతో.',
     'role.book': 'సూపర్‌హీరోను బుక్ చేయండి',
-    'role.be': 'సూ�ర్‌హీరోగా ఉండండి',
+    'role.be': 'సూపర్‌హీరోగా ఉండండి',
     'login.phone': 'మొబైల్ నంబర్',
     'login.phone_placeholder': '10 అంకెల మొబైల్ నంబర్',
     'login.send_otp': 'OTP పంపండి',
@@ -1361,8 +1389,9 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'login.backend_checking': 'బ్యాకెండ్ తనిఖी జరుగుతోంది...',
     'login.otp_whatsapp': 'WhatsApp ద్వారా పంపు',
     'login.otp_call': 'కాల్‌లో OTP పొందు',
-    'login.diagnostics': 'डायग्नोस्टिक्स',
+    'login.diagnostics': 'డయాగ్నస్టిక్స్',
     'login.terms': 'కొనసాగితే, మీరు మా టerms లను అంగీకరిస్తారు మరియు గోప్యత విధానాన్ని గుర్తిస్తారు.',
+    'auth.session_expired': 'మీ సెషన్ ముగిసింది. దయచేసి మళ్లీ లాగిన్ అవ్వండి.',
     // OTP
     'otp.title': 'OTP Validation',
     'otp.subtitle': 'OTP sent to',
@@ -1391,7 +1420,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'signup.phone_invalid': 'Phone must be 10 digits.',
     // Signup - Helper
     'signup.helper.title': 'Sign up',
-    'signup.helper.subtitle': 'Create helper account and complete KYC to go online.',
+    'signup.helper.subtitle': 'Superherooo ఖాతా సృష్టించి ఆన్‌లైన్ కావడానికి KYC పూర్తి చేయండి.',
     'signup.helper.kyc_notice': 'KYC documents required after signup to accept tasks.',
 
     // Onboarding
@@ -1406,7 +1435,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'onboard.skip': 'Skip',
     // Terms
     'terms.title': 'Terms & Safety',
-    'terms.line1': 'Superherooo connects customers with verified helpers.',
+    'terms.line1': 'Superherooo ఒక హైపర్‌లోకల్ సహాయ ప్లాట్‌ఫారం. త్వరిత సహాయం అవసరమైన పౌరులను ధృవీకరించిన Superherooos‌తో కలుపుతుంది.',
     'terms.line2': 'No illegal activities or unsafe tasks.',
     'terms.line3': 'Meet in public places. Verify details.',
     'terms.line4': 'Escrow holds payment until completion.',
@@ -1511,7 +1540,8 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'helper.kyc.rejected': 'KYC rejected. Re-submit.',
     // Helper - Task
     'helper.task.title': 'Job',
-    'helper.task.call_customer': 'Call Customer',
+    'helper.task.job': 'పని',
+    'helper.task.call_customer': 'పౌరుడిని కాల్ చేయండి',
     'helper.task.distance_eta': 'Distance',
     'helper.task.eta_label': 'ETA',
     'helper.task.minutes': 'min',
@@ -1587,13 +1617,20 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'helper.video_kyc.status': 'ప్రస్తుత స్థితి',
     'helper.video_kyc.refresh': 'స్థితి రిఫ్రెష్ చేయండి',
     'helper.video_kyc.video_submitted': 'వీడియో KYC సమర్పించబడింది. అడ్మిన్ సమీక్షిస్తారు.',
+    'helper.live_kyc.title': 'లైవ్ KYC',
+    'helper.live_kyc.subtitle': 'అడ్మిన్ లైవ్ వెరిఫికేషన్ ప్రారంభించినప్పుడు కాల్‌లో చేరండి.',
+    'helper.live_kyc.check': 'లైవ్ సెషన్ తనిఖీ చేయండి',
+    'helper.live_kyc.join': 'లైవ్ KYCలో చేరండి',
+    'helper.live_kyc.none': 'ఇప్పటికీ లైవ్ సెషన్ లేదు.',
+    'helper.live_kyc.error': 'లైవ్ సెషన్‌ని తనిఖీ చేయలేకపోయాం.',
+    'helper.live_kyc.status': 'సెషన్ స్థితి',
     // Helper - Notices
     'helper.notice.offline': 'You are offline.',
     'helper.notice.gps_unavailable': 'Using demo location.',
     'helper.notice.location_off': 'Location off.',
     'helper.notice.location_permission': 'Location permission needed.',
     'helper.notice.permission_missing': 'Permission missing.',
-    'helper.notice.pending_approval': 'Pending approval.',
+    'helper.notice.pending_approval': 'Your Superherooo account is pending approval. Please wait for admin verification.',
     'helper.notice.offer_expired': 'Offer expired.',
     'helper.notice.could_not_accept': 'Could not accept.',
     'helper.notice.could_not_go_online': 'Could not go online.',
@@ -1710,12 +1747,15 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'error.cancel_task': 'Could not cancel the task.',
     'error.update_status': 'Could not update status.',
     'error.upload_selfie': 'Selfie upload failed. Please try again.',
+    'error.process_selfie': 'పట్టుకున్న చిత్రాన్ని ప్రాసెస్ చేయలేకపోయాం.',
+    'error.upload_timeout': 'అప్‌లోడ్ ఎక్కువ సమయం తీసుకుంటోంది. దయచేసి మళ్లీ ప్రయత్నించండి.',
     'error.arrival_otp_required': 'Arrival OTP is required to start work.',
     'error.completion_selfie_required': 'Please upload the completion selfie first.',
     'error.completion_otp_required': 'Completion OTP is required to finish work.',
     'error.upload_notice': 'Uploading arrival selfie...',
     'error.upload_notice_completion': 'Uploading completion selfie...',
     'error.completion_uploaded': 'Completion selfie uploaded. Enter OTP to finish.',
+    'error.signup': 'ఖాతాను సృష్టించలేకపోయాం. దయచేసి మళ్లీ ప్రయత్నించండి.',
     'error.voice_unavailable': 'Voice input unavailable. Check mic permission.',
     'error.voice_failed': 'Voice input failed. Please try again.',
     'error.maps_api_key': 'Google Maps API key is missing. Please add it to the app config.',
@@ -1760,6 +1800,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'helper.task.completion_hint': 'Upload completion selfie first, then enter OTP to finish.',
     'helper.task.upload_selfie': 'Upload completion selfie',
     'helper.task.selfie_uploaded': 'Completion selfie uploaded',
+    'helper.task.status_updated': 'స్థితి అప్డేట్ అయింది',
     'helper.task.mark_status': 'Mark',
     'helper.task.great_work': 'Great work! Please rate your citizen.',
     'helper.task.rate_customer': 'Rate citizen',
@@ -1790,6 +1831,10 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'support.support': 'Support',
     'support.new': 'New',
     'support.create_new': 'Create new ticket',
+
+    // Additional - Active Task
+    'active_task.title': 'సక్రియ పని',
+    'active_task.tap': 'తెరవడానికి ట్యాప్ చేయండి',
 
     // Additional - Common
     'common.loading': 'Loading...',

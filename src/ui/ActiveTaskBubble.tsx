@@ -4,11 +4,13 @@ import { useNavigation } from '@react-navigation/native';
 
 import { useActiveTask } from '../state/ActiveTaskContext';
 import { useAuth } from '../auth/AuthContext';
+import { useI18n } from '../i18n/I18nProvider';
 import { theme } from './theme';
 
 export function ActiveTaskBubble() {
   const { activeTaskId } = useActiveTask();
   const { user, status } = useAuth();
+  const { t } = useI18n();
   const navigation = useNavigation<any>();
 
   const onPress = useCallback(() => {
@@ -27,8 +29,8 @@ export function ActiveTaskBubble() {
   return (
     <View pointerEvents="box-none" style={styles.wrap}>
       <Pressable onPress={onPress} style={styles.bubble}>
-        <Text style={styles.title}>Active Task</Text>
-        <Text style={styles.sub}>Tap to open</Text>
+        <Text style={styles.title}>{t('active_task.title')}</Text>
+        <Text style={styles.sub}>{t('active_task.tap')}</Text>
       </Pressable>
     </View>
   );

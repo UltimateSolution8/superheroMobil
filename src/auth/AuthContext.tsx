@@ -201,7 +201,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const refreshed = await refreshTokens();
             return await fn(refreshed.accessToken);
           } catch {
-            await signOut('Your session has expired. Please log in again.');
+            await signOut('auth.session_expired');
           }
         }
         throw e;

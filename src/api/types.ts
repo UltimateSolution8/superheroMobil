@@ -198,3 +198,13 @@ export type VideoKycStatusResponse = {
   livenessScore?: number | null;
   reviewerNotes?: string | null;
 };
+
+export type LiveKycSession = {
+  id: string;
+  helperId: string;
+  helperName?: string | null;
+  roomId: string;
+  token: string;
+  status: string;
+  expiresAt: string;
+};

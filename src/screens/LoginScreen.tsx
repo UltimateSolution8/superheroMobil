@@ -81,6 +81,7 @@ export function LoginScreen({ navigation, route }: Props) {
   const onSignup = useCallback(() => {
     navigation.navigate(role === 'BUYER' ? 'BuyerSignup' : 'HelperSignup');
   }, [navigation, role]);
+  const authNoticeText = authNotice ? t(authNotice) : null;
 
   return (
     <Screen>
@@ -127,7 +128,7 @@ export function LoginScreen({ navigation, route }: Props) {
           />
 
           {error ? <Notice kind="danger" text={error} /> : null}
-          {authNotice ? <Notice kind="warning" text={authNotice} onClose={clearAuthNotice} /> : null}
+          {authNoticeText ? <Notice kind="warning" text={authNoticeText} onClose={clearAuthNotice} /> : null}
 
           <View style={styles.footer}>
             <PrimaryButton label={t('login.send_otp')} onPress={onSend} disabled={!canSend} loading={busy} />

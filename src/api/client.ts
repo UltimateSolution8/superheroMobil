@@ -5,6 +5,7 @@ import type {
   CreateTaskRequest,
   CreateTaskResponse,
   HelperProfile,
+  LiveKycSession,
   VideoKycStartResponse,
   VideoKycStatusResponse,
   OtpStartResponse,
@@ -227,6 +228,13 @@ export async function helperVideoKycStatus(
   kycId: string,
 ): Promise<VideoKycStatusResponse> {
   return fetchJson(url(`/api/v1/helper/video-kyc/${kycId}/status`), {
+    method: 'GET',
+    headers: authHeaders(accessToken),
+  });
+}
+
+export async function helperLiveKycSession(accessToken: string): Promise<LiveKycSession> {
+  return fetchJson(url('/api/v1/helper/video-kyc/live'), {
     method: 'GET',
     headers: authHeaders(accessToken),
   });
