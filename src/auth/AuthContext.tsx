@@ -87,7 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (state.status !== 'signedIn') return;
-    if (!state.accessToken || state.user?.role !== 'HELPER') return;
+    if (!state.accessToken || state.user?.role === 'ADMIN') return;
     registerForPushNotifications(state.accessToken);
   }, [state.status, state.accessToken, state.user?.role]);
 

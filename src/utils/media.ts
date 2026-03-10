@@ -1,4 +1,5 @@
 import type { Asset } from 'react-native-image-picker';
+import * as FileSystem from 'expo-file-system';
 
 export type PickedFile = { uri: string; name: string; type: string };
 
@@ -18,3 +19,35 @@ export const assetToPickedFile = (asset: Asset | null | undefined, fallbackName:
     type: asset.type || 'image/jpeg',
   };
 };
+
+const isNonFileUri = (uri: string) =>
+  uri.startsWith('content://') || uri.startsWith('ph://') || uri.startsWith('assets-library://');
+
+const guessExt = (nameOrUri: string) => {
+  const match = nameOrUri.match(/\.([a-zA-Z0-9]+)$/);
+  return match ? match[1].toLowerCase() : 'jpg';
+};
+
+export async function ensureLocalFileUri(uri: string, fallbackName: string): Promise<string> {
+  if (!uri) return uri;
+  if (uri.startsWith('file://')) return uri;
+  if (isNonFileUri(uri)) {
+    const baseDir = FileSystem.cacheDirectory || FileSystem.documentDirectory;
+    if (!baseDir) return uri;
+    const ext = guessExt(fallbackName);
+    const target = `${baseDir}selfie-${Date.now()}.${ext}`;
+    try {
+      await FileSystem.copyAsync({ from: uri, to: target });
+      return target;
+    } catch {
+      try {
+        const data = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+        await FileSystem.writeAsStringAsync(target, data, { encoding: FileSystem.EncodingType.Base64 });
+        return target;
+      } catch {
+        return uri;
+      }
+    }
+  }
+  return uri.startsWith('file://') ? uri : `file://${uri}`;
+}

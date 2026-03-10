@@ -360,11 +360,17 @@ export function HelperHomeScreen({ navigation }: Props) {
         return next;
       });
     };
+    const onTaskCreated = () => {
+      // When a new task is created, refresh available tasks so helper sees it
+      loadValidTasks();
+    };
     socket.on('task.offered', onOffered);
+    socket.on('task_created', onTaskCreated);
     return () => {
       socket.off('task.offered', onOffered);
+      socket.off('task_created', onTaskCreated);
     };
-  }, [persistOffers, socket]);
+  }, [loadValidTasks, persistOffers, socket]);
 
   useEffect(() => {
     const timer = setInterval(() => {
