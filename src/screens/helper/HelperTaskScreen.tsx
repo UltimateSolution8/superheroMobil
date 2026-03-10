@@ -22,7 +22,7 @@ import { TaskSkeleton } from '../../ui/TaskSkeleton';
 import { MemoizedMapView } from '../../ui/MemoizedMapView';
 import { theme } from '../../ui/theme';
 import { ensureCameraPermissions, ensureGalleryPermissions } from '../../utils/permissions';
-import { assetToPickedFile } from '../../utils/media';
+import { assetToPickedFile, ensureLocalFileUri } from '../../utils/media';
 import { enqueueUpload } from '../../utils/uploadQueue';
 import { API_BASE_URL, ENABLE_PRESIGNED_SELFIES } from '../../config';
 import type { HelperStackParamList } from '../../navigation/types';
@@ -375,9 +375,11 @@ export function HelperTaskScreen({ route, navigation }: Props) {
     async (asset: Asset, stage: 'ARRIVAL' | 'COMPLETION', requireJpeg: boolean) => {
       const base = assetToPickedFile(asset as any, `${stage.toLowerCase()}-selfie-${Date.now()}.jpg`);
       if (!base) return null;
+      const localUri = await ensureLocalFileUri(base.uri, base.name);
+      const baseFile = { ...base, uri: localUri };
       try {
         const processed = await manipulateAsync(
-          base.uri,
+          localUri,
           [{ resize: { width: 960 } }],
           { compress: 0.7, format: SaveFormat.JPEG },
         );
@@ -387,7 +389,12 @@ export function HelperTaskScreen({ route, navigation }: Props) {
           type: 'image/jpeg',
         };
       } catch {
-        return requireJpeg ? null : base;
+        if (!requireJpeg) return baseFile;
+        const isJpeg =
+          baseFile.type?.includes('jpeg') ||
+          baseFile.type?.includes('jpg') ||
+          /\.jpe?g$/i.test(baseFile.name);
+        return isJpeg ? { ...baseFile, type: 'image/jpeg', name: baseFile.name.replace(/\.\w+$/, '.jpg') } : null;
       }
     },
     [],
