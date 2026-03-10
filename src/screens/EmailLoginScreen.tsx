@@ -35,20 +35,20 @@ export function EmailLoginScreen({ navigation }: Props) {
       if (e instanceof ApiError) {
         setError(e.message);
       } else {
-        setError('Could not sign in. Check your network and try again.');
+        setError(t('error.sign_in'));
       }
     } finally {
       setBusy(false);
     }
-  }, [busy, canLogin, email, loginWithPassword, password]);
+  }, [busy, canLogin, email, loginWithPassword, password, t]);
 
   const onSignup = useCallback(() => {
-    Alert.alert('Sign up', 'Choose account type', [
-      { text: 'Super-customer', onPress: () => navigation.navigate('BuyerSignup') },
-      { text: 'Superheroo', onPress: () => navigation.navigate('HelperSignup') },
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('signup.choose_title'), t('signup.choose_subtitle'), [
+      { text: t('role.citizen'), onPress: () => navigation.navigate('BuyerSignup') },
+      { text: t('role.superherooo'), onPress: () => navigation.navigate('HelperSignup') },
+      { text: t('common.cancel'), style: 'cancel' },
     ]);
-  }, [navigation]);
+  }, [navigation, t]);
 
   return (
     <Screen>
@@ -60,23 +60,23 @@ export function EmailLoginScreen({ navigation }: Props) {
         </View>
 
         <TextField
-          label="Email"
+          label={t('signup.email')}
           value={email}
           onChangeText={setEmail}
-          placeholder="buyer1@helpinminutes.app"
+          placeholder={t('email.placeholder')}
           keyboardType="default"
         />
 
         <TextField
-          label="Password"
+          label={t('signup.password')}
           value={password}
           onChangeText={setPassword}
-          placeholder="Password"
+          placeholder={t('signup.password_placeholder')}
           secureTextEntry
         />
 
         {error ? <Notice kind="danger" text={error} /> : null}
-        {!emailOk && email.trim().length > 0 ? <Notice kind="warning" text="Enter a valid email address." /> : null}
+        {!emailOk && email.trim().length > 0 ? <Notice kind="warning" text={t('signup.email_invalid')} /> : null}
 
         <PrimaryButton label={t('email.sign_in')} onPress={onLogin} disabled={!canLogin} loading={busy} />
         <View style={styles.signupRow}>

@@ -36,12 +36,12 @@ export function OtpScreen({ route, navigation }: Props) {
       if (e instanceof ApiError) {
         setError(e.message);
       } else {
-        setError('Could not verify OTP. Check your network and try again.');
+        setError(t('error.verify_otp'));
       }
     } finally {
       setBusy(false);
     }
-  }, [busy, canVerify, otp, phone, role, verifyOtp]);
+  }, [busy, canVerify, otp, phone, role, t, verifyOtp]);
 
   const onEdit = useCallback(() => navigation.goBack(), [navigation]);
 
@@ -58,11 +58,11 @@ export function OtpScreen({ route, navigation }: Props) {
       </View>
 
       {DEV_SHOW_OTP && devOtp ? (
-        <Notice kind="warning" text={`Dev OTP: ${devOtp}`} />
+        <Notice kind="warning" text={`${t('otp.dev_label')} ${devOtp}`} />
       ) : null}
 
       <TextField
-        label="OTP"
+        label={t('otp.label')}
         value={otp}
         onChangeText={setOtp}
         placeholder={t('otp.placeholder')}

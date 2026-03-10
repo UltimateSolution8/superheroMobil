@@ -172,7 +172,7 @@ export function HelperVideoKycScreen({ navigation }: Props) {
         <TextInput
           value={docType}
           onChangeText={setDocType}
-          placeholder="AADHAAR / DL / PASSPORT"
+          placeholder={t('helper.kyc.doc_type_placeholder')}
           placeholderTextColor={theme.colors.muted}
           style={styles.input}
         />

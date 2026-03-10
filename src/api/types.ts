@@ -42,6 +42,7 @@ export type CreateTaskRequest = {
   lat: number;
   lng: number;
   addressText?: string | null;
+  scheduledAt?: string | null;
 };
 
 export type CreateTaskResponse = {
@@ -98,6 +99,7 @@ export type Task = {
   cancelReason?: string | null;
   cancelledByRole?: string | null;
   cancelledAt?: string | null;
+  scheduledAt?: string | null;
   createdAt: string;
 };
 

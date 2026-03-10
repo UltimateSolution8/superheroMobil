@@ -10,11 +10,13 @@ import { Notice } from '../ui/Notice';
 import { theme } from '../ui/theme';
 import type { AuthStackParamList } from '../navigation/types';
 import { ApiError } from '../api/http';
+import { useI18n } from '../i18n/I18nProvider';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'HelperSignup'>;
 
 export function HelperSignupScreen({ navigation }: Props) {
   const { signupWithPassword } = useAuth();
+  const { t } = useI18n();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [phone, setPhone] = useState('');
@@ -34,57 +36,57 @@ export function HelperSignupScreen({ navigation }: Props) {
       await signupWithPassword(email.trim(), password.trim(), 'HELPER', phone.trim() || null, displayName.trim() || null);
     } catch (e) {
       if (e instanceof ApiError) {
-        setError(e.message || `Signup failed (${e.status})`);
+        setError(e.message || t('error.signup'));
       } else {
-        setError('Could not create account. Please try again.');
+        setError(t('error.signup'));
       }
     } finally {
       setBusy(false);
     }
-  }, [busy, canSubmit, displayName, email, password, phone, signupWithPassword]);
+  }, [busy, canSubmit, displayName, email, password, phone, signupWithPassword, t]);
 
   return (
     <Screen>
       <KeyboardAvoidingView behavior={Platform.select({ ios: 'padding', android: undefined })} style={styles.kav}>
         <View style={styles.header}>
-          <Text style={styles.h1}>Sign up</Text>
-          <Text style={styles.sub}>Create a helper account and complete KYC to go online.</Text>
+          <Text style={styles.h1}>{t('signup.helper.title')}</Text>
+          <Text style={styles.sub}>{t('signup.helper.subtitle')}</Text>
         </View>
 
         <View style={styles.form}>
-          <TextField label="Email" value={email} onChangeText={setEmail} placeholder="helper@example.com" />
+          <TextField label={t('signup.email')} value={email} onChangeText={setEmail} placeholder={t('signup.email_placeholder')} />
           <TextField
-            label="Password"
+            label={t('signup.password')}
             value={password}
             onChangeText={setPassword}
-            placeholder="Min 6 characters"
+            placeholder={t('signup.password_placeholder')}
             secureTextEntry
           />
           <TextField
-            label="Phone (optional)"
+            label={t('signup.phone_optional')}
             value={phone}
             onChangeText={setPhone}
-            placeholder="10-digit mobile number"
+            placeholder={t('signup.phone_placeholder')}
             keyboardType="phone-pad"
           />
           <TextField
-            label="Display name (optional)"
+            label={t('signup.display_name_optional')}
             value={displayName}
             onChangeText={setDisplayName}
-            placeholder="Akash"
+            placeholder={t('signup.display_name_placeholder')}
           />
         </View>
 
-        <Notice kind="warning" text="KYC documents are required after signup to accept tasks." />
+        <Notice kind="warning" text={t('signup.helper.kyc_notice')} />
 
         {error ? <Notice kind="danger" text={error} /> : null}
-        {!emailOk && email.trim().length > 0 ? <Notice kind="warning" text="Enter a valid email address." /> : null}
-        {!phoneOk ? <Notice kind="warning" text="Phone must be 10 digits." /> : null}
+        {!emailOk && email.trim().length > 0 ? <Notice kind="warning" text={t('signup.email_invalid')} /> : null}
+        {!phoneOk ? <Notice kind="warning" text={t('signup.phone_invalid')} /> : null}
 
         <View style={styles.footer}>
-          <PrimaryButton label="Sign up" onPress={onSubmit} disabled={!canSubmit} loading={busy} />
+          <PrimaryButton label={t('login.sign_up')} onPress={onSubmit} disabled={!canSubmit} loading={busy} />
           <Text onPress={() => navigation.goBack()} style={styles.alt}>
-            Back to login
+            {t('signup.back_to_login')}
           </Text>
         </View>
       </KeyboardAvoidingView>

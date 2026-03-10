@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
@@ -12,6 +12,7 @@ import { Notice } from '../../ui/Notice';
 import { SkeletonPlaceholder } from '../../ui/SkeletonPlaceholder';
 import { theme } from '../../ui/theme';
 import type { BuyerStackParamList, HelperStackParamList } from '../../navigation/types';
+import { useI18n } from '../../i18n/I18nProvider';
 
 type Props = NativeStackScreenProps<BuyerStackParamList & HelperStackParamList, 'History'>;
 
@@ -23,12 +24,31 @@ type HistoryRowProps = {
 
 export const HistoryRow = React.memo(
   function HistoryRow({ task, onOpen }: HistoryRowProps) {
+    const { t } = useI18n();
     const onPress = useCallback(() => onOpen(task.id), [onOpen, task.id]);
+    const statusLabel = useMemo(() => {
+      switch (task.status) {
+        case 'SEARCHING':
+          return t('status.searching');
+        case 'ASSIGNED':
+          return t('status.assigned');
+        case 'ARRIVED':
+          return t('status.arrived');
+        case 'STARTED':
+          return t('status.started');
+        case 'COMPLETED':
+          return t('status.completed');
+        case 'CANCELLED':
+          return t('status.cancelled');
+        default:
+          return task.status;
+      }
+    }, [t, task.status]);
     return (
       <Pressable style={styles.row} onPress={onPress}>
         <Text style={styles.title}>{task.title}</Text>
-        <Text style={styles.meta}>Status: {task.status}</Text>
-        <Text style={styles.meta}>Budget: INR {(task.budgetPaise / 100).toFixed(0)}</Text>
+        <Text style={styles.meta}>{t('history.status')}: {statusLabel}</Text>
+        <Text style={styles.meta}>{t('history.budget')}: {t('currency.inr')} {(task.budgetPaise / 100).toFixed(0)}</Text>
         {task.addressText ? <Text style={styles.meta}>{task.addressText}</Text> : null}
       </Pressable>
     );
@@ -63,6 +83,7 @@ const renderHistoryRow = ({ item, onOpen }: { item: Task; onOpen: (id: string) =
 
 export function HistoryScreen({ navigation }: Props) {
   const { user, withAuth } = useAuth();
+  const { t } = useI18n();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [busy, setBusy] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
@@ -75,12 +96,12 @@ export function HistoryScreen({ navigation }: Props) {
       const list = await withAuth((t) => api.listMyTasks(t));
       setTasks(list || []);
     } catch {
-      setError('Could not load task history.');
+      setError(t('history.load_error'));
     } finally {
       setBusy(false);
       setInitialLoad(false);
     }
-  }, [withAuth]);
+  }, [t, withAuth]);
 
   // Only useFocusEffect — fires on both mount + re-focus (fixes double load)
   useFocusEffect(
@@ -112,9 +133,9 @@ export function HistoryScreen({ navigation }: Props) {
     return (
       <Screen>
         <View style={styles.topBar}>
-          <Text style={styles.h1}>History</Text>
+          <Text style={styles.h1}>{t('history.title')}</Text>
           <Text onPress={() => navigation.goBack()} style={styles.link}>
-            Back
+            {t('common.back')}
           </Text>
         </View>
         <HistorySkeleton />
@@ -125,16 +146,16 @@ export function HistoryScreen({ navigation }: Props) {
   return (
     <Screen>
       <View style={styles.topBar}>
-        <Text style={styles.h1}>History</Text>
+        <Text style={styles.h1}>{t('history.title')}</Text>
         <Text onPress={() => navigation.goBack()} style={styles.link}>
-          Back
+          {t('common.back')}
         </Text>
       </View>
 
       {error ? <Notice kind="danger" text={error} /> : null}
 
       <View style={styles.card}>
-        <PrimaryButton label="Refresh" onPress={load} loading={busy} variant="ghost" />
+        <PrimaryButton label={t('common.refresh')} onPress={load} loading={busy} variant="ghost" />
         <FlatList
           data={tasks}
           keyExtractor={keyExtractor}
@@ -143,7 +164,7 @@ export function HistoryScreen({ navigation }: Props) {
           initialNumToRender={8}
           windowSize={7}
           removeClippedSubviews
-          ListEmptyComponent={<Text style={styles.muted}>No tasks yet.</Text>}
+          ListEmptyComponent={<Text style={styles.muted}>{t('history.no_tasks')}</Text>}
         />
       </View>
     </Screen>

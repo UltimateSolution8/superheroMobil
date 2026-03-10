@@ -3,10 +3,10 @@ import { Alert, AppState, Linking, Platform, ScrollView, StyleSheet, Text, View 
 import type { Asset } from 'react-native-image-picker';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import * as Location from 'expo-location';
-import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import { useFocusEffect } from '@react-navigation/native';
+import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView from 'react-native-maps';
 
 import type { Task, TaskStatus, TaskStatusChangedEvent } from '../../api/types';
 import * as api from '../../api/client';
@@ -28,10 +28,9 @@ import { API_BASE_URL, ENABLE_PRESIGNED_SELFIES } from '../../config';
 import type { HelperStackParamList } from '../../navigation/types';
 import { DEMO_FALLBACK_LOCATION, GOOGLE_MAPS_API_KEY } from '../../config';
 import { useActiveTask } from '../../state/ActiveTaskContext';
+import { useI18n } from '../../i18n/I18nProvider';
 
 type Props = NativeStackScreenProps<HelperStackParamList, 'HelperTask'>;
-
-type PickedFile = { uri: string; name: string; type: string };
 
 function nextStatus(s: TaskStatus): TaskStatus | null {
   if (s === 'ASSIGNED') return 'ARRIVED';
@@ -41,21 +40,22 @@ function nextStatus(s: TaskStatus): TaskStatus | null {
 }
 
 const ArrivalOtpForm = React.memo(function ArrivalOtpForm({ onSubmit, busy, load }: { onSubmit: (otp: string) => void; busy: boolean; load: () => void }) {
+  const { t } = useI18n();
   const [otp, setOtp] = useState('');
   return (
     <View style={styles.formWrap}>
-      <Text style={styles.muted}>Arrival OTP</Text>
-      <Text style={styles.otpHint}>Ask the super-customer for the arrival OTP to start work.</Text>
+      <Text style={styles.muted}>{t('helper.task.arrival_otp_title')}</Text>
+      <Text style={styles.otpHint}>{t('helper.task.arrival_otp_hint')}</Text>
       <TextField
-        label="Arrival OTP"
+        label={t('helper.task.arrival_otp_label')}
         value={otp}
         onChangeText={setOtp}
-        placeholder="Enter arrival OTP"
+        placeholder={t('helper.task.arrival_otp_placeholder')}
         keyboardType="number-pad"
       />
       <View style={styles.actions}>
-        <PrimaryButton label="Refresh" onPress={load} variant="ghost" style={styles.half} />
-        <PrimaryButton label="Start Work" onPress={() => onSubmit(otp)} loading={busy} disabled={busy || otp.length < 4} style={styles.half} />
+        <PrimaryButton label={t('common.refresh')} onPress={load} variant="ghost" style={styles.half} />
+        <PrimaryButton label={t('helper.task.start_work')} onPress={() => onSubmit(otp)} loading={busy} disabled={busy || otp.length < 4} style={styles.half} />
       </View>
     </View>
   );
@@ -76,14 +76,15 @@ const CompletionOtpForm = React.memo(function CompletionOtpForm({
   uploadCompletionSelfie: () => void;
   completionSelfieBusy: boolean;
 }) {
+  const { t } = useI18n();
   const [otp, setOtp] = useState('');
   return (
     <View style={styles.formWrap}>
-      <Text style={styles.muted}>Completion</Text>
-      <Text style={styles.otpHint}>Upload completion selfie first, then enter OTP to finish.</Text>
+      <Text style={styles.muted}>{t('helper.task.completion_title')}</Text>
+      <Text style={styles.otpHint}>{t('helper.task.completion_hint')}</Text>
       <View style={{ marginBottom: 12 }}>
         <PrimaryButton
-          label={completionSelfieDone ? 'Completion selfie uploaded' : 'Upload completion selfie'}
+          label={completionSelfieDone ? t('helper.task.completion_selfie_done') : t('helper.task.upload_completion_selfie')}
           onPress={uploadCompletionSelfie}
           loading={completionSelfieBusy}
           disabled={completionSelfieDone}
@@ -91,16 +92,16 @@ const CompletionOtpForm = React.memo(function CompletionOtpForm({
         />
       </View>
       <TextField
-        label="Completion OTP"
+        label={t('helper.task.completion_otp_label')}
         value={otp}
         onChangeText={setOtp}
-        placeholder="Enter completion OTP"
+        placeholder={t('helper.task.completion_otp_placeholder')}
         keyboardType="number-pad"
       />
       <View style={styles.actions}>
-        <PrimaryButton label="Refresh" onPress={load} variant="ghost" style={styles.half} />
+        <PrimaryButton label={t('common.refresh')} onPress={load} variant="ghost" style={styles.half} />
         <PrimaryButton
-          label="Mark Completed"
+          label={t('helper.task.mark_completed')}
           onPress={() => onSubmit(otp)}
           loading={busy}
           disabled={busy || !completionSelfieDone || otp.length < 4}
@@ -111,21 +112,12 @@ const CompletionOtpForm = React.memo(function CompletionOtpForm({
   );
 });
 
-function statusLabel(s: TaskStatus) {
-  if (s === 'SEARCHING') return 'Searching';
-  if (s === 'ASSIGNED') return 'Assigned';
-  if (s === 'ARRIVED') return 'Arrived';
-  if (s === 'STARTED') return 'Started';
-  if (s === 'COMPLETED') return 'Completed';
-  if (s === 'CANCELLED') return 'Cancelled';
-  return s;
-}
-
 export function HelperTaskScreen({ route, navigation }: Props) {
   const { taskId } = route.params;
   const { withAuth } = useAuth();
   const socket = useSocket();
   const { setActiveTaskId } = useActiveTask();
+  const { t } = useI18n();
 
   const [task, setTask] = useState<Task | null>(null);
   const [busy, setBusy] = useState(false);
@@ -164,12 +156,12 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       const t = await withAuth((at) => api.getTask(at, taskId));
       setTask(t);
     } catch {
-      setError('Could not load task.');
+      setError(t('error.load_task'));
     } finally {
       setBusy(false);
       setInitialLoad(false);
     }
-  }, [taskId, withAuth]);
+  }, [taskId, t, withAuth]);
 
   // Only useFocusEffect — fires on both mount + re-focus (fixes double load)
   useFocusEffect(
@@ -212,6 +204,27 @@ export function HelperTaskScreen({ route, navigation }: Props) {
   const canCancel = status === 'ASSIGNED' || status === 'SEARCHING';
   const completionSelfieDone = Boolean(task?.completionSelfieUrl);
   const previousStatus = useRef<TaskStatus | null>(null);
+  const statusLabel = useCallback(
+    (s: TaskStatus) => {
+      switch (s) {
+        case 'SEARCHING':
+          return t('status.searching');
+        case 'ASSIGNED':
+          return t('status.assigned');
+        case 'ARRIVED':
+          return t('status.arrived');
+        case 'STARTED':
+          return t('status.started');
+        case 'COMPLETED':
+          return t('status.completed');
+        case 'CANCELLED':
+          return t('status.cancelled');
+        default:
+          return s;
+      }
+    },
+    [t],
+  );
 
   useEffect(() => {
     if (previousStatus.current && previousStatus.current !== 'COMPLETED' && status === 'COMPLETED') {
@@ -248,17 +261,17 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       const updated = await withAuth((at) => api.rateTask(at, taskId, rating, ratingComment.trim() || null));
       setTask(updated);
     } catch {
-      setError('Could not submit rating.');
+      setError(t('error.submit_rating'));
     } finally {
       setRatingBusy(false);
     }
-  }, [canRate, rating, ratingBusy, ratingComment, taskId, withAuth]);
+  }, [canRate, rating, ratingBusy, ratingComment, t, taskId, withAuth]);
 
   const submitCancel = useCallback(async () => {
     if (!canCancel || cancelBusy) return;
     const reason = cancelReason.trim();
     if (!reason) {
-      setError('Please add a cancellation reason.');
+      setError(t('task.cancel_reason_required'));
       return;
     }
     setCancelBusy(true);
@@ -268,11 +281,11 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       setTask(updated);
       setCancelReason('');
     } catch {
-      setError('Could not cancel the task.');
+      setError(t('error.cancel_task'));
     } finally {
       setCancelBusy(false);
     }
-  }, [canCancel, cancelBusy, cancelReason, taskId, withAuth]);
+  }, [canCancel, cancelBusy, cancelReason, t, taskId, withAuth]);
 
   const safeSetState = useCallback((fn: () => void) => {
     if (mountedRef.current) {
@@ -285,7 +298,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       try {
         const allowed = await ensureCameraPermissions();
         if (!allowed) {
-          safeSetState(() => setError('Camera permission is required to capture a selfie.'));
+          safeSetState(() => setError(t('error.camera_permission')));
           return null;
         }
         const res = await launchCamera({
@@ -299,12 +312,12 @@ export function HelperTaskScreen({ route, navigation }: Props) {
         });
         if (res.didCancel) return null;
         if (res.errorCode) {
-          setError('Camera is unavailable. Please choose from gallery.');
+          setError(t('error.camera_unavailable'));
           return null;
         }
         return res.assets?.[0] ?? null;
       } catch {
-        setError('Camera is unavailable. Please choose from gallery.');
+        setError(t('error.camera_unavailable'));
         return null;
       }
     };
@@ -313,7 +326,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       try {
         const allowed = await ensureGalleryPermissions();
         if (!allowed) {
-          setError('Gallery permission is required to select a selfie.');
+          setError(t('error.gallery_permission'));
           return null;
         }
         const pick = await launchImageLibrary({
@@ -326,12 +339,12 @@ export function HelperTaskScreen({ route, navigation }: Props) {
         });
         if (pick.didCancel) return null;
         if (pick.errorCode) {
-          setError('Could not open gallery.');
+          setError(t('error.gallery_unavailable'));
           return null;
         }
         return pick.assets?.[0] ?? null;
       } catch {
-        setError('Could not open gallery.');
+        setError(t('error.gallery_unavailable'));
         return null;
       }
     };
@@ -341,31 +354,54 @@ export function HelperTaskScreen({ route, navigation }: Props) {
 
     return new Promise<Asset | null>((resolve) => {
       Alert.alert(
-        'Camera unavailable',
-        'Would you like to choose a selfie from your gallery?',
+        t('helper.task.camera_unavailable_title'),
+        t('helper.task.camera_unavailable_body'),
         [
           {
-            text: 'Choose from gallery',
+            text: t('common.choose_gallery'),
             onPress: async () => {
               const asset = await pickGallery();
               resolve(asset);
             },
           },
-          { text: 'Cancel', style: 'cancel', onPress: () => resolve(null) },
+          { text: t('common.cancel'), style: 'cancel', onPress: () => resolve(null) },
         ],
         { cancelable: true },
       );
     });
-  }, []);
+  }, [safeSetState, t]);
+
+  const prepareSelfieFile = useCallback(
+    async (asset: Asset, stage: 'ARRIVAL' | 'COMPLETION', requireJpeg: boolean) => {
+      const base = assetToPickedFile(asset as any, `${stage.toLowerCase()}-selfie-${Date.now()}.jpg`);
+      if (!base) return null;
+      try {
+        const processed = await manipulateAsync(
+          base.uri,
+          [{ resize: { width: 960 } }],
+          { compress: 0.7, format: SaveFormat.JPEG },
+        );
+        return {
+          uri: processed.uri,
+          name: base.name.replace(/\.\w+$/, '.jpg'),
+          type: 'image/jpeg',
+        };
+      } catch {
+        return requireJpeg ? null : base;
+      }
+    },
+    [],
+  );
 
   const uploadCheckpointSelfie = useCallback(
     async (stage: 'ARRIVAL' | 'COMPLETION') => {
       const a = await pickSelfie();
       if (!a || !a.uri) return false;
 
-      const selfie = assetToPickedFile(a as any, `${stage.toLowerCase()}-selfie-${Date.now()}.jpg`);
+      safeSetState(() => setNotice(t('helper.task.processing_selfie')));
+      const selfie = await prepareSelfieFile(a, stage, ENABLE_PRESIGNED_SELFIES);
       if (!selfie) {
-        setError('Could not access captured image.');
+        setError(t('error.process_selfie'));
         return false;
       }
 
@@ -397,7 +433,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       };
 
       try {
-        safeSetState(() => setNotice('Getting location...'));
+        safeSetState(() => setNotice(t('helper.task.getting_location')));
         const perm = await Location.requestForegroundPermissionsAsync();
         if (perm.status !== 'granted') {
           throw new Error('Location permission missing');
@@ -408,7 +444,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
         );
         lat = p.coords.latitude;
         lng = p.coords.longitude;
-        safeSetState(() => setNotice('Resolving address...'));
+        safeSetState(() => setNotice(t('helper.task.resolving_address')));
         const rev = await withTimeout(
           Location.reverseGeocodeAsync({ latitude: lat, longitude: lng }),
           6000,
@@ -424,10 +460,12 @@ export function HelperTaskScreen({ route, navigation }: Props) {
 
       try {
         const at = await withAuth((t) => Promise.resolve(t));
-        safeSetState(() => setNotice(`Queuing ${stage === 'ARRIVAL' ? 'arrival' : 'completion'} selfie...`));
+        safeSetState(() =>
+          setNotice(stage === 'ARRIVAL' ? t('helper.task.queue_arrival_selfie') : t('helper.task.queue_completion_selfie')),
+        );
 
         if (ENABLE_PRESIGNED_SELFIES) {
-          await enqueueUpload({
+          const res = await enqueueUpload({
             type: 'presigned',
             id: `selfie-${taskId}-${stage}-${Date.now()}`,
             url: API_BASE_URL,
@@ -441,9 +479,27 @@ export function HelperTaskScreen({ route, navigation }: Props) {
               capturedAt: new Date().toISOString()
             },
             accessToken: at
-          });
+          }, { enqueueOnFailure: false });
+          if (!res.success) {
+            const fallback = await enqueueUpload({
+              id: `selfie-${taskId}-${stage}-${Date.now()}`,
+              url: `${API_BASE_URL}/api/v1/tasks/${taskId}/selfie`,
+              file: selfie,
+              formFields: {
+                stage,
+                lat: String(lat),
+                lng: String(lng),
+                addressText: address,
+                capturedAt: new Date().toISOString()
+              },
+              accessToken: at
+            });
+            if (!fallback.success) {
+              throw new Error(fallback.error || t('error.upload_selfie'));
+            }
+          }
         } else {
-          await enqueueUpload({
+          const res = await enqueueUpload({
             id: `selfie-${taskId}-${stage}-${Date.now()}`,
             url: `${API_BASE_URL}/api/v1/tasks/${taskId}/selfie`,
             file: selfie,
@@ -456,6 +512,9 @@ export function HelperTaskScreen({ route, navigation }: Props) {
             },
             accessToken: at
           });
+          if (!res.success) {
+            throw new Error(res.error || t('error.upload_selfie'));
+          }
         }
 
         // Optimistic UI update to unblock the user immediately
@@ -473,13 +532,13 @@ export function HelperTaskScreen({ route, navigation }: Props) {
           if (err instanceof Error && err.message) {
             setError(err.message);
           } else {
-            setError('Selfie upload failed. Please try again.');
+            setError(t('error.upload_selfie'));
           }
         });
         return false;
       }
     },
-    [safeSetState, task, taskId, withAuth],
+    [prepareSelfieFile, safeSetState, t, task, taskId, withAuth],
   );
 
   const advance = useCallback(async (providedOtp?: string) => {
@@ -494,7 +553,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
     busyTimeoutRef.current = setTimeout(() => {
       if (!mountedRef.current) return;
       setBusy(false);
-      setError('Upload is taking too long. Please try again.');
+      setError(t('error.upload_timeout'));
     }, 45_000);
     try {
       if (next === 'ARRIVED') {
@@ -508,19 +567,19 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       }
       if (next === 'STARTED') {
         if (!providedOtp || !providedOtp.trim()) {
-          setError('Arrival OTP is required to start work.');
+          setError(t('error.arrival_otp_required'));
           setBusy(false);
           return;
         }
       }
       if (next === 'COMPLETED') {
         if (!completionSelfieDone) {
-          setError('Please upload the completion selfie first.');
+          setError(t('error.completion_selfie_required'));
           setBusy(false);
           return;
         }
         if (!providedOtp || !providedOtp.trim()) {
-          setError('Completion OTP is required to finish work.');
+          setError(t('error.completion_otp_required'));
           setBusy(false);
           return;
         }
@@ -529,13 +588,13 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       const otp = providedOtp?.trim() || null;
       const updated = await withAuth((at) => api.updateTaskStatus(at, taskId, next, otp));
       setTask(updated);
-      setNotice(`Status updated: ${statusLabel(next)}`);
+      setNotice(`${t('helper.task.status_updated')}: ${statusLabel(next)}`);
       setTimeout(() => setNotice(null), 1500);
     } catch (e) {
       if (e instanceof Error && e.message) {
         setError(e.message);
       } else {
-        setError('Could not update status.');
+        setError(t('error.update_status'));
       }
     } finally {
       if (busyTimeoutRef.current) {
@@ -544,7 +603,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       }
       setBusy(false);
     }
-  }, [arrivalSelfieDone, busy, completionSelfieDone, next, statusLabel, taskId, uploadCheckpointSelfie, withAuth]);
+  }, [arrivalSelfieDone, busy, completionSelfieDone, next, statusLabel, t, taskId, uploadCheckpointSelfie, withAuth]);
 
   const uploadCompletionSelfie = useCallback(async () => {
     if (completionSelfieBusy || completionSelfieDone) return;
@@ -555,14 +614,14 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       if (!done) return;
       const refreshed = await withAuth((at) => api.getTask(at, taskId));
       setTask(refreshed);
-      setNotice('Completion selfie uploaded. Enter OTP to finish.');
+      setNotice(t('error.completion_uploaded'));
       setTimeout(() => setNotice(null), 2000);
     } catch {
-      setError('Selfie upload failed. Please try again.');
+      setError(t('error.upload_selfie'));
     } finally {
       setCompletionSelfieBusy(false);
     }
-  }, [completionSelfieBusy, completionSelfieDone, taskId, uploadCheckpointSelfie, withAuth]);
+  }, [completionSelfieBusy, completionSelfieDone, taskId, t, uploadCheckpointSelfie, withAuth]);
 
   const backHome = useCallback(() => navigation.popToTop(), [navigation]);
 
@@ -692,13 +751,13 @@ export function HelperTaskScreen({ route, navigation }: Props) {
   const mapMarkers = useMemo(() => {
     const list = [];
     if (hasTaskCoords) {
-      list.push({ key: 'customer', coordinate: { latitude: taskLat, longitude: taskLng }, title: 'Super-customer' });
+      list.push({ key: 'customer', coordinate: { latitude: taskLat, longitude: taskLng }, title: t('role.citizen') });
     }
     if (helperLoc) {
-      list.push({ key: 'helper', coordinate: { latitude: helperLoc.lat, longitude: helperLoc.lng }, title: 'You' });
+      list.push({ key: 'helper', coordinate: { latitude: helperLoc.lat, longitude: helperLoc.lng }, title: t('map.you') });
     }
     return list;
-  }, [hasTaskCoords, taskLat, taskLng, helperLoc]);
+  }, [hasTaskCoords, taskLat, taskLng, helperLoc, t]);
 
   if (initialLoad) {
     return (
@@ -748,13 +807,13 @@ export function HelperTaskScreen({ route, navigation }: Props) {
         <View style={styles.card}>
           <Text style={styles.status}>{statusLabel(status)}</Text>
           {task?.title ? <Text style={styles.title}>{task.title}</Text> : null}
-          {task?.addressText ? <Text style={styles.muted}>Address: {task.addressText}</Text> : null}
+          {task?.addressText ? <Text style={styles.muted}>{t('task.address')}: {task.addressText}</Text> : null}
           {task?.description ? <Text style={styles.desc}>{task.description}</Text> : null}
           <Text style={styles.muted}>
-            Distance: {helperDistance == null ? '--' : `${(helperDistance / 1000).toFixed(2)} km`} • ETA:{' '}
-            {helperEta == null ? '--' : `${helperEta} min`}
+            {t('task.distance')}: {helperDistance == null ? '--' : `${(helperDistance / 1000).toFixed(2)} km`} • {t('task.eta_label')}{' '}
+            {helperEta == null ? '--' : `${helperEta} ${t('helper.task.minutes')}`}
           </Text>
-          <PrimaryButton label="Open in Maps" onPress={openMaps} variant="ghost" />
+          <PrimaryButton label={t('task.open_maps')} onPress={openMaps} variant="ghost" />
 
           {next === 'STARTED' ? (
             <ArrivalOtpForm onSubmit={(o) => advance(o)} busy={busy} load={load} />
@@ -774,13 +833,13 @@ export function HelperTaskScreen({ route, navigation }: Props) {
           {canCancel ? (
             <View style={styles.cancelBox}>
               <TextField
-                label="Cancellation reason"
+                label={t('task.cancellation_reason')}
                 value={cancelReason}
                 onChangeText={setCancelReason}
-                placeholder="Share why you are cancelling"
+                placeholder={t('task.share_cancelling')}
               />
               <PrimaryButton
-                label="Cancel task"
+                label={t('task.cancel_task')}
                 onPress={submitCancel}
                 loading={cancelBusy}
                 variant="danger"
@@ -805,7 +864,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       {showStickyFooter ? (
         <View style={styles.stickyFooter}>
           <PrimaryButton
-            label={`Mark ${statusLabel(next)}`}
+            label={`${t('helper.task.mark')} ${statusLabel(next)}`}
             onPress={() => advance()}
             disabled={!next || (next === 'COMPLETED' && !completionSelfieDone)}
             loading={busy}
@@ -828,78 +887,90 @@ export function HelperTaskScreen({ route, navigation }: Props) {
 
 // Sub-components
 
-const TaskHeader = memo(({ onMenu, onRefresh, onBack }: any) => (
-  <View style={styles.topBar}>
-    <MenuButton onPress={onMenu} />
-    <Text style={styles.h1}>Job</Text>
-    <View style={styles.topActions}>
-      <Text onPress={onRefresh} style={styles.link}>Refresh</Text>
-      <Text onPress={onBack} style={styles.link}>Back</Text>
+const TaskHeader = memo(({ onMenu, onRefresh, onBack }: any) => {
+  const { t } = useI18n();
+  return (
+    <View style={styles.topBar}>
+      <MenuButton onPress={onMenu} />
+      <Text style={styles.h1}>{t('helper.task.title')}</Text>
+      <View style={styles.topActions}>
+        <Text onPress={onRefresh} style={styles.link}>{t('common.refresh')}</Text>
+        <Text onPress={onBack} style={styles.link}>{t('common.back')}</Text>
+      </View>
     </View>
-  </View>
-));
+  );
+});
 
-const CustomerContactCard = memo(({ buyerPhone, name, avgRating, completedCount }: any) => (
-  <View style={styles.contactRow}>
-    <View style={styles.flex1}>
-      <Text style={styles.label}>Super-customer</Text>
-      <Text style={styles.value}>{name ?? buyerPhone}</Text>
-      <Text style={styles.value}>{buyerPhone}</Text>
-      {avgRating != null ? (
-        <Text style={styles.muted}>
-          Rating: {avgRating.toFixed(1)} / 5
-          {completedCount != null ? ` · ${completedCount} tasks` : ''}
-        </Text>
-      ) : null}
+const CustomerContactCard = memo(({ buyerPhone, name, avgRating, completedCount }: any) => {
+  const { t } = useI18n();
+  return (
+    <View style={styles.contactRow}>
+      <View style={styles.flex1}>
+        <Text style={styles.label}>{t('role.citizen')}</Text>
+        <Text style={styles.value}>{name ?? buyerPhone}</Text>
+        <Text style={styles.value}>{buyerPhone}</Text>
+        {avgRating != null ? (
+          <Text style={styles.muted}>
+            {t('task.rating')}: {avgRating.toFixed(1)} / 5
+            {completedCount != null ? ` · ${completedCount} ${t('task.jobs_done')}` : ''}
+          </Text>
+        ) : null}
+      </View>
+      <PrimaryButton
+        label={t('common.call')}
+        onPress={() => Linking.openURL(`tel:${buyerPhone}`)}
+        variant="ghost"
+        style={styles.callButton}
+      />
     </View>
-    <PrimaryButton
-      label="Call"
-      onPress={() => Linking.openURL(`tel:${buyerPhone}`)}
-      variant="ghost"
-      style={styles.callButton}
-    />
-  </View>
-));
+  );
+});
 
-const RatingCard = memo(({ helperRating, rating, setRating, ratingComment, setRatingComment, submitRating, ratingBusy }: any) => (
-  <View style={styles.ratingCard}>
-    <Text style={styles.muted}>Rate super-customer</Text>
-    {helperRating ? (
-      <Text style={styles.muted}>Your rating: {helperRating.toFixed(1)} / 5</Text>
-    ) : (
-      <>
-        <View style={styles.ratingRow}>
-          {[1, 2, 3, 4, 5].map((r) => (
-            <Text
-              key={`rate-${r}`}
-              style={[styles.star, r <= rating ? styles.starOn : styles.starOff]}
-              onPress={() => setRating(r)}
-            >
-              ★
-            </Text>
-          ))}
-        </View>
-        <TextField
-          label="Comment (optional)"
-          value={ratingComment}
-          onChangeText={setRatingComment}
-          placeholder="Share feedback"
-        />
-        <PrimaryButton label="Submit rating" onPress={submitRating} loading={ratingBusy} />
-      </>
-    )}
-  </View>
-));
-
-const CelebrationOverlay = memo(({ onContinue }: any) => (
-  <View style={styles.celebrateWrap}>
-    <View style={styles.celebrateCard}>
-      <Text style={styles.celebrateTitle}>Task completed</Text>
-      <Text style={styles.celebrateBody}>Great work! Please rate your super-customer.</Text>
-      <PrimaryButton label="Continue" onPress={onContinue} />
+const RatingCard = memo(({ helperRating, rating, setRating, ratingComment, setRatingComment, submitRating, ratingBusy }: any) => {
+  const { t } = useI18n();
+  return (
+    <View style={styles.ratingCard}>
+      <Text style={styles.muted}>{t('helper.task.rate_citizen')}</Text>
+      {helperRating ? (
+        <Text style={styles.muted}>{t('task.your_rating')}: {helperRating.toFixed(1)} / 5</Text>
+      ) : (
+        <>
+          <View style={styles.ratingRow}>
+            {[1, 2, 3, 4, 5].map((r) => (
+              <Text
+                key={`rate-${r}`}
+                style={[styles.star, r <= rating ? styles.starOn : styles.starOff]}
+                onPress={() => setRating(r)}
+              >
+                ★
+              </Text>
+            ))}
+          </View>
+          <TextField
+            label={t('task.comment_optional')}
+            value={ratingComment}
+            onChangeText={setRatingComment}
+            placeholder={t('task.share_feedback')}
+          />
+          <PrimaryButton label={t('task.submit_rating')} onPress={submitRating} loading={ratingBusy} />
+        </>
+      )}
     </View>
-  </View>
-));
+  );
+});
+
+const CelebrationOverlay = memo(({ onContinue }: any) => {
+  const { t } = useI18n();
+  return (
+    <View style={styles.celebrateWrap}>
+      <View style={styles.celebrateCard}>
+        <Text style={styles.celebrateTitle}>{t('task.completed_title')}</Text>
+        <Text style={styles.celebrateBody}>{t('helper.task.completed_body')}</Text>
+        <PrimaryButton label={t('task.continue')} onPress={onContinue} />
+      </View>
+    </View>
+  );
+});
 
 const styles = StyleSheet.create({
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },

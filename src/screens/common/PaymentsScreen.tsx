@@ -10,11 +10,13 @@ import { PrimaryButton } from '../../ui/PrimaryButton';
 import { Notice } from '../../ui/Notice';
 import { theme } from '../../ui/theme';
 import type { BuyerStackParamList, HelperStackParamList } from '../../navigation/types';
+import { useI18n } from '../../i18n/I18nProvider';
 
 type Props = NativeStackScreenProps<BuyerStackParamList & HelperStackParamList, 'Payments'>;
 
 export function PaymentsScreen({ navigation }: Props) {
   const { withAuth } = useAuth();
+  const { t } = useI18n();
   const [balancePaise, setBalancePaise] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -26,11 +28,11 @@ export function PaymentsScreen({ navigation }: Props) {
       const me = await withAuth((t) => api.getMe(t));
       setBalancePaise(me.demoBalancePaise ?? 0);
     } catch {
-      setError('Could not load balance.');
+      setError(t('payments.load_error'));
     } finally {
       setBusy(false);
     }
-  }, [withAuth]);
+  }, [t, withAuth]);
 
   useEffect(() => {
     load();
@@ -44,25 +46,26 @@ export function PaymentsScreen({ navigation }: Props) {
   );
 
   const balance = balancePaise != null ? (balancePaise / 100).toFixed(0) : '-';
+  const title = t('payments.wallet_title');
 
   return (
     <Screen>
       <View style={styles.topBar}>
-        <Text style={styles.h1}>Payment</Text>
+        <Text style={styles.h1}>{title}</Text>
         <Text onPress={() => navigation.goBack()} style={styles.link}>
-          Back
+          {t('common.back')}
         </Text>
       </View>
 
       {error ? <Notice kind="danger" text={error} /> : null}
 
       <View style={styles.card}>
-        <Text style={styles.label}>Demo balance</Text>
-        <Text style={styles.amount}>INR {balance}</Text>
+        <Text style={styles.label}>{t('payments.demo_balance')}</Text>
+        <Text style={styles.amount}>{t('currency.inr')} {balance}</Text>
         <Text style={styles.muted}>
-          Escrow is deducted when a task is created and released to the Superheroo 5 minutes after completion.
+          {t('payments.escrow_note')}
         </Text>
-        <PrimaryButton label="Refresh" onPress={load} loading={busy} variant="ghost" />
+        <PrimaryButton label={t('common.refresh')} onPress={load} loading={busy} variant="ghost" />
       </View>
     </Screen>
   );

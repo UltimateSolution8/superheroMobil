@@ -4,6 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { useAuth } from '../auth/AuthContext';
+import { useUploadQueueProcessor } from '../hooks/useUploadQueueProcessor';
 import { SocketProvider } from '../realtime/SocketProvider';
 import { ActiveTaskProvider } from '../state/ActiveTaskContext';
 import { HelperPresenceProvider } from '../state/HelperPresenceContext';
@@ -41,7 +42,8 @@ const BuyerStack = createNativeStackNavigator<BuyerStackParamList>();
 const HelperStack = createNativeStackNavigator<HelperStackParamList>();
 
 export function AppNavigator() {
-  const { status, user, pinRequired, pinVerified } = useAuth();
+  const { status, user, pinRequired, pinVerified, authNotice } = useAuth();
+  useUploadQueueProcessor();
 
   if (status === 'loading') {
     return (
@@ -56,7 +58,10 @@ export function AppNavigator() {
     <ActiveTaskProvider>
       <NavigationContainer>
         {status !== 'signedIn' || !user ? (
-          <AuthStack.Navigator screenOptions={{ headerShown: false, animation: 'fade' }}>
+          <AuthStack.Navigator
+            screenOptions={{ headerShown: false, animation: 'fade' }}
+            initialRouteName={authNotice ? 'Login' : 'Splash'}
+          >
             <AuthStack.Screen name="Splash" component={SplashScreen} />
             <AuthStack.Screen name="Onboarding" component={OnboardingScreen} />
             <AuthStack.Screen name="RoleSelection" component={RoleSelectionScreen} />

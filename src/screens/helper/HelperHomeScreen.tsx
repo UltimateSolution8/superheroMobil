@@ -29,10 +29,10 @@ type OfferRowProps = {
   onAccept: (taskId: string) => void;
 };
 
-const SORT_OPTIONS: Array<{ key: 'distance' | 'time' | 'budget'; label: string }> = [
-  { key: 'distance', label: 'Distance' },
-  { key: 'time', label: 'Time' },
-  { key: 'budget', label: 'Money' },
+const SORT_OPTIONS: Array<{ key: 'distance' | 'time' | 'budget'; labelKey: string }> = [
+  { key: 'distance', labelKey: 'helper.sort.distance' },
+  { key: 'time', labelKey: 'helper.sort.time' },
+  { key: 'budget', labelKey: 'helper.sort.budget' },
 ];
 
 const OFFERS_STORAGE_KEY = 'superheroo.helper.offers';
@@ -64,12 +64,28 @@ const OfferRow = React.memo(function OfferRow({ offer, onAccept }: OfferRowProps
   const onPress = useCallback(() => onAccept(offer.taskId), [offer.taskId, onAccept]);
   const km = Math.max(0, Number(offer.distanceMeters) / 1000).toFixed(1);
   const budget = (Number(offer.budgetPaise) / 100).toFixed(0);
+  const urgencyLabel = useMemo(() => {
+    switch (offer.urgency) {
+      case 'LOW':
+        return t('urgency.low');
+      case 'NORMAL':
+        return t('urgency.normal');
+      case 'HIGH':
+        return t('urgency.high');
+      case 'CRITICAL':
+        return t('urgency.critical');
+      default:
+        return offer.urgency;
+    }
+  }, [offer.urgency, t]);
   return (
     <View style={styles.offerRow}>
       <Text style={styles.offerTitle}>{offer.title}</Text>
       <Text style={styles.offerMeta}>{offer.description}</Text>
-      <Text style={styles.offerMeta}>Urgency: {offer.urgency} | ETA: {offer.timeMinutes} min | Budget: INR {budget}</Text>
-      <Text style={styles.offerMeta}>{km} km away</Text>
+      <Text style={styles.offerMeta}>
+        {t('helper.offer.urgency')}: {urgencyLabel} | {t('helper.offer.eta')}: {offer.timeMinutes} {t('buyer.task.minutes')} | {t('helper.offer.budget')}: {t('currency.inr')} {budget}
+      </Text>
+      <Text style={styles.offerMeta}>{km} {t('helper.km_away')}</Text>
       <PrimaryButton label={t('helper.accept')} onPress={onPress} />
     </View>
   );
@@ -126,12 +142,12 @@ export function HelperHomeScreen({ navigation }: Props) {
     const sub = Notifications.addNotificationReceivedListener((event) => {
       const type = event.request?.content?.data?.type;
       if (type === 'KYC_APPROVED') {
-        setNotice('KYC approved. You can go online now.');
+        setNotice(t('helper.kyc.approved'));
         loadProfile();
       }
     });
     return () => sub.remove();
-  }, [loadProfile]);
+  }, [loadProfile, t]);
 
   useEffect(() => {
     const unsub = navigation.addListener('focus', () => {
@@ -158,7 +174,7 @@ export function HelperHomeScreen({ navigation }: Props) {
         distanceMeters: (t as any).distanceMeters ?? 0,
         lat: t.lat,
         lng: t.lng,
-        expiresAt: new Date(Date.now() + 5 * 60000).toISOString() // Fake expiry for now
+        expiresAt: null
       });
 
       setOffers((prev) => {
@@ -196,11 +212,11 @@ export function HelperHomeScreen({ navigation }: Props) {
     setError(null);
     setNotice(null);
     if (!online) {
-      setNotice('You are offline.');
+      setNotice(t('common.offline'));
       return false;
     }
     if (profile && profile.kycStatus !== 'APPROVED') {
-      setNotice('Complete KYC and wait for admin approval before going online.');
+      setNotice(t('helper.kyc.must_complete'));
       return false;
     }
 
@@ -211,14 +227,14 @@ export function HelperHomeScreen({ navigation }: Props) {
           const { lat, lng } = DEMO_FALLBACK_LOCATION;
           lastCoords.current = { lat, lng };
           await withAuth((t) => api.helperSetOnline(t, true, lat, lng));
-          setNotice('GPS unavailable. Using demo fallback location.');
+          setNotice(t('error.gps_unavailable'));
           await setLastCoords({ lat, lng });
           await setOnline(true);
           setOffers([]);
           await persistOffers([]);
           return true;
         }
-        setNotice('Location is turned off. Enable Location in device settings and try again.');
+        setNotice(t('error.location_unavailable'));
         return false;
       }
 
@@ -228,14 +244,14 @@ export function HelperHomeScreen({ navigation }: Props) {
           const { lat, lng } = DEMO_FALLBACK_LOCATION;
           lastCoords.current = { lat, lng };
           await withAuth((t) => api.helperSetOnline(t, true, lat, lng));
-          setNotice('Location permission missing. Using demo fallback location.');
+          setNotice(t('error.location_permission_fallback'));
           await setLastCoords({ lat, lng });
           await setOnline(true);
           setOffers([]);
           await persistOffers([]);
           return true;
         }
-        setNotice('Location permission is required to go online.');
+        setNotice(t('error.location_permission'));
         return false;
       }
 
@@ -259,7 +275,7 @@ export function HelperHomeScreen({ navigation }: Props) {
       return true;
     } catch (e) {
       if (e instanceof ApiError && e.status === 403) {
-        setNotice('Your helper account is pending approval. Please wait for admin verification.');
+        setNotice(t('helper.kyc.pending'));
         return false;
       }
       if (DEMO_FALLBACK_LOCATION) {
@@ -267,7 +283,7 @@ export function HelperHomeScreen({ navigation }: Props) {
         try {
           lastCoords.current = { lat, lng };
           await withAuth((t) => api.helperSetOnline(t, true, lat, lng));
-          setNotice('Current location unavailable. Using demo fallback location.');
+        setNotice(t('error.location_fallback'));
           await setLastCoords({ lat, lng });
           await setOnline(true);
           setOffers([]);
@@ -277,10 +293,10 @@ export function HelperHomeScreen({ navigation }: Props) {
           // fall through
         }
       }
-      setError('Could not go online. Try again.');
+      setError(t('helper.go_online_error'));
       return false;
     }
-  }, [online, profile, withAuth]);
+  }, [online, profile, t, withAuth]);
 
   const goOffline = useCallback(async () => {
     setError(null);
@@ -317,7 +333,7 @@ export function HelperHomeScreen({ navigation }: Props) {
         navigation.navigate('HelperTask', { taskId });
       } catch (e) {
         if (e instanceof ApiError && e.status === 409) {
-          setNotice('Offer expired or task already taken.');
+          setNotice(t('helper.offer_expired'));
           setOffers((prev) => {
             const next = prev.filter((o) => o.taskId !== taskId);
             persistOffers(next).catch(() => { });
@@ -325,10 +341,10 @@ export function HelperHomeScreen({ navigation }: Props) {
           });
           return;
         }
-        setError('Could not accept task.');
+        setError(t('helper.accept_error'));
       }
     },
-    [navigation, persistOffers, setActiveTaskId, withAuth],
+    [navigation, persistOffers, setActiveTaskId, t, withAuth],
   );
 
   useEffect(() => {
@@ -376,26 +392,27 @@ export function HelperHomeScreen({ navigation }: Props) {
   }, [offers, sortBy]);
 
   const sortLabel = useMemo(() => {
-    return SORT_OPTIONS.find((opt) => opt.key === sortBy)?.label ?? 'Distance';
-  }, [sortBy]);
+    const opt = SORT_OPTIONS.find((o) => o.key === sortBy);
+    return opt ? t(opt.labelKey) : t('helper.sort.distance');
+  }, [sortBy, t]);
 
   return (
     <Screen style={styles.screen}>
       <View style={styles.topBar}>
         <MenuButton onPress={() => navigation.navigate('Menu')} />
-        <Text style={styles.h1}>Superheroo</Text>
+        <Text style={styles.h1}>{t('app.name')}</Text>
         <View style={styles.topLinks} />
       </View>
 
       {!online ? <Notice kind="warning" text={t('buyer.offline')} /> : null}
       {profile?.kycStatus === 'PENDING' ? (
-        <Notice kind="warning" text="KYC pending review. Upload or update docs from Complete KYC." />
+        <Notice kind="warning" text={t('helper.kyc.pending')} />
       ) : null}
       {profile?.kycStatus === 'APPROVED' ? (
-        <Notice kind="success" text="KYC approved. You can go online now." />
+        <Notice kind="success" text={t('helper.kyc.approved')} />
       ) : null}
       {profile?.kycStatus === 'REJECTED' ? (
-        <Notice kind="danger" text={`KYC rejected${profile.kycRejectionReason ? `: ${profile.kycRejectionReason}` : ''}. Please re-submit.`} />
+        <Notice kind="danger" text={`${t('helper.kyc.rejected')}${profile.kycRejectionReason ? `: ${profile.kycRejectionReason}` : ''}`} />
       ) : null}
       {notice ? <Notice kind="warning" text={notice} /> : null}
       {error ? <Notice kind="danger" text={error} /> : null}
@@ -421,7 +438,7 @@ export function HelperHomeScreen({ navigation }: Props) {
       <View style={styles.card}>
         <Text style={styles.section}>{t('helper.nearby_tasks')}</Text>
         <View style={styles.sortRow}>
-          <Text style={styles.sortLabel}>Sort by</Text>
+          <Text style={styles.sortLabel}>{t('helper.sort_by')}</Text>
           <Pressable style={styles.sortDropdown} onPress={() => setSortOpen(true)}>
             <Text style={styles.sortValue}>{sortLabel}</Text>
             <Text style={styles.sortCaret}>▾</Text>
@@ -442,7 +459,7 @@ export function HelperHomeScreen({ navigation }: Props) {
       <Modal transparent visible={sortOpen} animationType="fade" onRequestClose={() => setSortOpen(false)}>
         <Pressable style={styles.modalBackdrop} onPress={() => setSortOpen(false)}>
           <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>Sort tasks</Text>
+            <Text style={styles.modalTitle}>{t('helper.sort_tasks')}</Text>
             {SORT_OPTIONS.map((opt) => (
               <Pressable
                 key={opt.key}
@@ -452,7 +469,7 @@ export function HelperHomeScreen({ navigation }: Props) {
                   setSortOpen(false);
                 }}
               >
-                <Text style={styles.modalOptionText}>{opt.label}</Text>
+                <Text style={styles.modalOptionText}>{t(opt.labelKey)}</Text>
               </Pressable>
             ))}
           </View>

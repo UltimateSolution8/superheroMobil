@@ -35,9 +35,9 @@ const androidPermissions = Array.from(
 );
 const iosInfoPlist = {
   ...(expo.ios && expo.ios.infoPlist ? expo.ios.infoPlist : {}),
-  NSCameraUsageDescription: 'Allow Superheroo to access the camera for selfie verification.',
-  NSPhotoLibraryUsageDescription: 'Allow Superheroo to access your photos for KYC and task selfies.',
-  NSLocationWhenInUseUsageDescription: 'Allow Superheroo to access your location for nearby tasks.',
+  NSCameraUsageDescription: 'Allow Superherooo to access the camera for selfie verification.',
+  NSPhotoLibraryUsageDescription: 'Allow Superherooo to access your photos for KYC and task selfies.',
+  NSLocationWhenInUseUsageDescription: 'Allow Superherooo to access your location for nearby tasks.',
 };
 
 function withNetworkSecurity(config) {

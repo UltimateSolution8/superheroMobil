@@ -14,14 +14,14 @@ import type { BuyerStackParamList, HelperStackParamList } from '../../navigation
 type Props = NativeStackScreenProps<BuyerStackParamList & HelperStackParamList, 'Settings'>;
 
 export function SettingsScreen({ navigation }: Props) {
-  const { lang, setLang } = useI18n();
+  const { lang, setLang, t } = useI18n();
   const { signOut, pinRequired, setPin, clearPin } = useAuth();
   const [pin, setPinValue] = useState('');
   const [pinError, setPinError] = useState<string | null>(null);
 
   const handleSetPin = async () => {
     if (pin.trim().length !== 4) {
-      setPinError('PIN must be 4 digits.');
+      setPinError(t('settings.pin_error_length'));
       return;
     }
     setPinError(null);
@@ -32,41 +32,41 @@ export function SettingsScreen({ navigation }: Props) {
   return (
     <Screen>
       <View style={styles.topBar}>
-        <Text style={styles.h1}>Settings</Text>
+        <Text style={styles.h1}>{t('settings.title')}</Text>
         <Text onPress={() => navigation.goBack()} style={styles.link}>
-          Back
+          {t('common.back')}
         </Text>
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.label}>Language</Text>
+        <Text style={styles.label}>{t('settings.language')}</Text>
         <Segmented
           value={lang}
           onChange={(v) => setLang(v as 'en' | 'hi' | 'te')}
           options={[
-            { key: 'en', label: 'EN' },
-            { key: 'hi', label: 'हिं' },
-            { key: 'te', label: 'తెల' },
+            { key: 'en', label: t('language.en') },
+            { key: 'hi', label: t('language.hi') },
+            { key: 'te', label: t('language.te') },
           ]}
         />
         <View style={styles.divider} />
-        <Text style={styles.label}>4-digit PIN</Text>
+        <Text style={styles.label}>{t('settings.pin_label')}</Text>
         <Text style={styles.helperText}>
-          {pinRequired ? 'PIN is enabled for quick login.' : 'Set a PIN for fast sign-in.'}
+          {pinRequired ? t('settings.pin_enabled') : t('settings.pin_disabled')}
         </Text>
         <TextField
-          label="PIN"
+          label={t('settings.pin_input')}
           value={pin}
           onChangeText={(v) => setPinValue(v.replace(/\D+/g, '').slice(0, 4))}
           keyboardType="number-pad"
-          placeholder="••••"
+          placeholder={t('pin.placeholder')}
         />
         {pinError ? <Text style={styles.error}>{pinError}</Text> : null}
         <View style={styles.row}>
-          <PrimaryButton label="Set PIN" onPress={handleSetPin} style={styles.half} />
-          <PrimaryButton label="Remove PIN" onPress={clearPin} variant="ghost" style={styles.half} />
+          <PrimaryButton label={t('settings.pin_set')} onPress={handleSetPin} style={styles.half} />
+          <PrimaryButton label={t('settings.pin_remove')} onPress={clearPin} variant="ghost" style={styles.half} />
         </View>
-        <PrimaryButton label="Sign out" variant="danger" onPress={signOut} />
+        <PrimaryButton label={t('menu.sign_out')} variant="danger" onPress={signOut} />
       </View>
     </Screen>
   );

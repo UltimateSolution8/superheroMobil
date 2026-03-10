@@ -31,9 +31,9 @@ export function RoleSelectionScreen({ navigation }: Props) {
           value={lang}
           onChange={(v) => setLang(v as 'en' | 'hi' | 'te')}
           options={[
-            { key: 'en', label: 'EN' },
-            { key: 'hi', label: 'हिं' },
-            { key: 'te', label: 'తెల' },
+            { key: 'en', label: t('language.en') },
+            { key: 'hi', label: t('language.hi') },
+            { key: 'te', label: t('language.te') },
           ]}
         />
       </View>

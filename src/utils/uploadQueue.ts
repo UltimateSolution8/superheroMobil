@@ -7,6 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const QUEUE_KEY = 'superheroo.uploadQueue';
 const MAX_RETRIES = 3;
 const BASE_DELAY_MS = 1000;
+const UPLOAD_TIMEOUT_MS = 30_000;
 
 export type UploadItem = {
     id: string;
@@ -43,122 +44,137 @@ function sleep(ms: number): Promise<void> {
 }
 
 async function attemptUpload(item: UploadItem): Promise<UploadResult> {
-    if (item.type === 'presigned') {
+    const runWithTimeout = async (fn: (signal: AbortSignal) => Promise<UploadResult>): Promise<UploadResult> => {
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 30_000);
+        let timeoutId: ReturnType<typeof setTimeout> | null = null;
+        const timeoutPromise = new Promise<UploadResult>((resolve) => {
+            timeoutId = setTimeout(() => {
+                controller.abort();
+                resolve({ success: false, error: 'Upload timed out. Please try again.' });
+            }, UPLOAD_TIMEOUT_MS);
+        });
+        try {
+            return await Promise.race([fn(controller.signal), timeoutPromise]);
+        } finally {
+            if (timeoutId) clearTimeout(timeoutId);
+        }
+    };
+
+    if (item.type === 'presigned') {
+        return runWithTimeout(async (signal) => {
+            try {
+                // 1. Request presigned URL
+                const reqRes = await fetch(`${item.url}/api/v1/photos/request-upload`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${item.accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        jobId: item.formFields.jobId,
+                        photoType: item.formFields.photoType
+                    }),
+                    signal
+                });
+
+                if (!reqRes.ok) {
+                    const text = await reqRes.text();
+                    return { success: false, error: 'Request presign failed: ' + text };
+                }
+                const presignedData = await reqRes.json();
+                const { photoId, presignedUrl, uploadHeaders } = presignedData;
+
+                // 2. Upload (PUT)
+                const fileRes = await fetch(item.file.uri);
+                const blob = await fileRes.blob();
+
+                const headers = { ...uploadHeaders } as Record<string, string>;
+                if (!headers['Content-Type'] && !headers['content-type']) {
+                    headers['Content-Type'] = item.file.type || 'image/jpeg';
+                }
+                const putRes = await fetch(presignedUrl, {
+                    method: 'PUT',
+                    headers,
+                    body: blob,
+                    signal
+                });
+
+                if (!putRes.ok) {
+                    return { success: false, error: 'PUT presigned failed: ' + putRes.status };
+                }
+
+                // 3. Confirm
+                const lat = item.formFields.lat !== undefined ? Number(item.formFields.lat) : null;
+                const lng = item.formFields.lng !== undefined ? Number(item.formFields.lng) : null;
+                const addressText = item.formFields.addressText || null;
+                const capturedAt = item.formFields.capturedAt || null;
+
+                const confirmRes = await fetch(`${item.url}/api/v1/photos/confirm-upload`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${item.accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        photoId,
+                        size: blob.size,
+                        lat: Number.isFinite(lat as number) ? lat : null,
+                        lng: Number.isFinite(lng as number) ? lng : null,
+                        addressText,
+                        capturedAt
+                    }),
+                    signal
+                });
+
+                if (!confirmRes.ok) {
+                    const text = await confirmRes.text();
+                    return { success: false, error: 'Confirm failed: ' + text };
+                }
+
+                return { success: true, response: { message: 'Uploaded and confirmed' } };
+            } catch (e) {
+                const msg = e instanceof Error ? e.message : 'Presigned upload failed';
+                return { success: false, error: msg };
+            }
+        });
+    }
+
+    return runWithTimeout(async (signal) => {
+        const body = new FormData();
+        for (const [key, value] of Object.entries(item.formFields)) {
+            body.append(key, value);
+        }
+        body.append('selfie', {
+            uri: item.file.uri,
+            name: item.file.name,
+            type: item.file.type,
+        } as any);
 
         try {
-            // 1. Request presigned URL
-            const reqRes = await fetch(`${item.url}/api/v1/photos/request-upload`, {
+            const res = await fetch(item.url, {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${item.accessToken}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    jobId: item.formFields.jobId,
-                    photoType: item.formFields.photoType
-                }),
-                signal: controller.signal
+                headers: { Authorization: `Bearer ${item.accessToken}` },
+                body,
+                signal,
             });
 
-            if (!reqRes.ok) {
-                const text = await reqRes.text();
-                return { success: false, error: 'Request presign failed: ' + text };
-            }
-            const presignedData = await reqRes.json();
-            const { photoId, presignedUrl, uploadHeaders } = presignedData;
-
-            // 2. Upload (PUT)
-            const fileRes = await fetch(item.file.uri);
-            const blob = await fileRes.blob();
-
-            const putRes = await fetch(presignedUrl, {
-                method: 'PUT',
-                headers: {
-                    ...uploadHeaders,
-                    'Content-Length': blob.size.toString(),
-                    'Content-Type': item.file.type || 'image/jpeg'
-                },
-                body: blob,
-                signal: controller.signal
-            });
-
-            if (!putRes.ok) {
-                return { success: false, error: 'PUT presigned failed: ' + putRes.status };
+            const text = await res.text();
+            let parsed: any = null;
+            try {
+                parsed = text ? JSON.parse(text) : null;
+            } catch {
+                parsed = null;
             }
 
-            // 3. Confirm
-            const lat = item.formFields.lat !== undefined ? Number(item.formFields.lat) : null;
-            const lng = item.formFields.lng !== undefined ? Number(item.formFields.lng) : null;
-            const addressText = item.formFields.addressText || null;
-            const capturedAt = item.formFields.capturedAt || null;
-
-            const confirmRes = await fetch(`${item.url}/api/v1/photos/confirm-upload`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${item.accessToken}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    photoId,
-                    size: blob.size,
-                    lat: Number.isFinite(lat as number) ? lat : null,
-                    lng: Number.isFinite(lng as number) ? lng : null,
-                    addressText,
-                    capturedAt
-                }),
-                signal: controller.signal
-            });
-
-            if (!confirmRes.ok) {
-                const text = await confirmRes.text();
-                return { success: false, error: 'Confirm failed: ' + text };
+            if (!res.ok) {
+                return { success: false, error: parsed?.message || `Upload failed (${res.status})` };
             }
-
-            return { success: true, response: { message: 'Uploaded and confirmed' } };
+            return { success: true, response: parsed };
         } catch (e) {
-            const msg = e instanceof Error ? e.message : 'Presigned upload failed';
+            const msg = e instanceof Error ? e.message : 'Upload failed';
             return { success: false, error: msg };
-        } finally {
-            clearTimeout(timeout);
         }
-    }
-
-    const body = new FormData();
-    for (const [key, value] of Object.entries(item.formFields)) {
-        body.append(key, value);
-    }
-    body.append('selfie', {
-        uri: item.file.uri,
-        name: item.file.name,
-        type: item.file.type,
-    } as any);
-
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30_000);
-
-    try {
-        const res = await fetch(item.url, {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${item.accessToken}` },
-            body,
-            signal: controller.signal,
-        });
-
-        const text = await res.text();
-        const parsed = text ? JSON.parse(text) : null;
-
-        if (!res.ok) {
-            return { success: false, error: parsed?.message || `Upload failed (${res.status})` };
-        }
-        return { success: true, response: parsed };
-    } catch (e) {
-        const msg = e instanceof Error ? e.message : 'Upload failed';
-        return { success: false, error: msg };
-    } finally {
-        clearTimeout(timeout);
-    }
+    });
 }
 
 /**
@@ -166,7 +182,10 @@ async function attemptUpload(item: UploadItem): Promise<UploadResult> {
  * Returns true if uploaded successfully immediately.
  * If it fails, it's added to the persistent queue for later retry.
  */
-export async function enqueueUpload(item: Omit<UploadItem, 'retries' | 'createdAt'>): Promise<UploadResult> {
+export async function enqueueUpload(
+    item: Omit<UploadItem, 'retries' | 'createdAt'>,
+    opts?: { enqueueOnFailure?: boolean },
+): Promise<UploadResult> {
     const fullItem: UploadItem = {
         ...item,
         retries: 0,
@@ -176,10 +195,12 @@ export async function enqueueUpload(item: Omit<UploadItem, 'retries' | 'createdA
     const result = await attemptUpload(fullItem);
     if (result.success) return result;
 
-    // Queue for retry
-    const queue = await loadQueue();
-    queue.push(fullItem);
-    await saveQueue(queue);
+    if (opts?.enqueueOnFailure !== false) {
+        // Queue for retry
+        const queue = await loadQueue();
+        queue.push(fullItem);
+        await saveQueue(queue);
+    }
 
     return result;
 }

@@ -26,11 +26,16 @@ import { useActiveTask } from '../../state/ActiveTaskContext';
 
 type Props = NativeStackScreenProps<BuyerStackParamList, 'BuyerHome'>;
 
-const URGENCY_OPTIONS: { label: string; key: TaskUrgency }[] = [
-  { label: 'Low', key: 'LOW' },
-  { label: 'Normal', key: 'NORMAL' },
-  { label: 'High', key: 'HIGH' },
-  { label: 'Critical', key: 'CRITICAL' },
+const URGENCY_OPTIONS: { labelKey: string; key: TaskUrgency }[] = [
+  { labelKey: 'urgency.low', key: 'LOW' },
+  { labelKey: 'urgency.normal', key: 'NORMAL' },
+  { labelKey: 'urgency.high', key: 'HIGH' },
+  { labelKey: 'urgency.critical', key: 'CRITICAL' },
+];
+
+const SCHEDULE_OPTIONS = [
+  { key: 'now', labelKey: 'schedule.now' },
+  { key: 'later', labelKey: 'schedule.later' },
 ];
 
 export function BuyerHomeScreen({ navigation }: Props) {
@@ -50,6 +55,9 @@ export function BuyerHomeScreen({ navigation }: Props) {
   const [timeMinutes, setTimeMinutes] = useState('30');
   const [budgetRupees, setBudgetRupees] = useState('150');
   const [urgency, setUrgency] = useState<TaskUrgency>('NORMAL');
+  const [scheduleMode, setScheduleMode] = useState<'now' | 'later'>('now');
+  const [scheduleDate, setScheduleDate] = useState('');
+  const [scheduleTime, setScheduleTime] = useState('');
   const [voiceActive, setVoiceActive] = useState(false);
   const [voiceError, setVoiceError] = useState<string | null>(null);
 
@@ -61,14 +69,53 @@ export function BuyerHomeScreen({ navigation }: Props) {
   const [error, setError] = useState<string | null>(null);
   const canRenderMap = Boolean(GOOGLE_MAPS_API_KEY);
   const mapProvider = canRenderMap ? PROVIDER_GOOGLE : undefined;
+  const urgencyOptions = useMemo(
+    () => URGENCY_OPTIONS.map((opt) => ({ key: opt.key, label: t(opt.labelKey) })),
+    [t],
+  );
+  const scheduleOptions = useMemo(
+    () => SCHEDULE_OPTIONS.map((opt) => ({ key: opt.key, label: t(opt.labelKey) })),
+    [t],
+  );
 
   const titleOk = useMemo(() => title.trim().length >= 3, [title]);
   const descOk = useMemo(() => description.trim().length >= 10, [description]);
   const timeOk = useMemo(() => Number.isFinite(Number(timeMinutes)) && Number(timeMinutes) >= 1, [timeMinutes]);
   const budgetOk = useMemo(() => Number.isFinite(Number(budgetRupees)) && Number(budgetRupees) >= 0, [budgetRupees]);
+  const scheduledAt = useMemo(() => {
+    if (scheduleMode !== 'later') return null;
+    const dateMatch = scheduleDate.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    const timeMatch = scheduleTime.trim().match(/^(\d{1,2}):(\d{2})$/);
+    if (!dateMatch || !timeMatch) return null;
+    const year = Number(dateMatch[1]);
+    const month = Number(dateMatch[2]);
+    const day = Number(dateMatch[3]);
+    const hour = Number(timeMatch[1]);
+    const minute = Number(timeMatch[2]);
+    if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) return null;
+    if (!Number.isFinite(hour) || !Number.isFinite(minute)) return null;
+    if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+    if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
+    const dt = new Date(year, month - 1, day, hour, minute, 0, 0);
+    if (
+      dt.getFullYear() !== year ||
+      dt.getMonth() !== month - 1 ||
+      dt.getDate() !== day ||
+      dt.getHours() !== hour ||
+      dt.getMinutes() !== minute
+    ) {
+      return null;
+    }
+    return dt;
+  }, [scheduleDate, scheduleMode, scheduleTime]);
+  const scheduleOk = useMemo(() => {
+    if (scheduleMode !== 'later') return true;
+    if (!scheduledAt) return false;
+    return scheduledAt.getTime() > Date.now() + 60_000;
+  }, [scheduleMode, scheduledAt]);
   const canCreate = useMemo(
-    () => Boolean(online && titleOk && descOk && timeOk && budgetOk && lat != null && lng != null),
-    [budgetOk, descOk, lat, lng, online, timeOk, titleOk],
+    () => Boolean(online && titleOk && descOk && timeOk && budgetOk && scheduleOk && lat != null && lng != null),
+    [budgetOk, descOk, lat, lng, online, scheduleOk, timeOk, titleOk],
   );
 
   const lastLocationTs = useRef<number>(0);
@@ -109,10 +156,10 @@ export function BuyerHomeScreen({ navigation }: Props) {
         if (DEMO_FALLBACK_LOCATION) {
           setLat(DEMO_FALLBACK_LOCATION.lat);
           setLng(DEMO_FALLBACK_LOCATION.lng);
-          setLocError('GPS unavailable. Using demo fallback location.');
+          setLocError(t('error.gps_unavailable'));
           return;
         }
-        setLocError('Location is turned off. Enable Location in device settings and try again.');
+        setLocError(t('error.location_unavailable'));
         return;
       }
 
@@ -121,10 +168,10 @@ export function BuyerHomeScreen({ navigation }: Props) {
         if (DEMO_FALLBACK_LOCATION) {
           setLat(DEMO_FALLBACK_LOCATION.lat);
           setLng(DEMO_FALLBACK_LOCATION.lng);
-          setLocError('Location permission not granted. Using demo fallback location.');
+          setLocError(t('error.location_permission_fallback'));
           return;
         }
-        setLocError('Location permission is required to create a task.');
+        setLocError(t('error.location_permission'));
         return;
       }
 
@@ -159,12 +206,12 @@ export function BuyerHomeScreen({ navigation }: Props) {
       if (DEMO_FALLBACK_LOCATION) {
         setLat(DEMO_FALLBACK_LOCATION.lat);
         setLng(DEMO_FALLBACK_LOCATION.lng);
-        setLocError('Current location unavailable. Using demo fallback location.');
+        setLocError(t('error.location_fallback'));
         return;
       }
-      setLocError(msg ? `Could not get your location: ${msg}` : 'Could not get your location. Try again.');
+      setLocError(msg ? `${t('error.location_failed')}: ${msg}` : t('error.network'));
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     refreshLocation();
@@ -218,7 +265,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
 
     Voice.onSpeechError = () => {
       if (!isMounted) return;
-      setVoiceError('Voice input failed. Please try again.');
+      setVoiceError(t('error.voice_failed'));
       setVoiceActive(false);
       voiceActiveRef.current = false;
       voiceResultsRef.current.clear();
@@ -235,12 +282,12 @@ export function BuyerHomeScreen({ navigation }: Props) {
       isMounted = false;
       Voice.destroy().then(Voice.removeAllListeners);
     };
-  }, []);
+  }, [t]);
 
   const searchLocation = useCallback(async () => {
     if (!searchQuery.trim()) return;
     if (!GOOGLE_MAPS_API_KEY) {
-      setError('Google Maps API key is missing. Please add it to the app config.');
+      setError(t('error.maps_api_key'));
       return;
     }
     setSearchBusy(true);
@@ -267,14 +314,14 @@ export function BuyerHomeScreen({ navigation }: Props) {
         }
         setSuggestions([]);
       } else {
-        setError('Location not found. Try a different search.');
+        setError(t('error.location_not_found'));
       }
     } catch {
-      setError('Could not search location. Check your network and try again.');
+      setError(t('error.network_check'));
     } finally {
       setSearchBusy(false);
     }
-  }, [searchQuery, resolveAddress]);
+  }, [searchQuery, resolveAddress, t]);
 
   const fetchSuggestions = useCallback(
     async (query: string) => {
@@ -344,12 +391,12 @@ export function BuyerHomeScreen({ navigation }: Props) {
           }
         }
       } catch {
-        setError('Could not fetch location details. Try again.');
+        setError(t('error.fetch_details'));
       } finally {
         setSearchBusy(false);
       }
     },
-    [resolveAddress],
+    [resolveAddress, t],
   );
 
   const onCreate = useCallback(async () => {
@@ -357,6 +404,11 @@ export function BuyerHomeScreen({ navigation }: Props) {
     setBusy(true);
     setError(null);
     try {
+      if (scheduleMode === 'later' && !scheduleOk) {
+        setError(t('schedule.invalid_datetime'));
+        return;
+      }
+      const scheduledAtIso = scheduleMode === 'later' && scheduledAt ? scheduledAt.toISOString() : null;
       const res = await withAuth((t) =>
         api.createTask(t, {
           title: title.trim(),
@@ -367,6 +419,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
           lat,
           lng,
           addressText: addressText.trim() || null,
+          scheduledAt: scheduledAtIso,
         }),
       );
       await setActiveTaskId(res.taskId);
@@ -374,14 +427,14 @@ export function BuyerHomeScreen({ navigation }: Props) {
     } catch (e) {
       if (e instanceof ApiError && e.status === 401) return;
       if (e instanceof ApiError) {
-        setError(e.message || `Could not create task (${e.status}).`);
+        setError(e.message || t('error.create_task'));
       } else {
-        setError('Could not create task. Please try again.');
+        setError(t('error.create_task'));
       }
     } finally {
       setBusy(false);
     }
-  }, [addressText, budgetRupees, busy, canCreate, description, lat, lng, navigation, timeMinutes, title, urgency, withAuth]);
+  }, [addressText, budgetRupees, busy, canCreate, description, lat, lng, navigation, scheduleMode, scheduleOk, scheduledAt, timeMinutes, title, urgency, withAuth, t]);
 
   const toggleVoice = useCallback(async () => {
     setVoiceError(null);
@@ -400,11 +453,11 @@ export function BuyerHomeScreen({ navigation }: Props) {
       setVoiceActive(true);
       voiceActiveRef.current = true;
     } catch {
-      setVoiceError('Voice input unavailable. Check mic permission.');
+      setVoiceError(t('error.voice_unavailable'));
       setVoiceActive(false);
       voiceActiveRef.current = false;
     }
-  }, []);
+  }, [t]);
 
   return (
     <Screen style={styles.screen}>
@@ -440,7 +493,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
             </View>
             <PrimaryButton label={t('buyer.search')} onPress={searchLocation} loading={searchBusy} style={styles.searchBtn} />
           </View>
-          {autoSearchBusy ? <Text style={styles.muted}>Searching suggestions…</Text> : null}
+          {autoSearchBusy ? <Text style={styles.muted}>{t('buyer.searching_suggestions')}</Text> : null}
           {suggestions.length > 0 ? (
             <View style={styles.suggestions}>
               {suggestions.map((s) => (
@@ -452,7 +505,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
           ) : null}
           {addressText ? (
             <View style={styles.addressBox}>
-              <Text style={styles.addressLabel}>Selected address</Text>
+              <Text style={styles.addressLabel}>{t('buyer.selected_address')}</Text>
               <Text style={styles.addressValue}>{addressText}</Text>
             </View>
           ) : null}
@@ -481,12 +534,12 @@ export function BuyerHomeScreen({ navigation }: Props) {
                   }
                 >
                   {lat != null && lng != null ? (
-                    <Marker coordinate={{ latitude: lat, longitude: lng }} title="Pickup location" />
+                    <Marker coordinate={{ latitude: lat, longitude: lng }} title={t('buyer.pickup_location')} />
                   ) : null}
                 </MapView>
               </View>
             ) : (
-              <Notice kind="warning" text="Map unavailable: missing Google Maps API key." />
+              <Notice kind="warning" text={t('error.maps_api_key')} />
             )}
 
             <Text style={styles.section}>{t('buyer.task_details')}</Text>
@@ -508,7 +561,37 @@ export function BuyerHomeScreen({ navigation }: Props) {
             </View>
             <TextField label={t('buyer.expected_time')} value={timeMinutes} onChangeText={setTimeMinutes} keyboardType="number-pad" />
             <TextField label={t('buyer.budget')} value={budgetRupees} onChangeText={setBudgetRupees} keyboardType="number-pad" />
-            <Segmented options={URGENCY_OPTIONS} value={urgency} onChange={(v) => setUrgency(v as TaskUrgency)} />
+            <Text style={styles.section}>{t('schedule.title')}</Text>
+            <Segmented options={scheduleOptions} value={scheduleMode} onChange={(v) => setScheduleMode(v as 'now' | 'later')} />
+            {scheduleMode === 'later' ? (
+              <View style={styles.scheduleWrap}>
+                <View style={styles.scheduleRow}>
+                  <View style={styles.scheduleField}>
+                    <TextField
+                      label={t('schedule.date_label')}
+                      value={scheduleDate}
+                      onChangeText={setScheduleDate}
+                      placeholder={t('schedule.date_placeholder')}
+                      keyboardType="numbers-and-punctuation"
+                    />
+                  </View>
+                  <View style={styles.scheduleField}>
+                    <TextField
+                      label={t('schedule.time_label')}
+                      value={scheduleTime}
+                      onChangeText={setScheduleTime}
+                      placeholder={t('schedule.time_placeholder')}
+                      keyboardType="numbers-and-punctuation"
+                    />
+                  </View>
+                </View>
+                <Text style={styles.muted}>{t('schedule.help')}</Text>
+                {!scheduleOk && (scheduleDate.trim() || scheduleTime.trim()) ? (
+                  <Text style={styles.scheduleError}>{t('schedule.invalid_datetime')}</Text>
+                ) : null}
+              </View>
+            ) : null}
+            <Segmented options={urgencyOptions} value={urgency} onChange={(v) => setUrgency(v as TaskUrgency)} />
             <TextField
               label={t('buyer.address_optional')}
               value={addressText}
@@ -583,6 +666,10 @@ const styles = StyleSheet.create({
   },
   addressLabel: { color: theme.colors.muted, fontSize: 12, fontWeight: '800' },
   addressValue: { color: theme.colors.text, fontSize: 13, lineHeight: 18 },
+  scheduleWrap: { gap: theme.space.xs },
+  scheduleRow: { flexDirection: 'row', gap: theme.space.sm },
+  scheduleField: { flex: 1 },
+  scheduleError: { color: theme.colors.danger, fontSize: 12 },
   actionsRow: { flexDirection: 'row', gap: theme.space.sm, marginTop: 8 },
   half: { flex: 1 },
 });

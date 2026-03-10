@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Linking, Platform, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
 
 import type { Task, TaskAssignedEvent, TaskStatusChangedEvent, TaskStatus } from '../../api/types';
 import * as api from '../../api/client';
@@ -15,6 +15,7 @@ import { Notice } from '../../ui/Notice';
 import { MenuButton } from '../../ui/MenuButton';
 import { TextField } from '../../ui/TextField';
 import { TaskSkeleton } from '../../ui/TaskSkeleton';
+import { MemoizedMapView } from '../../ui/MemoizedMapView';
 import { theme } from '../../ui/theme';
 import { DEMO_FALLBACK_LOCATION, GOOGLE_MAPS_API_KEY } from '../../config';
 import type { BuyerStackParamList } from '../../navigation/types';
@@ -50,6 +51,12 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
     if (raw == null) return '';
     return String(raw);
   }, [task?.helperPhone]);
+  const scheduledAtLabel = useMemo(() => {
+    if (!task?.scheduledAt) return null;
+    const dt = new Date(task.scheduledAt);
+    if (Number.isNaN(dt.getTime())) return null;
+    return dt.toLocaleString();
+  }, [task?.scheduledAt]);
   const canRenderMap = Boolean(GOOGLE_MAPS_API_KEY);
   const mapProvider = canRenderMap ? PROVIDER_GOOGLE : undefined;
 
@@ -62,6 +69,21 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
   const taskLat = Number(task?.lat);
   const taskLng = Number(task?.lng);
   const hasTaskCoords = Number.isFinite(taskLat) && Number.isFinite(taskLng);
+  const mapMarkers = useMemo(() => {
+    const list: { key: string; coordinate: { latitude: number; longitude: number }; title?: string; ref?: any }[] = [];
+    if (hasTaskCoords) {
+      list.push({ key: 'buyer', coordinate: { latitude: taskLat, longitude: taskLng }, title: t('map.you') });
+    }
+    if (helperLoc) {
+      list.push({
+        key: 'helper',
+        coordinate: { latitude: helperLoc.lat, longitude: helperLoc.lng },
+        title: t('role.superherooo'),
+        ref: helperMarkerRef,
+      });
+    }
+    return list;
+  }, [hasTaskCoords, taskLat, taskLng, helperLoc, t]);
 
   const load = useCallback(async () => {
     setBusy(true);
@@ -75,7 +97,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
       setBusy(false);
       setInitialLoad(false);
     }
-  }, [taskId, withAuth]);
+  }, [taskId, t, withAuth]);
 
   // Only useFocusEffect — fires on both mount + re-focus (fixes double load)
   useFocusEffect(
@@ -237,7 +259,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
     } finally {
       setRatingBusy(false);
     }
-  }, [canRate, rating, ratingBusy, ratingComment, taskId, withAuth]);
+  }, [canRate, rating, ratingBusy, ratingComment, t, taskId, withAuth]);
 
   const submitCancel = useCallback(async () => {
     if (!canCancel || cancelBusy) return;
@@ -257,7 +279,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
     } finally {
       setCancelBusy(false);
     }
-  }, [canCancel, cancelBusy, cancelReason, taskId, withAuth]);
+  }, [canCancel, cancelBusy, cancelReason, t, taskId, withAuth]);
 
   if (initialLoad) {
     return (
@@ -276,10 +298,10 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
     <Screen style={styles.screen}>
       <View style={styles.topBar}>
         <MenuButton onPress={() => navigation.navigate('Menu')} />
-        <Text style={styles.h1}>Task</Text>
+        <Text style={styles.h1}>{t('task.title')}</Text>
         <View style={styles.topActions}>
-          <Text onPress={load} style={styles.link}>Refresh</Text>
-          <Text onPress={onBackHome} style={styles.link}>Back</Text>
+          <Text onPress={load} style={styles.link}>{t('common.refresh')}</Text>
+          <Text onPress={onBackHome} style={styles.link}>{t('common.back')}</Text>
         </View>
       </View>
 
@@ -308,31 +330,20 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
       {error ? <Notice kind="danger" text={error} /> : null}
 
       {canRenderMap ? (
-        <View style={styles.mapWrap}>
-          <MapView
-            style={styles.map}
-            provider={mapProvider}
-            ref={mapRef}
-            initialRegion={{
-              latitude: hasTaskCoords ? taskLat : DEMO_FALLBACK_LOCATION?.lat ?? 12.9716,
-              longitude: hasTaskCoords ? taskLng : DEMO_FALLBACK_LOCATION?.lng ?? 77.5946,
-              latitudeDelta: 0.02,
-              longitudeDelta: 0.02,
-            }}
-          >
-            {hasTaskCoords ? <Marker coordinate={{ latitude: taskLat, longitude: taskLng }} title="You" /> : null}
-            {helperLoc ? (
-              <Marker
-                ref={helperMarkerRef}
-                coordinate={{ latitude: helperLoc.lat, longitude: helperLoc.lng }}
-                title="Superheroo"
-              />
-            ) : null}
-            {routeCoords.length > 1 ? (
-              <Polyline coordinates={routeCoords} strokeColor={theme.colors.primary} strokeWidth={4} />
-            ) : null}
-          </MapView>
-        </View>
+        <MemoizedMapView
+          provider={mapProvider}
+          mapRef={mapRef}
+          markers={mapMarkers}
+          routeCoords={routeCoords}
+          initialRegion={{
+            latitude: hasTaskCoords ? taskLat : DEMO_FALLBACK_LOCATION?.lat ?? 12.9716,
+            longitude: hasTaskCoords ? taskLng : DEMO_FALLBACK_LOCATION?.lng ?? 77.5946,
+            latitudeDelta: 0.02,
+            longitudeDelta: 0.02,
+          }}
+          height={220}
+          style={styles.mapWrap}
+        />
       ) : (
         <Notice kind="warning" text={t('error.maps_api_key')} />
       )}
@@ -367,8 +378,9 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
         ) : null}
         {task?.addressText ? <Text style={styles.muted}>{t('buyer.address_optional')}: {task.addressText}</Text> : null}
         {task?.description ? <Text style={styles.desc}>{task.description}</Text> : null}
+        {scheduledAtLabel ? <Text style={styles.muted}>{t('task.scheduled_for')}: {scheduledAtLabel}</Text> : null}
         <Text style={styles.muted}>{t('buyer.task.urgency')}: {task?.urgency ?? '-'} | {t('buyer.task.eta')}: {task?.timeMinutes ?? '-'} {t('buyer.task.minutes')}</Text>
-        <Text style={styles.muted}>{t('buyer.task.budget')}: INR {task ? (task.budgetPaise / 100).toFixed(0) : '-'}</Text>
+        <Text style={styles.muted}>{t('buyer.task.budget')}: {t('currency.inr')} {task ? (task.budgetPaise / 100).toFixed(0) : '-'}</Text>
         {task?.arrivalOtp ? <Text style={styles.otp}>{t('buyer.task.arrival_otp')}: {task.arrivalOtp}</Text> : null}
         {task?.completionOtp ? <Text style={styles.otp}>{t('buyer.task.completion_otp')}: {task.completionOtp}</Text> : null}
 
