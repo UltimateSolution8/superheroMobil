@@ -24,7 +24,7 @@ export function DiagnosticsScreen({ navigation }: Props) {
     setError(null);
     const url = `${API_BASE_URL.replace(/\/+$/, '')}/actuator/health`;
     const controller = new AbortController();
-    const t = setTimeout(() => controller.abort(), 12000);
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
     try {
       const res = await fetch(url, { method: 'GET', signal: controller.signal });
       const text = await res.text();
@@ -37,7 +37,7 @@ export function DiagnosticsScreen({ navigation }: Props) {
       const msg = e instanceof Error ? e.message : String(e);
       setError(msg);
     } finally {
-      clearTimeout(t);
+      clearTimeout(timeoutId);
       setBusy(false);
     }
   }, [t]);

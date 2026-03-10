@@ -572,7 +572,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
                       value={scheduleDate}
                       onChangeText={setScheduleDate}
                       placeholder={t('schedule.date_placeholder')}
-                      keyboardType="numbers-and-punctuation"
+                      keyboardType="number-pad"
                     />
                   </View>
                   <View style={styles.scheduleField}>
@@ -581,7 +581,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
                       value={scheduleTime}
                       onChangeText={setScheduleTime}
                       placeholder={t('schedule.time_placeholder')}
-                      keyboardType="numbers-and-punctuation"
+                      keyboardType="number-pad"
                     />
                   </View>
                 </View>

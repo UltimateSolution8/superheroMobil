@@ -60,7 +60,7 @@ export function MenuScreen({ navigation }: Props) {
               <Text style={styles.rowArrow}>›</Text>
             </Pressable>
           ))}
-          <Pressable style={[styles.row, styles.signOut]} onPress={signOut}>
+          <Pressable style={[styles.row, styles.signOut]} onPress={() => signOut()}>
             <Text style={styles.signOutText}>{t('menu.sign_out')}</Text>
           </Pressable>
         </View>

@@ -1,0 +1,1591 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.apk
+#1 transferring dockerfile: 7.82kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for ghcr.io/cirruslabs/android-sdk:34
+#2 DONE 1.1s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [build  1/18] FROM ghcr.io/cirruslabs/android-sdk:34@sha256:1c2e7e9c4490dbc1f85364556aa08e550945e6dffb29baab86d5fe2c7be0773a
+#4 resolve ghcr.io/cirruslabs/android-sdk:34@sha256:1c2e7e9c4490dbc1f85364556aa08e550945e6dffb29baab86d5fe2c7be0773a done
+#4 DONE 0.0s
+
+#5 [build  2/18] WORKDIR /app
+#5 CACHED
+
+#6 [internal] load build context
+#6 transferring context: 4.22kB done
+#6 DONE 0.0s
+
+#7 [build  3/18] RUN apt-get update -qq   && apt-get install -y --no-install-recommends curl ca-certificates gnupg git openjdk-17-jdk   && curl -fsSL https://deb.nodesource.com/setup_22.x | bash -   && apt-get install -y --no-install-recommends nodejs   && rm -rf /var/lib/apt/lists/*
+#7 15.86 Reading package lists...
+#7 17.02 Building dependency tree...
+#7 17.32 Reading state information...
+#7 17.59 ca-certificates is already the newest version (20240203).
+#7 17.59 ca-certificates set to manually installed.
+#7 17.59 The following additional packages will be installed:
+#7 17.59   dirmngr git-man gnupg-utils gpg gpg-agent gpgconf gpgsm gpgv keyboxd
+#7 17.59   libcurl3t64-gnutls libcurl4t64 libksba8 openjdk-17-jdk-headless
+#7 17.59   openjdk-17-jre openjdk-17-jre-headless pinentry-curses
+#7 17.59 Suggested packages:
+#7 17.59   pinentry-gnome3 tor gettext-base git-daemon-run | git-daemon-sysvinit
+#7 17.59   git-doc git-email git-gui gitk gitweb git-cvs git-mediawiki git-svn
+#7 17.59   parcimonie xloadimage gpg-wks-server scdaemon openjdk-17-demo
+#7 17.59   openjdk-17-source visualvm libnss-mdns fonts-ipafont-gothic
+#7 17.59   fonts-ipafont-mincho fonts-wqy-microhei | fonts-wqy-zenhei fonts-indic
+#7 17.59   pinentry-doc
+#7 17.59 Recommended packages:
+#7 17.59   less gnupg-l10n gpg-wks-client
+#7 17.70 The following NEW packages will be installed:
+#7 17.70   dirmngr gnupg gnupg-utils gpg-agent gpgsm keyboxd libksba8 openjdk-17-jdk
+#7 17.70   openjdk-17-jdk-headless openjdk-17-jre openjdk-17-jre-headless
+#7 17.70   pinentry-curses
+#7 17.70 The following packages will be upgraded:
+#7 17.70   curl git git-man gpg gpgconf gpgv libcurl3t64-gnutls libcurl4t64
+#7 18.48 8 upgraded, 12 newly installed, 0 to remove and 188 not upgraded.
+#7 18.48 Need to get 129 MB of archives.
+#7 18.48 After this operation, 278 MB of additional disk space will be used.
+#7 18.48 Get:1 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 gpgv amd64 2.4.4-2ubuntu17.4 [158 kB]
+#7 20.64 Get:2 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 curl amd64 8.5.0-2ubuntu10.7 [227 kB]
+#7 21.13 Get:3 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libcurl4t64 amd64 8.5.0-2ubuntu10.7 [342 kB]
+#7 21.53 Get:4 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 gpg amd64 2.4.4-2ubuntu17.4 [565 kB]
+#7 21.91 Get:5 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 gpgconf amd64 2.4.4-2ubuntu17.4 [104 kB]
+#7 21.96 Get:6 http://archive.ubuntu.com/ubuntu noble/main amd64 libksba8 amd64 1.6.6-1build1 [122 kB]
+#7 22.01 Get:7 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 dirmngr amd64 2.4.4-2ubuntu17.4 [323 kB]
+#7 22.11 Get:8 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libcurl3t64-gnutls amd64 8.5.0-2ubuntu10.7 [334 kB]
+#7 22.24 Get:9 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 git-man all 1:2.43.0-1ubuntu7.3 [1,100 kB]
+#7 23.42 Get:10 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 git amd64 1:2.43.0-1ubuntu7.3 [3,680 kB]
+#7 24.92 Get:11 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 gnupg-utils amd64 2.4.4-2ubuntu17.4 [109 kB]
+#7 24.94 Get:12 http://archive.ubuntu.com/ubuntu noble/main amd64 pinentry-curses amd64 1.2.1-3ubuntu5 [35.2 kB]
+#7 24.95 Get:13 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 gpg-agent amd64 2.4.4-2ubuntu17.4 [227 kB]
+#7 25.01 Get:14 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 gpgsm amd64 2.4.4-2ubuntu17.4 [232 kB]
+#7 25.06 Get:15 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 keyboxd amd64 2.4.4-2ubuntu17.4 [78.3 kB]
+#7 25.08 Get:16 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 gnupg all 2.4.4-2ubuntu17.4 [359 kB]
+#7 25.17 Get:17 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 openjdk-17-jre-headless amd64 17.0.18+8-1~24.04.1 [48.0 MB]
+#7 36.03 Get:18 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 openjdk-17-jre amd64 17.0.18+8-1~24.04.1 [234 kB]
+#7 36.06 Get:19 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 openjdk-17-jdk-headless amd64 17.0.18+8-1~24.04.1 [71.5 MB]
+#7 52.15 Get:20 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 openjdk-17-jdk amd64 17.0.18+8-1~24.04.1 [1,533 kB]
+#7 53.83 debconf: delaying package configuration, since apt-utils is not installed
+#7 53.95 Fetched 129 MB in 36s (3,635 kB/s)
+#7 54.10 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 55312 files and directories currently installed.)
+#7 54.26 Preparing to unpack .../gpgv_2.4.4-2ubuntu17.4_amd64.deb ...
+#7 54.27 Unpacking gpgv (2.4.4-2ubuntu17.4) over (2.4.4-2ubuntu17) ...
+#7 54.42 Setting up gpgv (2.4.4-2ubuntu17.4) ...
+#7 54.58 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 55312 files and directories currently installed.)
+#7 54.61 Preparing to unpack .../00-curl_8.5.0-2ubuntu10.7_amd64.deb ...
+#7 54.62 Unpacking curl (8.5.0-2ubuntu10.7) over (8.5.0-2ubuntu10.6) ...
+#7 54.79 Preparing to unpack .../01-libcurl4t64_8.5.0-2ubuntu10.7_amd64.deb ...
+#7 54.80 Unpacking libcurl4t64:amd64 (8.5.0-2ubuntu10.7) over (8.5.0-2ubuntu10.6) ...
+#7 54.98 Preparing to unpack .../02-gpg_2.4.4-2ubuntu17.4_amd64.deb ...
+#7 54.98 Unpacking gpg (2.4.4-2ubuntu17.4) over (2.4.4-2ubuntu17) ...
+#7 55.17 Preparing to unpack .../03-gpgconf_2.4.4-2ubuntu17.4_amd64.deb ...
+#7 55.17 Unpacking gpgconf (2.4.4-2ubuntu17.4) over (2.4.4-2ubuntu17) ...
+#7 55.43 Selecting previously unselected package libksba8:amd64.
+#7 55.44 Preparing to unpack .../04-libksba8_1.6.6-1build1_amd64.deb ...
+#7 55.44 Unpacking libksba8:amd64 (1.6.6-1build1) ...
+#7 55.88 Selecting previously unselected package dirmngr.
+#7 55.89 Preparing to unpack .../05-dirmngr_2.4.4-2ubuntu17.4_amd64.deb ...
+#7 56.19 Unpacking dirmngr (2.4.4-2ubuntu17.4) ...
+#7 56.36 Preparing to unpack .../06-libcurl3t64-gnutls_8.5.0-2ubuntu10.7_amd64.deb ...
+#7 56.37 Unpacking libcurl3t64-gnutls:amd64 (8.5.0-2ubuntu10.7) over (8.5.0-2ubuntu10.6) ...
+#7 56.54 Preparing to unpack .../07-git-man_1%3a2.43.0-1ubuntu7.3_all.deb ...
+#7 56.54 Unpacking git-man (1:2.43.0-1ubuntu7.3) over (1:2.43.0-1ubuntu7.1) ...
+#7 56.74 Preparing to unpack .../08-git_1%3a2.43.0-1ubuntu7.3_amd64.deb ...
+#7 57.02 Unpacking git (1:2.43.0-1ubuntu7.3) over (1:2.43.0-1ubuntu7.1) ...
+#7 57.63 Selecting previously unselected package gnupg-utils.
+#7 57.63 Preparing to unpack .../09-gnupg-utils_2.4.4-2ubuntu17.4_amd64.deb ...
+#7 57.64 Unpacking gnupg-utils (2.4.4-2ubuntu17.4) ...
+#7 57.81 Selecting previously unselected package pinentry-curses.
+#7 57.81 Preparing to unpack .../10-pinentry-curses_1.2.1-3ubuntu5_amd64.deb ...
+#7 57.82 Unpacking pinentry-curses (1.2.1-3ubuntu5) ...
+#7 57.97 Selecting previously unselected package gpg-agent.
+#7 57.97 Preparing to unpack .../11-gpg-agent_2.4.4-2ubuntu17.4_amd64.deb ...
+#7 57.97 Unpacking gpg-agent (2.4.4-2ubuntu17.4) ...
+#7 58.13 Selecting previously unselected package gpgsm.
+#7 58.14 Preparing to unpack .../12-gpgsm_2.4.4-2ubuntu17.4_amd64.deb ...
+#7 58.15 Unpacking gpgsm (2.4.4-2ubuntu17.4) ...
+#7 58.31 Selecting previously unselected package keyboxd.
+#7 58.31 Preparing to unpack .../13-keyboxd_2.4.4-2ubuntu17.4_amd64.deb ...
+#7 58.31 Unpacking keyboxd (2.4.4-2ubuntu17.4) ...
+#7 58.46 Selecting previously unselected package gnupg.
+#7 58.46 Preparing to unpack .../14-gnupg_2.4.4-2ubuntu17.4_all.deb ...
+#7 58.46 Unpacking gnupg (2.4.4-2ubuntu17.4) ...
+#7 58.66 Selecting previously unselected package openjdk-17-jre-headless:amd64.
+#7 58.66 Preparing to unpack .../15-openjdk-17-jre-headless_17.0.18+8-1~24.04.1_amd64.deb ...
+#7 58.67 Unpacking openjdk-17-jre-headless:amd64 (17.0.18+8-1~24.04.1) ...
+#7 59.86 Selecting previously unselected package openjdk-17-jre:amd64.
+#7 59.86 Preparing to unpack .../16-openjdk-17-jre_17.0.18+8-1~24.04.1_amd64.deb ...
+#7 59.86 Unpacking openjdk-17-jre:amd64 (17.0.18+8-1~24.04.1) ...
+#7 60.03 Selecting previously unselected package openjdk-17-jdk-headless:amd64.
+#7 60.03 Preparing to unpack .../17-openjdk-17-jdk-headless_17.0.18+8-1~24.04.1_amd64.deb ...
+#7 60.05 Unpacking openjdk-17-jdk-headless:amd64 (17.0.18+8-1~24.04.1) ...
+#7 60.59 Selecting previously unselected package openjdk-17-jdk:amd64.
+#7 60.59 Preparing to unpack .../18-openjdk-17-jdk_17.0.18+8-1~24.04.1_amd64.deb ...
+#7 60.59 Unpacking openjdk-17-jdk:amd64 (17.0.18+8-1~24.04.1) ...
+#7 60.72 Setting up libksba8:amd64 (1.6.6-1build1) ...
+#7 60.72 Setting up pinentry-curses (1.2.1-3ubuntu5) ...
+#7 60.80 Setting up libcurl4t64:amd64 (8.5.0-2ubuntu10.7) ...
+#7 60.80 Setting up libcurl3t64-gnutls:amd64 (8.5.0-2ubuntu10.7) ...
+#7 60.81 Setting up openjdk-17-jre-headless:amd64 (17.0.18+8-1~24.04.1) ...
+#7 61.13 Setting up gpgconf (2.4.4-2ubuntu17.4) ...
+#7 61.14 Setting up git-man (1:2.43.0-1ubuntu7.3) ...
+#7 61.14 Setting up curl (8.5.0-2ubuntu10.7) ...
+#7 61.14 Setting up gpg (2.4.4-2ubuntu17.4) ...
+#7 61.15 Setting up gnupg-utils (2.4.4-2ubuntu17.4) ...
+#7 61.15 Setting up gpg-agent (2.4.4-2ubuntu17.4) ...
+#7 61.91 Created symlink /etc/systemd/user/sockets.target.wants/gpg-agent.socket → /usr/lib/systemd/user/gpg-agent.socket.
+#7 62.57 Created symlink /etc/systemd/user/sockets.target.wants/gpg-agent-ssh.socket → /usr/lib/systemd/user/gpg-agent-ssh.socket.
+#7 63.21 Created symlink /etc/systemd/user/sockets.target.wants/gpg-agent-extra.socket → /usr/lib/systemd/user/gpg-agent-extra.socket.
+#7 63.85 Created symlink /etc/systemd/user/sockets.target.wants/gpg-agent-browser.socket → /usr/lib/systemd/user/gpg-agent-browser.socket.
+#7 63.87 Setting up gpgsm (2.4.4-2ubuntu17.4) ...
+#7 63.88 Setting up dirmngr (2.4.4-2ubuntu17.4) ...
+#7 64.53 Created symlink /etc/systemd/user/sockets.target.wants/dirmngr.socket → /usr/lib/systemd/user/dirmngr.socket.
+#7 64.79 Setting up keyboxd (2.4.4-2ubuntu17.4) ...
+#7 65.44 Created symlink /etc/systemd/user/sockets.target.wants/keyboxd.socket → /usr/lib/systemd/user/keyboxd.socket.
+#7 65.46 Setting up git (1:2.43.0-1ubuntu7.3) ...
+#7 65.59 Setting up gnupg (2.4.4-2ubuntu17.4) ...
+#7 65.60 Processing triggers for hicolor-icon-theme (0.17-2) ...
+#7 65.75 Processing triggers for libc-bin (2.39-0ubuntu8.3) ...
+#7 65.98 Processing triggers for ca-certificates-java (20240118) ...
+#7 66.51 done.
+#7 66.56 Setting up openjdk-17-jdk-headless:amd64 (17.0.18+8-1~24.04.1) ...
+#7 67.37 Setting up openjdk-17-jre:amd64 (17.0.18+8-1~24.04.1) ...
+#7 67.43 Setting up openjdk-17-jdk:amd64 (17.0.18+8-1~24.04.1) ...
+#7 68.02 [38;5;79m2026-03-10 15:21:37 - Installing pre-requisites[0m
+#7 68.07 
+#7 68.07 WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+#7 68.07 
+#7 68.87 Hit:1 http://archive.ubuntu.com/ubuntu noble InRelease
+#7 68.87 Hit:2 http://security.ubuntu.com/ubuntu noble-security InRelease
+#7 69.04 Hit:3 http://archive.ubuntu.com/ubuntu noble-updates InRelease
+#7 69.27 Hit:4 http://archive.ubuntu.com/ubuntu noble-backports InRelease
+#7 72.01 Reading package lists...
+#7 73.17 Building dependency tree...
+#7 73.46 Reading state information...
+#7 73.48 188 packages can be upgraded. Run 'apt list --upgradable' to see them.
+#7 73.54 
+#7 73.54 WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+#7 73.54 
+#7 73.58 Reading package lists...
+#7 74.66 Building dependency tree...
+#7 74.94 Reading state information...
+#7 75.18 ca-certificates is already the newest version (20240203).
+#7 75.18 curl is already the newest version (8.5.0-2ubuntu10.7).
+#7 75.18 gnupg is already the newest version (2.4.4-2ubuntu17.4).
+#7 75.18 The following additional packages will be installed:
+#7 75.18   apt libapt-pkg6.0t64
+#7 75.18 Suggested packages:
+#7 75.18   apt-doc aptitude | synaptic | wajig powermgmt-base
+#7 75.24 The following NEW packages will be installed:
+#7 75.25   apt-transport-https
+#7 75.25 The following packages will be upgraded:
+#7 75.25   apt libapt-pkg6.0t64
+#7 75.95 2 upgraded, 1 newly installed, 0 to remove and 186 not upgraded.
+#7 75.95 Need to get 2,364 kB of archives.
+#7 75.95 After this operation, 47.1 kB of additional disk space will be used.
+#7 75.95 Get:1 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libapt-pkg6.0t64 amd64 2.8.3 [985 kB]
+#7 77.82 Get:2 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 apt amd64 2.8.3 [1,376 kB]
+#7 78.30 Get:3 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 apt-transport-https all 2.8.3 [3,970 B]
+#7 78.66 debconf: delaying package configuration, since apt-utils is not installed
+#7 78.75 Fetched 2,364 kB in 3s (781 kB/s)
+#7 78.89 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 55915 files and directories currently installed.)
+#7 78.92 Preparing to unpack .../libapt-pkg6.0t64_2.8.3_amd64.deb ...
+#7 78.93 Unpacking libapt-pkg6.0t64:amd64 (2.8.3) over (2.7.14build2) ...
+#7 79.09 Setting up libapt-pkg6.0t64:amd64 (2.8.3) ...
+#7 79.25 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 55915 files and directories currently installed.)
+#7 79.27 Preparing to unpack .../archives/apt_2.8.3_amd64.deb ...
+#7 79.90 Unpacking apt (2.8.3) over (2.7.14build2) ...
+#7 80.74 Setting up apt (2.8.3) ...
+#7 82.60 Selecting previously unselected package apt-transport-https.
+#7 82.60 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 55915 files and directories currently installed.)
+#7 82.64 Preparing to unpack .../apt-transport-https_2.8.3_all.deb ...
+#7 82.65 Unpacking apt-transport-https (2.8.3) ...
+#7 82.84 Setting up apt-transport-https (2.8.3) ...
+#7 82.85 Processing triggers for libc-bin (2.39-0ubuntu8.3) ...
+#7 83.67 
+#7 83.67 WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+#7 83.67 
+#7 84.55 Hit:1 http://security.ubuntu.com/ubuntu noble-security InRelease
+#7 84.81 Hit:2 http://archive.ubuntu.com/ubuntu noble InRelease
+#7 85.31 Hit:3 http://archive.ubuntu.com/ubuntu noble-updates InRelease
+#7 85.48 Hit:4 http://archive.ubuntu.com/ubuntu noble-backports InRelease
+#7 90.12 Get:5 https://deb.nodesource.com/node_22.x nodistro InRelease [12.1 kB]
+#7 91.81 Get:6 https://deb.nodesource.com/node_22.x nodistro/main amd64 Packages [9,081 B]
+#7 92.05 Fetched 21.2 kB in 8s (2,608 B/s)
+#7 92.05 Reading package lists...
+#7 93.26 Building dependency tree...
+#7 93.58 Reading state information...
+#7 93.62 186 packages can be upgraded. Run 'apt list --upgradable' to see them.
+#7 93.65 [1;34m2026-03-10 15:22:03 - Repository configured successfully.[0m
+#7 93.67 [38;5;79m2026-03-10 15:22:03 - To install Node.js, run: apt install nodejs -y[0m
+#7 93.70 [38;5;79m2026-03-10 15:22:03 - You can use N|solid Runtime as a node.js alternative[0m
+#7 93.72 [1;32m2026-03-10 15:22:03 - To install N|solid Runtime, run: apt install nsolid -y 
+#7 93.72 [0m
+#7 93.83 Reading package lists...
+#7 94.95 Building dependency tree...
+#7 95.28 Reading state information...
+#7 95.65 The following NEW packages will be installed:
+#7 95.65   nodejs
+#7 95.96 0 upgraded, 1 newly installed, 0 to remove and 186 not upgraded.
+#7 95.96 Need to get 37.8 MB of archives.
+#7 95.96 After this operation, 237 MB of additional disk space will be used.
+#7 95.96 Get:1 https://deb.nodesource.com/node_22.x nodistro/main amd64 nodejs amd64 22.22.1-1nodesource1 [37.8 MB]
+#7 103.6 debconf: delaying package configuration, since apt-utils is not installed
+#7 103.7 Fetched 37.8 MB in 7s (5,058 kB/s)
+#7 103.9 Selecting previously unselected package nodejs.
+#7 103.9 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 55919 files and directories currently installed.)
+#7 103.9 Preparing to unpack .../nodejs_22.22.1-1nodesource1_amd64.deb ...
+#7 104.0 Unpacking nodejs (22.22.1-1nodesource1) ...
+#7 106.8 Setting up nodejs (22.22.1-1nodesource1) ...
+#7 DONE 107.4s
+
+#8 [build  4/18] COPY package.json package-lock.json app.json app.config.js tsconfig.json index.ts App.tsx ./
+#8 DONE 0.1s
+
+#9 [build  5/18] COPY google-services.json ./google-services.json
+#9 DONE 0.0s
+
+#10 [build  6/18] RUN npm ci
+#10 4.124 npm warn deprecated whatwg-encoding@2.0.0: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+#10 4.467 npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+#10 7.956 npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+#10 10.24 npm warn deprecated domexception@4.0.0: Use your platform's native DOMException instead
+#10 11.64 npm warn deprecated abab@2.0.6: Use your platform's native atob() and btoa() methods instead
+#10 14.20 npm warn deprecated @react-native-voice/voice@3.1.5: This package is deprecated. Use expo-speech-recognition instead.
+#10 17.37 npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+#10 17.63 npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+#10 17.63 npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+#10 17.96 npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+#10 18.67 npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+#10 19.80 npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+#10 20.57 npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+#10 20.62 npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+#10 24.95 
+#10 24.95 added 1152 packages, and audited 1153 packages in 24s
+#10 24.95 
+#10 24.95 127 packages are looking for funding
+#10 24.95   run `npm fund` for details
+#10 24.97 
+#10 24.97 5 low severity vulnerabilities
+#10 24.97 
+#10 24.97 To address all issues (including breaking changes), run:
+#10 24.97   npm audit fix --force
+#10 24.97 
+#10 24.97 Run `npm audit` for details.
+#10 24.97 npm notice
+#10 24.97 npm notice New major version of npm available! 10.9.4 -> 11.11.0
+#10 24.97 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.11.0
+#10 24.97 npm notice To update run: npm install -g npm@11.11.0
+#10 24.97 npm notice
+#10 DONE 27.0s
+
+#11 [build  7/18] COPY assets ./assets
+#11 DONE 0.3s
+
+#12 [build  8/18] COPY src ./src
+#12 DONE 0.1s
+
+#13 [build  9/18] COPY gradle-dist/gradle-8.14.3-bin.zip /tmp/gradle-8.14.3-bin.zip
+#13 DONE 0.4s
+
+#14 [build 10/18] RUN CI=1 npx expo prebuild --platform android --clean
+#14 2.552 ! No git repo found in current directory
+#14 2.553 › Use git to track file changes before running commands that modify project files.
+#14 2.554 Git status is dirty but the command will continue because the terminal is not interactive.
+#14 2.581 - Clearing android
+#14 2.586 ✔ Cleared android code
+#14 2.622 - Creating native directory (./android)
+#14 3.443 ✔ Created native directory
+#14 3.444 - Updating package.json
+#14 3.457 ✔ Updated package.json | no changes
+#14 3.458 - Running prebuild
+#14 60.82 » android: userInterfaceStyle: Install expo-system-ui in your project to enable this feature.
+#14 60.82 - Running prebuild
+#14 60.84 ✔ Finished prebuild
+#14 DONE 61.2s
+
+#15 [build 11/18] RUN CI=1 npx expo prebuild --platform android
+#15 2.984 - Creating native directory (./android)
+#15 3.698 ✔ Created native directory | reusing /android
+#15 3.700 - Updating package.json
+#15 3.715 ✔ Updated package.json | no changes
+#15 3.716 - Running prebuild
+#15 20.85 - Running prebuild
+#15 20.85 » android: userInterfaceStyle: Install expo-system-ui in your project to enable this feature.
+#15 20.87 ✔ Finished prebuild
+#15 DONE 21.2s
+
+#16 [build 12/18] RUN set -eux;   GP="/app/android/gradle.properties";   touch "$GP";   if ! grep -q '^android.useAndroidX=' "$GP"; then     printf '%s\n' 'android.useAndroidX=true' >> "$GP";   fi;   if ! grep -q '^android.enableJetifier=' "$GP"; then     printf '%s\n' 'android.enableJetifier=true' >> "$GP";   fi
+#16 0.247 + GP=/app/android/gradle.properties
+#16 0.248 + touch /app/android/gradle.properties
+#16 0.282 + grep -q ^android.useAndroidX= /app/android/gradle.properties
+#16 0.321 + grep -q ^android.enableJetifier= /app/android/gradle.properties
+#16 0.426 + printf %s\n android.enableJetifier=true
+#16 DONE 0.4s
+
+#17 [build 13/18] RUN set -eux;   APP_GRADLE="/app/android/app/build.gradle";   sed -i 's/\\\\n/\\n/g' "$APP_GRADLE" || true;   if ! grep -q "configurations.all" "$APP_GRADLE"; then     bash -c 'printf "%s\n" ""       "configurations.all {"       "    exclude group: \"com.android.support\", module: \"support-compat\""       "    exclude group: \"com.android.support\", module: \"support-v4\""       "    exclude group: \"com.android.support\", module: \"versionedparcelable\""       "}" >> "'"$APP_GRADLE"'"';   fi
+#17 0.153 + APP_GRADLE=/app/android/app/build.gradle
+#17 0.154 + sed -i s/\\\\n/\\n/g /app/android/app/build.gradle
+#17 0.198 + grep -q configurations.all /app/android/app/build.gradle
+#17 0.238 + bash -c printf "%s\n" ""       "configurations.all {"       "    exclude group: \"com.android.support\", module: \"support-compat\""       "    exclude group: \"com.android.support\", module: \"support-v4\""       "    exclude group: \"com.android.support\", module: \"versionedparcelable\""       "}" >> "/app/android/app/build.gradle"
+#17 DONE 0.3s
+
+#18 [build 14/18] RUN set -eux;   if [ "release" = "release" ]; then     SDKMANAGER="/opt/android-sdk-linux/cmdline-tools/latest/bin/sdkmanager";     test -x "$SDKMANAGER";     export ANDROID_SDK_ROOT="/opt/android-sdk-linux";     export ANDROID_HOME="/opt/android-sdk-linux";     for i in 1 2 3; do       yes | "$SDKMANAGER" --sdk_root="/opt/android-sdk-linux" --install         "platform-tools"         "platforms;android-36"         "build-tools;36.0.0"         && break;       echo "sdkmanager failed (attempt $i). Clearing caches and retrying..." >&2;       rm -rf /root/.android/cache || true;       rm -rf "/opt/android-sdk-linux/.android/cache" || true;       sleep 3;     done;     test -d "/opt/android-sdk-linux/build-tools/36.0.0";   fi
+#18 0.252 + [ release = release ]
+#18 0.254 + SDKMANAGER=/opt/android-sdk-linux/cmdline-tools/latest/bin/sdkmanager
+#18 0.254 + test -x /opt/android-sdk-linux/cmdline-tools/latest/bin/sdkmanager
+#18 0.255 + export ANDROID_SDK_ROOT=/opt/android-sdk-linux
+#18 0.255 + export ANDROID_HOME=/opt/android-sdk-linux
+#18 0.258 + yes
+#18 0.258 + /opt/android-sdk-linux/cmdline-tools/latest/bin/sdkmanager --sdk_root=/opt/android-sdk-linux --install platform-tools platforms;android-36 build-tools;36.0.0
+#18 2.735 Loading package information...                                                  Loading local repository...                                                     [                                       ] 3% Loading local repository...        [                                       ] 3% Fetch remote repository...         [=                                      ] 3% Fetch remote repository...         [=                                      ] 4% Fetch remote repository...         [=                                      ] 5% Fetch remote repository...         [==                                     ] 5% Fetch remote repository...         [==                                     ] 6% Fetch remote repository...         [==                                     ] 7% Fetch remote repository...         [==                                     ] 7% Computing updates...               [===                                    ] 8% Computing updates...               [===                                    ] 10% Computing updates...              [===                                    ] 10% Installing Android SDK Build-Tools[===                                    ] 10% Downloading build-tools_r36_linux.[====                                   ] 10% Downloading build-tools_r36_linux.[====                                   ] 11% Downloading build-tools_r36_linux.[====                                   ] 12% Downloading build-tools_r36_linux.[=====                                  ] 13% Downloading build-tools_r36_linux.[=====                                  ] 14% Downloading build-tools_r36_linux.[=====                                  ] 15% Downloading build-tools_r36_linux.[======                                 ] 15% Downloading build-tools_r36_linux.[======                                 ] 16% Downloading build-tools_r36_linux.[======                                 ] 17% Downloading build-tools_r36_linux.[=======                                ] 18% Downloading build-tools_r36_linux.[=======                                ] 18% Unzipping...                      [=======                                ] 18% Unzipping... android-16/NOTICE.txt[=======                                ] 18% Unzipping... android-16/aapt      [=======                                ] 18% Unzipping... android-16/aapt2     [=======                                ] 18% Unzipping... android-16/aarch64-li[=======                                ] 18% Unzipping... android-16/aidl      [=======                                ] 18% Unzipping... android-16/apksigner [=======                                ] 18% Unzipping... android-16/arm-linux-[=======                                ] 18% Unzipping... android-16/bcc_compat[=======                                ] 18% Unzipping... android-16/core-lambd[=======                                ] 18% Unzipping... android-16/d8        [=======                                ] 18% Unzipping... android-16/dexdump   [=======                                ] 18% Unzipping... android-16/i686-linux[=======                                ] 18% Unzipping... android-16/lld       [=======                                ] 18% Unzipping... android-16/llvm-rs-cc[=======                                ] 18% Unzipping... android-16/mipsel-lin[=======                                ] 18% Unzipping... android-16/runtime.pr[=======                                ] 18% Unzipping... android-16/source.pro[=======                                ] 18% Unzipping... android-16/split-sele[=======                                ] 18% Unzipping... android-16/x86_64-lin[=======                                ] 18% Unzipping... android-16/zipalign  [=======                                ] 19% Unzipping... android-16/zipalign  [=======                                ] 19% Unzipping... android-16/lib/apksig[=======                                ] 19% Unzipping... android-16/lib/d8.jar[=======                                ] 20% Unzipping... android-16/lib/d8.jar[========                               ] 20% Unzipping... android-16/lib/d8.jar[========                               ] 20% Unzipping... android-16/lib64/libL[========                               ] 21% Unzipping... android-16/lib64/libL[========                               ] 22% Unzipping... android-16/lib64/libL[========                               ] 22% Unzipping... android-16/lib64/libb[========                               ] 22% Unzipping... android-16/lib64/libc[=========                              ] 23% Unzipping... android-16/lib64/libc[=========                              ] 23% Unzipping... android-16/lld-bin/ll[=========                              ] 24% Unzipping... android-16/lld-bin/ll[=========                              ] 24% Unzipping... android-16/renderscri[=========                              ] 25% Unzipping... android-16/renderscri[===============                        ] 40% Unzipping... android-16/renderscri[===============                        ] 40% Installing Android SDK Platform 36[===============                        ] 40% Downloading platform-36_r02.zip...[================                       ] 40% Downloading platform-36_r02.zip...[================                       ] 41% Downloading platform-36_r02.zip...[================                       ] 42% Downloading platform-36_r02.zip...[=================                      ] 43% Downloading platform-36_r02.zip...[=================                      ] 44% Downloading platform-36_r02.zip...[=================                      ] 45% Downloading platform-36_r02.zip...[==================                     ] 45% Downloading platform-36_r02.zip...[==================                     ] 46% Downloading platform-36_r02.zip...[==================                     ] 47% Downloading platform-36_r02.zip...[==================                     ] 48% Downloading platform-36_r02.zip...[==================                     ] 48% Unzipping... android-16/renderscri[==================                     ] 48% Unzipping... android-36/android-st[===================                    ] 48% Unzipping... android-36/android-st[===================                    ] 48% Unzipping... android-36/android.ja[===================                    ] 49% Unzipping... android-36/android.ja[===================                    ] 50% Unzipping... android-36/android.ja[====================                   ] 50% Unzipping... android-36/android.ja[====================                   ] 51% Unzipping... android-36/android.ja[====================                   ] 51% Unzipping... android-36/build.prop[====================                   ] 51% Unzipping... android-36/core-for-s[====================                   ] 51% Unzipping... android-36/data/NOTIC[====================                   ] 51% Unzipping... android-36/data/activ[====================                   ] 51% Unzipping... android-36/data/annot[====================                   ] 51% Unzipping... android-36/data/api-v[====================                   ] 52% Unzipping... android-36/data/api-v[====================                   ] 52% Unzipping... android-36/data/broad[====================                   ] 52% Unzipping... android-36/data/categ[====================                   ] 52% Unzipping... android-36/data/featu[====================                   ] 52% Unzipping... android-36/data/res/a[====================                   ] 52% Unzipping... android-36/data/res/c[====================                   ] 52% Unzipping... android-36/data/res/d[=====================                  ] 53% Unzipping... android-36/data/res/d[=====================                  ] 53% Unzipping... android-36/data/res/i[=====================                  ] 53% Unzipping... android-36/data/res/l[=====================                  ] 53% Unzipping... android-36/data/res/m[=====================                  ] 53% Unzipping... android-36/data/res/r[=====================                  ] 53% Unzipping... android-36/data/res/t[=====================                  ] 53% Unzipping... android-36/data/res/v[=====================                  ] 54% Unzipping... android-36/data/res/v[=====================                  ] 55% Unzipping... android-36/data/res/v[=====================                  ] 55% Unzipping... android-36/data/res/x[=====================                  ] 55% Unzipping... android-36/data/servi[=====================                  ] 55% Unzipping... android-36/data/widge[=====================                  ] 55% Unzipping... android-36/framework.[=====================                  ] 55% Unzipping... android-36/optional/a[=====================                  ] 55% Unzipping... android-36/optional/l[=====================                  ] 55% Unzipping... android-36/optional/o[=====================                  ] 55% Unzipping... android-36/optional/w[=====================                  ] 55% Unzipping... android-36/sdk.proper[=====================                  ] 55% Unzipping... android-36/skins/HVGA[=====================                  ] 55% Unzipping... android-36/skins/NOTI[=====================                  ] 55% Unzipping... android-36/skins/QVGA[=====================                  ] 55% Unzipping... android-36/skins/WQVG[=====================                  ] 55% Unzipping... android-36/skins/WSVG[=====================                  ] 55% Unzipping... android-36/skins/WVGA[=====================                  ] 55% Unzipping... android-36/skins/WXGA[=====================                  ] 55% Unzipping... android-36/source.pro[=====================                  ] 55% Unzipping... android-36/templates/[=====================                  ] 55% Unzipping... android-36/uiautomato[===========================            ] 70% Unzipping... android-36/uiautomato[===========================            ] 70% Installing Android SDK Platform-To[===========================            ] 70% Downloading platform-tools_r37.0.0[============================           ] 70% Downloading platform-tools_r37.0.0[============================           ] 71% Downloading platform-tools_r37.0.0[============================           ] 72% Downloading platform-tools_r37.0.0[=============================          ] 73% Downloading platform-tools_r37.0.0[=============================          ] 74% Downloading platform-tools_r37.0.0[=============================          ] 75% Downloading platform-tools_r37.0.0[==============================         ] 75% Downloading platform-tools_r37.0.0[==============================         ] 76% Downloading platform-tools_r37.0.0[==============================         ] 77% Downloading platform-tools_r37.0.0[==============================         ] 77% Unzipping... android-36/uiautomato[==============================         ] 77% Unzipping... platform-tools/NOTICE[===============================        ] 78% Unzipping... platform-tools/NOTICE[===============================        ] 78% Unzipping... platform-tools/adb   [===============================        ] 79% Unzipping... platform-tools/adb   [===============================        ] 80% Unzipping... platform-tools/adb   [================================       ] 80% Unzipping... platform-tools/adb   [================================       ] 81% Unzipping... platform-tools/adb   [================================       ] 82% Unzipping... platform-tools/adb   [================================       ] 82% Unzipping... platform-tools/etc1to[================================       ] 82% Unzipping... platform-tools/fastbo[=================================      ] 83% Unzipping... platform-tools/fastbo[=================================      ] 83% Unzipping... platform-tools/hprof-[=================================      ] 83% Unzipping... platform-tools/lib64/[=================================      ] 83% Unzipping... platform-tools/make_f[=================================      ] 83% Unzipping... platform-tools/mke2fs[=================================      ] 84% Unzipping... platform-tools/mke2fs[=================================      ] 84% Unzipping... platform-tools/source[=================================      ] 84% Unzipping... platform-tools/sqlite[=================================      ] 85% Unzipping... platform-tools/sqlite[=======================================] 100% Unzipping... platform-tools/sqlit
+#18 41.69 
+#18 41.74 + break
+#18 41.74 + test -d /opt/android-sdk-linux/build-tools/36.0.0
+#18 DONE 41.8s
+
+#19 [build 15/18] RUN set -eux;   GP="/app/android/gradle.properties";   touch "$GP";   if grep -q '^reactNativeArchitectures=' "$GP"; then     sed -i 's/^reactNativeArchitectures=.*/reactNativeArchitectures=arm64-v8a/' "$GP";   else     printf '%s\n' 'reactNativeArchitectures=arm64-v8a' >> "$GP";   fi;   if grep -q '^org.gradle.jvmargs=' "$GP"; then     sed -i 's/^org.gradle.jvmargs=.*/org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=768m -Dfile.encoding=UTF-8/' "$GP";   else     printf '%s\n' 'org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=768m -Dfile.encoding=UTF-8' >> "$GP";   fi;   if grep -q '^kotlin.daemon.jvmargs=' "$GP"; then     sed -i 's/^kotlin.daemon.jvmargs=.*/kotlin.daemon.jvmargs=-Xmx768m/' "$GP";   else     printf '%s\n' 'kotlin.daemon.jvmargs=-Xmx768m' >> "$GP";   fi;   if grep -q '^org.gradle.workers.max=' "$GP"; then     sed -i 's/^org.gradle.workers.max=.*/org.gradle.workers.max=1/' "$GP";   else     printf '%s\n' 'org.gradle.workers.max=1' >> "$GP";   fi;   if grep -q '^org.gradle.parallel=' "$GP"; then     sed -i 's/^org.gradle.parallel=.*/org.gradle.parallel=false/' "$GP";   else     printf '%s\n' 'org.gradle.parallel=false' >> "$GP";   fi;   if grep -q '^org.gradle.vfs.watch=' "$GP"; then     sed -i 's/^org.gradle.vfs.watch=.*/org.gradle.vfs.watch=false/' "$GP";   else     printf '%s\n' 'org.gradle.vfs.watch=false' >> "$GP";   fi
+#19 0.312 + GP=/app/android/gradle.properties
+#19 0.313 + touch /app/android/gradle.properties
+#19 0.349 + grep -q ^reactNativeArchitectures= /app/android/gradle.properties
+#19 0.393 + sed -i s/^reactNativeArchitectures=.*/reactNativeArchitectures=arm64-v8a/ /app/android/gradle.properties
+#19 0.432 + grep -q ^org.gradle.jvmargs= /app/android/gradle.properties
+#19 0.473 + sed -i s/^org.gradle.jvmargs=.*/org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=768m -Dfile.encoding=UTF-8/ /app/android/gradle.properties
+#19 0.514 + grep -q ^kotlin.daemon.jvmargs= /app/android/gradle.properties
+#19 0.552 + printf %s\n kotlin.daemon.jvmargs=-Xmx768m
+#19 0.553 + grep -q ^org.gradle.workers.max= /app/android/gradle.properties
+#19 0.594 + printf %s\n org.gradle.workers.max=1
+#19 0.594 + grep -q ^org.gradle.parallel= /app/android/gradle.properties
+#19 0.633 + sed -i s/^org.gradle.parallel=.*/org.gradle.parallel=false/ /app/android/gradle.properties
+#19 0.739 + grep -q ^org.gradle.vfs.watch= /app/android/gradle.properties
+#19 0.786 + printf %s\n org.gradle.vfs.watch=false
+#19 DONE 0.8s
+
+#20 [build 16/18] WORKDIR /app/android
+#20 DONE 0.0s
+
+#21 [build 17/18] RUN set -eux;   GRADLE_DIST="gradle-8.14.3-bin.zip";   if [ ! -f "/tmp/${GRADLE_DIST}" ]; then     curl -L --retry 5 --retry-delay 5 --max-time 600       "https://services.gradle.org/distributions/${GRADLE_DIST}"       -o "/tmp/${GRADLE_DIST}";   fi;   if [ -f "/app/android/gradle/wrapper/gradle-wrapper.properties" ]; then     sed -i "s|distributionUrl=.*|distributionUrl=file:///tmp/${GRADLE_DIST}|" /app/android/gradle/wrapper/gradle-wrapper.properties;   fi
+#21 0.268 + GRADLE_DIST=gradle-8.14.3-bin.zip
+#21 0.269 + [ ! -f /tmp/gradle-8.14.3-bin.zip ]
+#21 0.270 + [ -f /app/android/gradle/wrapper/gradle-wrapper.properties ]
+#21 0.270 + sed -i s|distributionUrl=.*|distributionUrl=file:///tmp/gradle-8.14.3-bin.zip| /app/android/gradle/wrapper/gradle-wrapper.properties
+#21 DONE 0.4s
+
+#22 [build 18/18] RUN set -eux;   if [ "release" = "release" ]; then     sed -i 's/signingConfig signingConfigs\\.release/signingConfig signingConfigs.debug/g' /app/android/app/build.gradle || true;     ./gradlew --no-daemon --max-workers 1 assembleRelease -x lint -x test;   elif [ "release" = "standalone" ]; then     ./gradlew --no-daemon --max-workers 1 :app:bundleDebugJsAndAssets -x lint -x test       || ./gradlew --no-daemon --max-workers 1 :app:createBundleDebugJsAndAssets -x lint -x test       || ./gradlew --no-daemon --max-workers 1 bundleDebugJsAndAssets -x lint -x test       || ./gradlew --no-daemon --max-workers 1 createBundleDebugJsAndAssets -x lint -x test;     ./gradlew --no-daemon --max-workers 1 assembleDebug -x lint -x test;   else     ./gradlew --no-daemon --max-workers 1 assembleDebug -x lint -x test;   fi
+#22 0.230 + [ release = release ]
+#22 0.231 + sed -i s/signingConfig signingConfigs\\.release/signingConfig signingConfigs.debug/g /app/android/app/build.gradle
+#22 0.274 + ./gradlew --no-daemon --max-workers 1 assembleRelease -x lint -x test
+#22 1.124 Downloading file:/tmp/gradle-8.14.3-bin.zip
+#22 1.437 .............10%.............20%.............30%.............40%.............50%.............60%.............70%.............80%.............90%..............100%
+#22 3.994 
+#22 3.994 Welcome to Gradle 8.14.3!
+#22 3.996 
+#22 3.996 Here are the highlights of this release:
+#22 3.996  - Java 24 support
+#22 3.996  - GraalVM Native Image toolchain selection
+#22 3.997  - Enhancements to test reporting
+#22 3.997  - Build Authoring improvements
+#22 3.998 
+#22 3.998 For more details see https://docs.gradle.org/8.14.3/release-notes.html
+#22 3.998 
+#22 4.491 To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+#22 7.893 Daemon will be stopped at the end of the build 
+#22 137.3 
+#22 137.3 > Configure project :expo-gradle-plugin:expo-autolinking-plugin
+#22 137.3 w: file:///app/node_modules/expo-modules-autolinking/android/expo-gradle-plugin/expo-autolinking-plugin/build.gradle.kts:25:3: 'kotlinOptions(KotlinJvmOptionsDeprecated /* = KotlinJvmOptions */.() -> Unit): Unit' is deprecated. Please migrate to the compilerOptions DSL. More details are here: https://kotl.in/u1r8ln
+#22 145.0 
+#22 145.0 > Configure project :expo-gradle-plugin:expo-autolinking-settings-plugin
+#22 145.0 w: file:///app/node_modules/expo-modules-autolinking/android/expo-gradle-plugin/expo-autolinking-settings-plugin/build.gradle.kts:30:3: 'kotlinOptions(KotlinJvmOptionsDeprecated /* = KotlinJvmOptions */.() -> Unit): Unit' is deprecated. Please migrate to the compilerOptions DSL. More details are here: https://kotl.in/u1r8ln
+#22 147.9 
+#22 147.9 > Task :expo-gradle-plugin:expo-autolinking-plugin-shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+#22 148.4 > Task :gradle-plugin:settings-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+#22 148.4 > Task :gradle-plugin:shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+#22 177.9 > Task :expo-gradle-plugin:expo-autolinking-plugin-shared:compileKotlin
+#22 178.4 > Task :gradle-plugin:shared:compileKotlin
+#22 211.6 > Task :gradle-plugin:shared:compileJava NO-SOURCE
+#22 211.6 > Task :gradle-plugin:shared:processResources NO-SOURCE
+#22 211.6 > Task :gradle-plugin:shared:classes UP-TO-DATE
+#22 211.9 > Task :gradle-plugin:shared:jar
+#22 213.4 > Task :expo-gradle-plugin:expo-autolinking-plugin-shared:compileJava NO-SOURCE
+#22 213.4 > Task :expo-gradle-plugin:expo-autolinking-plugin-shared:processResources NO-SOURCE
+#22 213.4 > Task :expo-gradle-plugin:expo-autolinking-plugin-shared:classes UP-TO-DATE
+#22 213.5 > Task :expo-gradle-plugin:expo-autolinking-plugin-shared:jar
+#22 213.5 > Task :expo-gradle-plugin:expo-autolinking-settings-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+#22 242.0 > Task :gradle-plugin:settings-plugin:compileKotlin
+#22 243.5 > Task :expo-gradle-plugin:expo-autolinking-settings-plugin:compileKotlin
+#22 270.3 > Task :expo-gradle-plugin:expo-autolinking-settings-plugin:compileJava NO-SOURCE
+#22 270.4 > Task :expo-gradle-plugin:expo-autolinking-settings-plugin:pluginDescriptors
+#22 270.4 > Task :expo-gradle-plugin:expo-autolinking-settings-plugin:processResources
+#22 270.4 > Task :expo-gradle-plugin:expo-autolinking-settings-plugin:classes
+#22 270.5 > Task :expo-gradle-plugin:expo-autolinking-settings-plugin:jar
+#22 270.6 > Task :gradle-plugin:settings-plugin:compileJava NO-SOURCE
+#22 270.6 > Task :gradle-plugin:settings-plugin:pluginDescriptors
+#22 270.6 > Task :gradle-plugin:settings-plugin:processResources
+#22 270.6 > Task :gradle-plugin:settings-plugin:classes
+#22 270.7 > Task :gradle-plugin:settings-plugin:jar
+#22 298.0 
+#22 298.0 > Configure project :expo-module-gradle-plugin
+#22 298.0 w: file:///app/node_modules/expo-modules-core/expo-module-gradle-plugin/build.gradle.kts:58:3: 'kotlinOptions(KotlinJvmOptionsDeprecated /* = KotlinJvmOptions */.() -> Unit): Unit' is deprecated. Please migrate to the compilerOptions DSL. More details are here: https://kotl.in/u1r8ln
+#22 332.9 
+#22 332.9 > Task :expo-gradle-plugin:expo-autolinking-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+#22 333.2 > Task :gradle-plugin:react-native-gradle-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+#22 347.9 > Task :expo-gradle-plugin:expo-autolinking-plugin:compileKotlin
+#22 347.9 > Task :expo-gradle-plugin:expo-autolinking-plugin:compileJava NO-SOURCE
+#22 347.9 > Task :expo-gradle-plugin:expo-autolinking-plugin:pluginDescriptors
+#22 348.0 > Task :expo-gradle-plugin:expo-autolinking-plugin:processResources
+#22 348.0 > Task :expo-gradle-plugin:expo-autolinking-plugin:classes
+#22 348.0 > Task :expo-gradle-plugin:expo-autolinking-plugin:jar
+#22 348.0 > Task :expo-module-gradle-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+#22 348.1 > Task :expo-module-gradle-plugin:pluginDescriptors
+#22 348.1 > Task :expo-module-gradle-plugin:processResources
+#22 363.2 > Task :gradle-plugin:react-native-gradle-plugin:compileKotlin
+#22 374.2 > Task :gradle-plugin:react-native-gradle-plugin:compileJava NO-SOURCE
+#22 374.2 > Task :gradle-plugin:react-native-gradle-plugin:pluginDescriptors
+#22 374.2 > Task :gradle-plugin:react-native-gradle-plugin:processResources
+#22 374.2 > Task :gradle-plugin:react-native-gradle-plugin:classes
+#22 374.3 > Task :gradle-plugin:react-native-gradle-plugin:jar
+#22 381.7 
+#22 381.7 > Task :expo-module-gradle-plugin:compileKotlin
+#22 381.7 w: file:///app/node_modules/expo-modules-core/expo-module-gradle-plugin/src/main/kotlin/expo/modules/plugin/android/AndroidLibraryExtension.kt:9:24 'var targetSdk: Int?' is deprecated. Will be removed from library DSL in v9.0. Use testOptions.targetSdk or/and lint.targetSdk instead.
+#22 381.8 
+#22 381.8 > Task :expo-module-gradle-plugin:compileJava NO-SOURCE
+#22 381.8 > Task :expo-module-gradle-plugin:classes
+#22 381.8 > Task :expo-module-gradle-plugin:jar
+#22 438.3 
+#22 438.3 > Configure project :
+#22 438.3 [32m[ExpoRootProject][0m Using the following versions:
+#22 438.3   - buildTools:  [32m36.0.0[0m
+#22 438.3   - minSdk:      [32m24[0m
+#22 438.3   - compileSdk:  [32m36[0m
+#22 438.3   - targetSdk:   [32m36[0m
+#22 438.3   - ndk:         [32m27.1.12297006[0m
+#22 438.3   - kotlin:      [32m2.1.20[0m
+#22 438.3   - ksp:         [32m2.1.20-2.0.1[0m
+#22 453.1 
+#22 453.1 > Configure project :expo
+#22 453.1 
+#22 453.1 Using expo modules
+#22 455.4   - [32mexpo-constants[0m (18.0.13)
+#22 457.1   - [32mexpo-image-loader[0m (4.7.0)
+#22 458.0   - [32mexpo-image-picker[0m (15.0.7)
+#22 488.0 
+#22 488.0 > Configure project :expo-modules-core
+#22 488.0 Checking the license for package NDK (Side by side) 27.1.12297006 in /opt/android-sdk-linux/licenses
+#22 488.0 License for package NDK (Side by side) 27.1.12297006 accepted.
+#22 488.0 Preparing "Install NDK (Side by side) 27.1.12297006 v.27.1.12297006".
+#22 777.8 "Install NDK (Side by side) 27.1.12297006 v.27.1.12297006" ready.
+#22 777.8 Installing NDK (Side by side) 27.1.12297006 in /opt/android-sdk-linux/ndk/27.1.12297006
+#22 777.8 "Install NDK (Side by side) 27.1.12297006 v.27.1.12297006" complete.
+#22 778.5 "Install NDK (Side by side) 27.1.12297006 v.27.1.12297006" finished.
+#22 779.6 
+#22 779.6 > Configure project :expo
+#22 779.6   - [32mexpo-modules-core[0m (3.0.29)
+#22 779.6   - [33m[📦][0m [32mexpo-application[0m (6.1.5)
+#22 779.6   - [33m[📦][0m [32mexpo-asset[0m (12.0.12)
+#22 779.6   - [33m[📦][0m [32mexpo-document-picker[0m (14.0.8)
+#22 779.6   - [33m[📦][0m [32mexpo-file-system[0m (19.0.21)
+#22 779.6   - [33m[📦][0m [32mexpo-font[0m (14.0.11)
+#22 779.6   - [33m[📦][0m [32mexpo-image-manipulator[0m (55.0.9)
+#22 779.6   - [33m[📦][0m [32mexpo-keep-awake[0m (15.0.8)
+#22 779.6   - [33m[📦][0m [32mexpo-location[0m (19.0.8)
+#22 779.6   - [33m[📦][0m [32mexpo-notifications[0m (0.31.5)
+#22 779.6   - [33m[📦][0m [32mexpo-secure-store[0m (15.0.8)
+#22 779.6 
+#22 1147.7 Checking the license for package Android SDK Build-Tools 35 in /opt/android-sdk-linux/licenses
+#22 1147.7 License for package Android SDK Build-Tools 35 accepted.
+#22 1147.7 Preparing "Install Android SDK Build-Tools 35 v.35.0.0".
+#22 1174.2 "Install Android SDK Build-Tools 35 v.35.0.0" ready.
+#22 1174.2 Installing Android SDK Build-Tools 35 in /opt/android-sdk-linux/build-tools/35.0.0
+#22 1174.2 "Install Android SDK Build-Tools 35 v.35.0.0" complete.
+#22 1174.2 "Install Android SDK Build-Tools 35 v.35.0.0" finished.
+#22 1174.3 [=========                              ] 25%                                   [=========                              ] 25% Fetch remote repository...        [=======================================] 100% Fetch remote repository...       
+#22 1189.6 Checking the license for package Android SDK Platform 35 in /opt/android-sdk-linux/licenses
+#22 1189.6 License for package Android SDK Platform 35 accepted.
+#22 1189.6 Preparing "Install Android SDK Platform 35 (revision 2)".
+#22 1217.9 "Install Android SDK Platform 35 (revision 2)" ready.
+#22 1217.9 Installing Android SDK Platform 35 in /opt/android-sdk-linux/platforms/android-35
+#22 1217.9 "Install Android SDK Platform 35 (revision 2)" complete.
+#22 1218.0 "Install Android SDK Platform 35 (revision 2)" finished.
+#22 1218.1 [=========                              ] 25%                                   [=========                              ] 25% Fetch remote repository...        [=======================================] 100% Fetch remote repository...       
+#22 1225.0 
+#22 1225.0 > Task :app:generateAutolinkingPackageList
+#22 1225.0 > Task :app:generateCodegenSchemaFromJavaScript SKIPPED
+#22 1225.0 > Task :app:generateCodegenArtifactsFromSchema SKIPPED
+#22 1225.1 > Task :app:generateReactNativeEntryPoint
+#22 1226.3 > Task :expo:generatePackagesList
+#22 1226.3 > Task :expo:preBuild
+#22 1227.4 
+#22 1227.4 > Task :expo-constants:createExpoConfig
+#22 1227.4 The NODE_ENV environment variable is required but was not specified. Ensure the project is bundled with Expo CLI or NODE_ENV is set. Using only .env.local and .env
+#22 1227.4 
+#22 1227.4 > Task :expo-constants:preBuild
+#22 1227.4 > Task :expo-image-loader:preBuild UP-TO-DATE
+#22 1227.4 > Task :expo-image-picker:preBuild UP-TO-DATE
+#22 1227.4 > Task :expo-modules-core:preBuild UP-TO-DATE
+#22 1227.4 > Task :react-native-async-storage_async-storage:preBuild UP-TO-DATE
+#22 1227.4 > Task :react-native-community_netinfo:preBuild UP-TO-DATE
+#22 1227.4 > Task :react-native-gesture-handler:preBuild UP-TO-DATE
+#22 1227.4 > Task :react-native-image-picker:preBuild UP-TO-DATE
+#22 1227.4 > Task :react-native-maps:preBuild UP-TO-DATE
+#22 1227.4 > Task :react-native-safe-area-context:preBuild UP-TO-DATE
+#22 1227.4 > Task :react-native-screens:preBuild UP-TO-DATE
+#22 1227.4 > Task :react-native-voice_voice:preBuild UP-TO-DATE
+#22 1227.4 > Task :react-native-webview:preBuild UP-TO-DATE
+#22 1227.4 > Task :app:preBuild
+#22 1227.4 > Task :app:preReleaseBuild
+#22 1227.6 > Task :app:mergeReleaseJniLibFolders
+#22 1227.6 > Task :expo:preReleaseBuild
+#22 1227.6 > Task :expo:mergeReleaseJniLibFolders
+#22 1227.6 > Task :expo:mergeReleaseNativeLibs NO-SOURCE
+#22 1227.7 > Task :expo:copyReleaseJniLibsProjectOnly
+#22 1227.7 > Task :expo-constants:preReleaseBuild
+#22 1227.7 > Task :expo-constants:mergeReleaseJniLibFolders
+#22 1227.7 > Task :expo-constants:mergeReleaseNativeLibs NO-SOURCE
+#22 1227.7 > Task :expo-constants:copyReleaseJniLibsProjectOnly
+#22 1227.7 > Task :expo-image-loader:preReleaseBuild UP-TO-DATE
+#22 1227.8 > Task :expo-image-loader:mergeReleaseJniLibFolders
+#22 1227.8 > Task :expo-image-loader:mergeReleaseNativeLibs NO-SOURCE
+#22 1227.8 > Task :expo-image-loader:copyReleaseJniLibsProjectOnly
+#22 1227.8 > Task :expo-image-picker:preReleaseBuild UP-TO-DATE
+#22 1227.8 > Task :expo-image-picker:mergeReleaseJniLibFolders
+#22 1227.8 > Task :expo-image-picker:mergeReleaseNativeLibs NO-SOURCE
+#22 1227.8 > Task :expo-image-picker:copyReleaseJniLibsProjectOnly
+#22 1227.8 > Task :expo-modules-core:preReleaseBuild UP-TO-DATE
+#22 1229.8 
+#22 1229.8 > Task :expo-modules-core:configureCMakeRelWithDebInfo[arm64-v8a]
+#22 1229.8 Checking the license for package CMake 3.22.1 in /opt/android-sdk-linux/licenses
+#22 1229.8 License for package CMake 3.22.1 accepted.
+#22 1229.8 Preparing "Install CMake 3.22.1 v.3.22.1".
+#22 1235.4 "Install CMake 3.22.1 v.3.22.1" ready.
+#22 1235.4 Installing CMake 3.22.1 in /opt/android-sdk-linux/cmake/3.22.1
+#22 1235.4 "Install CMake 3.22.1 v.3.22.1" complete.
+#22 1235.5 "Install CMake 3.22.1 v.3.22.1" finished.
+#22 1369.3 
+#22 1369.3 > Task :expo-modules-core:buildCMakeRelWithDebInfo[arm64-v8a]
+#22 1369.4 > Task :expo-modules-core:mergeReleaseJniLibFolders
+#22 1369.8 > Task :expo-modules-core:mergeReleaseNativeLibs
+#22 1370.0 > Task :expo-modules-core:copyReleaseJniLibsProjectOnly
+#22 1370.0 > Task :react-native-async-storage_async-storage:preReleaseBuild UP-TO-DATE
+#22 1370.0 > Task :react-native-async-storage_async-storage:mergeReleaseJniLibFolders
+#22 1370.0 > Task :react-native-async-storage_async-storage:mergeReleaseNativeLibs NO-SOURCE
+#22 1370.0 > Task :react-native-async-storage_async-storage:copyReleaseJniLibsProjectOnly
+#22 1370.0 > Task :react-native-community_netinfo:preReleaseBuild UP-TO-DATE
+#22 1370.0 > Task :react-native-community_netinfo:mergeReleaseJniLibFolders
+#22 1370.1 > Task :react-native-community_netinfo:mergeReleaseNativeLibs NO-SOURCE
+#22 1370.1 > Task :react-native-community_netinfo:copyReleaseJniLibsProjectOnly
+#22 1370.1 > Task :react-native-gesture-handler:preReleaseBuild UP-TO-DATE
+#22 1370.1 > Task :react-native-gesture-handler:mergeReleaseJniLibFolders
+#22 1370.1 > Task :react-native-gesture-handler:mergeReleaseNativeLibs NO-SOURCE
+#22 1370.1 > Task :react-native-gesture-handler:copyReleaseJniLibsProjectOnly
+#22 1370.1 > Task :react-native-image-picker:preReleaseBuild UP-TO-DATE
+#22 1370.1 > Task :react-native-image-picker:mergeReleaseJniLibFolders
+#22 1370.1 > Task :react-native-image-picker:mergeReleaseNativeLibs NO-SOURCE
+#22 1370.1 > Task :react-native-image-picker:copyReleaseJniLibsProjectOnly
+#22 1370.1 > Task :react-native-maps:preReleaseBuild UP-TO-DATE
+#22 1370.1 > Task :react-native-maps:mergeReleaseJniLibFolders
+#22 1370.1 > Task :react-native-maps:mergeReleaseNativeLibs NO-SOURCE
+#22 1370.1 > Task :react-native-maps:copyReleaseJniLibsProjectOnly
+#22 1370.1 > Task :react-native-safe-area-context:preReleaseBuild UP-TO-DATE
+#22 1370.2 > Task :react-native-safe-area-context:mergeReleaseJniLibFolders
+#22 1370.2 > Task :react-native-safe-area-context:mergeReleaseNativeLibs NO-SOURCE
+#22 1370.2 > Task :react-native-safe-area-context:copyReleaseJniLibsProjectOnly
+#22 1370.2 > Task :react-native-screens:preReleaseBuild UP-TO-DATE
+#22 1384.1 > Task :react-native-screens:configureCMakeRelWithDebInfo[arm64-v8a]
+#22 1387.8 > Task :react-native-screens:buildCMakeRelWithDebInfo[arm64-v8a]
+#22 1387.9 > Task :react-native-screens:mergeReleaseJniLibFolders
+#22 1388.0 > Task :react-native-screens:mergeReleaseNativeLibs
+#22 1388.0 > Task :react-native-screens:copyReleaseJniLibsProjectOnly
+#22 1388.0 > Task :react-native-voice_voice:preReleaseBuild UP-TO-DATE
+#22 1388.0 > Task :react-native-voice_voice:mergeReleaseJniLibFolders
+#22 1388.0 > Task :react-native-voice_voice:mergeReleaseNativeLibs NO-SOURCE
+#22 1388.0 > Task :react-native-voice_voice:copyReleaseJniLibsProjectOnly
+#22 1388.0 > Task :react-native-webview:preReleaseBuild UP-TO-DATE
+#22 1388.1 > Task :react-native-webview:mergeReleaseJniLibFolders
+#22 1388.1 > Task :react-native-webview:mergeReleaseNativeLibs NO-SOURCE
+#22 1388.1 > Task :react-native-webview:copyReleaseJniLibsProjectOnly
+#22 1418.0 > Task :app:mergeReleaseNativeLibs
+#22 1440.5 > Task :app:stripReleaseDebugSymbols
+#22 1440.9 > Task :app:extractReleaseNativeSymbolTables
+#22 1441.0 > Task :app:mergeReleaseNativeDebugMetadata
+#22 1441.1 > Task :react-native-gesture-handler:checkKotlinGradlePluginConfigurationErrors SKIPPED
+#22 1441.1 > Task :react-native-gesture-handler:generateReleaseBuildConfig
+#22 1441.1 > Task :react-native-gesture-handler:generateReleaseResValues
+#22 1441.1 > Task :react-native-gesture-handler:generateReleaseResources
+#22 1441.2 > Task :react-native-gesture-handler:packageReleaseResources
+#22 1442.4 > Task :react-native-gesture-handler:parseReleaseLocalResources
+#22 1442.5 > Task :react-native-gesture-handler:generateReleaseRFile
+#22 1472.5 > Task :react-native-gesture-handler:compileReleaseKotlin
+#22 1491.4 w: file:///app/node_modules/react-native-gesture-handler/android/src/main/java/com/swmansion/gesturehandler/react/RNGestureHandlerRootView.kt:41:43 The corresponding parameter in the supertype 'ReactViewGroup' is named 'ev'. This may cause problems when calling this function with named arguments.
+#22 1491.6 
+#22 1491.6 > Task :react-native-gesture-handler:javaPreCompileRelease
+#22 1503.8 
+#22 1503.8 > Task :react-native-gesture-handler:compileReleaseJavaWithJavac
+#22 1503.8 Note: /app/node_modules/react-native-gesture-handler/android/paper/src/main/java/com/swmansion/gesturehandler/NativeRNGestureHandlerModuleSpec.java uses or overrides a deprecated API.
+#22 1503.8 Note: Recompile with -Xlint:deprecation for details.
+#22 1509.8 
+#22 1509.8 > Task :react-native-gesture-handler:bundleLibRuntimeToDirRelease
+#22 1521.5 > Task :react-native-safe-area-context:checkKotlinGradlePluginConfigurationErrors SKIPPED
+#22 1521.5 > Task :react-native-safe-area-context:generateReleaseBuildConfig
+#22 1521.5 > Task :react-native-safe-area-context:generateReleaseResValues
+#22 1521.6 > Task :react-native-safe-area-context:generateReleaseResources
+#22 1521.7 > Task :react-native-safe-area-context:packageReleaseResources
+#22 1521.8 > Task :react-native-safe-area-context:parseReleaseLocalResources
+#22 1521.8 > Task :react-native-safe-area-context:generateReleaseRFile
+#22 1530.9 
+#22 1530.9 > Task :react-native-safe-area-context:compileReleaseKotlin
+#22 1530.9 w: file:///app/node_modules/react-native-safe-area-context/android/src/main/java/com/th3rdwave/safeareacontext/SafeAreaView.kt:59:23 'val uiImplementation: UIImplementation!' is deprecated. Deprecated in Java.
+#22 1530.9 w: file:///app/node_modules/react-native-safe-area-context/android/src/paper/java/com/th3rdwave/safeareacontext/InsetsChangeEvent.kt:19:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+#22 1531.0 
+#22 1531.0 > Task :react-native-safe-area-context:javaPreCompileRelease
+#22 1532.4 
+#22 1532.4 > Task :react-native-safe-area-context:compileReleaseJavaWithJavac
+#22 1532.4 Note: /app/node_modules/react-native-safe-area-context/android/src/paper/java/com/th3rdwave/safeareacontext/NativeSafeAreaContextSpec.java uses or overrides a deprecated API.
+#22 1532.4 Note: Recompile with -Xlint:deprecation for details.
+#22 1532.4 
+#22 1532.4 > Task :react-native-safe-area-context:bundleLibRuntimeToDirRelease
+#22 1534.1 > Task :react-native-screens:checkKotlinGradlePluginConfigurationErrors SKIPPED
+#22 1534.2 > Task :react-native-screens:generateReleaseBuildConfig
+#22 1534.2 > Task :react-native-screens:generateReleaseResValues
+#22 1534.2 > Task :react-native-screens:generateReleaseResources
+#22 1534.4 > Task :react-native-screens:packageReleaseResources
+#22 1534.5 > Task :react-native-screens:parseReleaseLocalResources
+#22 1534.6 > Task :react-native-screens:generateReleaseRFile
+#22 1559.2 
+#22 1559.2 > Task :react-native-screens:compileReleaseKotlin
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/RNScreensPackage.kt:56:9 The corresponding parameter in the supertype 'BaseReactPackage' is named 'name'. This may cause problems when calling this function with named arguments.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/RNScreensPackage.kt:57:9 The corresponding parameter in the supertype 'BaseReactPackage' is named 'reactContext'. This may cause problems when calling this function with named arguments.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/RNScreensPackage.kt:70:17 'constructor(name: String, className: String, canOverrideExistingModule: Boolean, needsEagerInit: Boolean, hasConstants: Boolean, isCxxModule: Boolean, isTurboModule: Boolean): ReactModuleInfo' is deprecated. This constructor is deprecated and will be removed in the future. Use ReactModuleInfo(String, String, boolean, boolean, boolean, boolean)].
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/Screen.kt:48:77 Unchecked cast of '(CoordinatorLayout.Behavior<View!>?..CoordinatorLayout.Behavior<*>?)' to 'BottomSheetBehavior<Screen>'.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/Screen.kt:383:36 'fun setTranslucent(screen: Screen, activity: Activity?, context: ReactContext?): Unit' is deprecated. For apps targeting SDK 35 or above this prop has no effect because edge-to-edge is enabled by default and the status bar is always translucent.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/Screen.kt:402:36 'fun setColor(screen: Screen, activity: Activity?, context: ReactContext?): Unit' is deprecated. For apps targeting SDK 35 or above this prop has no effect because edge-to-edge is enabled by default and the status bar is always translucent.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/Screen.kt:420:36 'fun setNavigationBarColor(screen: Screen, activity: Activity?): Unit' is deprecated. For all apps targeting Android SDK 35 or above edge-to-edge is enabled by default.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/Screen.kt:437:36 'fun setNavigationBarTranslucent(screen: Screen, activity: Activity?): Unit' is deprecated. For all apps targeting Android SDK 35 or above edge-to-edge is enabled by default.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:217:31 'var targetElevation: Float' is deprecated. Deprecated in Java.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:220:13 'fun setHasOptionsMenu(p0: Boolean): Unit' is deprecated. Deprecated in Java.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:397:18 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:404:22 'fun onPrepareOptionsMenu(p0: Menu): Unit' is deprecated. Deprecated in Java.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:407:18 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackFragment.kt:412:22 'fun onCreateOptionsMenu(p0: Menu, p1: MenuInflater): Unit' is deprecated. Deprecated in Java.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStackHeaderConfig.kt:435:18 'val reactNativeHost: ReactNativeHost' is deprecated. You should not use ReactNativeHost directly in the New Architecture. Use ReactHost instead.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:203:14 'var statusBarColor: Int?' is deprecated. For apps targeting SDK 35 or above this prop has no effect because edge-to-edge is enabled by default and the status bar is always translucent.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:220:14 'var isStatusBarTranslucent: Boolean?' is deprecated. For apps targeting SDK 35 or above this prop has no effect because edge-to-edge is enabled by default and the status bar is always translucent.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:237:14 'var navigationBarColor: Int?' is deprecated. For all apps targeting Android SDK 35 or above edge-to-edge is enabled by default.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenViewManager.kt:246:14 'var isNavigationBarTranslucent: Boolean?' is deprecated. For all apps targeting Android SDK 35 or above edge-to-edge is enabled by default.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:55:42 'fun replaceSystemWindowInsets(p0: Int, p1: Int, p2: Int, p3: Int): WindowInsetsCompat' is deprecated. Deprecated in Java.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:56:39 'val systemWindowInsetLeft: Int' is deprecated. Deprecated in Java.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:58:39 'val systemWindowInsetRight: Int' is deprecated. Deprecated in Java.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:59:39 'val systemWindowInsetBottom: Int' is deprecated. Deprecated in Java.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:102:53 'var statusBarColor: Int' is deprecated. Deprecated in Java.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:106:37 'var statusBarColor: Int?' is deprecated. For apps targeting SDK 35 or above this prop has no effect because edge-to-edge is enabled by default and the status bar is always translucent.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:113:48 'var statusBarColor: Int' is deprecated. Deprecated in Java.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:116:32 'var statusBarColor: Int' is deprecated. Deprecated in Java.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:162:49 'var isStatusBarTranslucent: Boolean?' is deprecated. For apps targeting SDK 35 or above this prop has no effect because edge-to-edge is enabled by default and the status bar is always translucent.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:218:43 'var navigationBarColor: Int?' is deprecated. For all apps targeting Android SDK 35 or above edge-to-edge is enabled by default.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:218:72 'var navigationBarColor: Int' is deprecated. Deprecated in Java.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:224:16 'var navigationBarColor: Int' is deprecated. Deprecated in Java.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:241:55 'var isNavigationBarTranslucent: Boolean?' is deprecated. For all apps targeting Android SDK 35 or above edge-to-edge is enabled by default.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:283:13 'fun setColor(screen: Screen, activity: Activity?, context: ReactContext?): Unit' is deprecated. For apps targeting SDK 35 or above this prop has no effect because edge-to-edge is enabled by default and the status bar is always translucent.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:285:13 'fun setTranslucent(screen: Screen, activity: Activity?, context: ReactContext?): Unit' is deprecated. For apps targeting SDK 35 or above this prop has no effect because edge-to-edge is enabled by default and the status bar is always translucent.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:289:13 'fun setNavigationBarColor(screen: Screen, activity: Activity?): Unit' is deprecated. For all apps targeting Android SDK 35 or above edge-to-edge is enabled by default.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:290:13 'fun setNavigationBarTranslucent(screen: Screen, activity: Activity?): Unit' is deprecated. For all apps targeting Android SDK 35 or above edge-to-edge is enabled by default.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:354:42 'var statusBarColor: Int?' is deprecated. For apps targeting SDK 35 or above this prop has no effect because edge-to-edge is enabled by default and the status bar is always translucent.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:356:48 'var isStatusBarTranslucent: Boolean?' is deprecated. For apps targeting SDK 35 or above this prop has no effect because edge-to-edge is enabled by default and the status bar is always translucent.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:359:57 'var navigationBarColor: Int?' is deprecated. For all apps targeting Android SDK 35 or above edge-to-edge is enabled by default.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenWindowTraits.kt:360:63 'var isNavigationBarTranslucent: Boolean?' is deprecated. For all apps targeting Android SDK 35 or above edge-to-edge is enabled by default.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/BottomSheetDialogRootView.kt:7:8 'object ReactFeatureFlags : Any' is deprecated. Use com.facebook.react.internal.featureflags.ReactNativeFeatureFlags instead.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/BottomSheetDialogRootView.kt:25:13 'object ReactFeatureFlags : Any' is deprecated. Use com.facebook.react.internal.featureflags.ReactNativeFeatureFlags instead.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/BottomSheetDialogRootView.kt:32:9 The corresponding parameter in the supertype 'ReactViewGroup' is named 'left'. This may cause problems when calling this function with named arguments.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/BottomSheetDialogRootView.kt:33:9 The corresponding parameter in the supertype 'ReactViewGroup' is named 'top'. This may cause problems when calling this function with named arguments.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/BottomSheetDialogRootView.kt:34:9 The corresponding parameter in the supertype 'ReactViewGroup' is named 'right'. This may cause problems when calling this function with named arguments.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/BottomSheetDialogRootView.kt:35:9 The corresponding parameter in the supertype 'ReactViewGroup' is named 'bottom'. This may cause problems when calling this function with named arguments.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/BottomSheetDialogRootView.kt:71:9 The corresponding parameter in the supertype 'RootView' is named 'childView'. This may cause problems when calling this function with named arguments.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/BottomSheetDialogRootView.kt:72:9 The corresponding parameter in the supertype 'RootView' is named 'ev'. This may cause problems when calling this function with named arguments.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/BottomSheetDialogRootView.kt:79:46 The corresponding parameter in the supertype 'RootView' is named 'ev'. This may cause problems when calling this function with named arguments.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/BottomSheetDialogRootView.kt:83:9 The corresponding parameter in the supertype 'RootView' is named 'childView'. This may cause problems when calling this function with named arguments.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/BottomSheetDialogRootView.kt:84:9 The corresponding parameter in the supertype 'RootView' is named 'ev'. This may cause problems when calling this function with named arguments.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/BottomSheetDialogRootView.kt:95:34 The corresponding parameter in the supertype 'RootView' is named 't'. This may cause problems when calling this function with named arguments.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/DimmingView.kt:63:9 The corresponding parameter in the supertype 'ReactCompoundView' is named 'touchX'. This may cause problems when calling this function with named arguments.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/DimmingView.kt:64:9 The corresponding parameter in the supertype 'ReactCompoundView' is named 'touchY'. This may cause problems when calling this function with named arguments.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/DimmingView.kt:68:9 The corresponding parameter in the supertype 'ReactCompoundViewGroup' is named 'touchX'. This may cause problems when calling this function with named arguments.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/DimmingView.kt:69:9 The corresponding parameter in the supertype 'ReactCompoundViewGroup' is named 'touchY'. This may cause problems when calling this function with named arguments.
+#22 1559.2 w: file:///app/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/gamma/tabs/TabsHostViewManager.kt:37:9 The corresponding parameter in the supertype 'TabsHostViewManager' is named 'view'. This may cause problems when calling this function with named arguments.
+#22 1559.3 
+#22 1559.3 > Task :react-native-screens:javaPreCompileRelease
+#22 1562.9 > Task :react-native-screens:compileReleaseJavaWithJavac
+#22 1563.1 > Task :react-native-screens:bundleLibRuntimeToDirRelease
+#22 1566.7 > Task :react-native-webview:checkKotlinGradlePluginConfigurationErrors SKIPPED
+#22 1566.8 > Task :react-native-webview:generateReleaseBuildConfig
+#22 1566.8 > Task :react-native-webview:generateReleaseResValues
+#22 1566.8 > Task :react-native-webview:generateReleaseResources
+#22 1566.9 > Task :react-native-webview:packageReleaseResources
+#22 1567.0 > Task :react-native-webview:parseReleaseLocalResources
+#22 1567.0 > Task :react-native-webview:generateReleaseRFile
+#22 1573.7 
+#22 1573.7 > Task :react-native-webview:compileReleaseKotlin
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewManagerImpl.kt:22:8 'object MapBuilder : Any' is deprecated. Use Kotlin's built-in collections extensions.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewManagerImpl.kt:82:18 'var allowFileAccessFromFileURLs: Boolean' is deprecated. Deprecated in Java.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewManagerImpl.kt:83:18 'var allowUniversalAccessFromFileURLs: Boolean' is deprecated. Deprecated in Java.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewManagerImpl.kt:124:21 'fun allowScanningByMediaScanner(): Unit' is deprecated. Deprecated in Java.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewManagerImpl.kt:161:36 'var systemUiVisibility: Int' is deprecated. Deprecated in Java.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewManagerImpl.kt:300:14 'object MapBuilder : Any' is deprecated. Use Kotlin's built-in collections extensions.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewManagerImpl.kt:350:34 Condition is always 'true'.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewManagerImpl.kt:369:38 'var allowUniversalAccessFromFileURLs: Boolean' is deprecated. Deprecated in Java.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewManagerImpl.kt:430:51 Unchecked cast of 'Any?' to 'HashMap<String, String>'.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewManagerImpl.kt:486:23 'var savePassword: Boolean' is deprecated. Deprecated in Java.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewManagerImpl.kt:487:23 'var saveFormData: Boolean' is deprecated. Deprecated in Java.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewManagerImpl.kt:557:23 'var allowFileAccessFromFileURLs: Boolean' is deprecated. Deprecated in Java.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewManagerImpl.kt:602:52 'static field FORCE_DARK_ON: Int' is deprecated. Deprecated in Java.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewManagerImpl.kt:602:89 'static field FORCE_DARK_OFF: Int' is deprecated. Deprecated in Java.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewManagerImpl.kt:603:35 'static fun setForceDark(p0: @NonNull() WebSettings, p1: Int): Unit' is deprecated. Deprecated in Java.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewManagerImpl.kt:612:35 'static fun setForceDarkStrategy(p0: @NonNull() WebSettings, p1: Int): Unit' is deprecated. Deprecated in Java.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewManagerImpl.kt:614:39 'static field DARK_STRATEGY_PREFER_WEB_THEME_OVER_USER_AGENT_DARKENING: Int' is deprecated. Deprecated in Java.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewManagerImpl.kt:658:65 Unchecked cast of 'ArrayList<Any?>' to 'List<Map<String, String>>'.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewManagerImpl.kt:679:23 'var saveFormData: Boolean' is deprecated. Deprecated in Java.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/SubResourceErrorEvent.kt:5:8 'interface RCTEventEmitter : JavaScriptModule' is deprecated. Use [RCTModernEventEmitter] instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/SubResourceErrorEvent.kt:11:3 'constructor<T : Event<T>>(viewTag: Int): Event<T>' is deprecated. Use constructor with explicit surfaceId instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/SubResourceErrorEvent.kt:22:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/SubResourceErrorEvent.kt:22:42 'interface RCTEventEmitter : JavaScriptModule' is deprecated. Use [RCTModernEventEmitter] instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/SubResourceErrorEvent.kt:23:21 'fun receiveEvent(targetTag: Int, eventName: String, params: WritableMap?): Unit' is deprecated. Use [RCTModernEventEmitter.receiveEvent] instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopCustomMenuSelectionEvent.kt:5:8 'interface RCTEventEmitter : JavaScriptModule' is deprecated. Use [RCTModernEventEmitter] instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopCustomMenuSelectionEvent.kt:11:3 'constructor<T : Event<T>>(viewTag: Int): Event<T>' is deprecated. Use constructor with explicit surfaceId instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopCustomMenuSelectionEvent.kt:22:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopCustomMenuSelectionEvent.kt:22:42 'interface RCTEventEmitter : JavaScriptModule' is deprecated. Use [RCTModernEventEmitter] instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopCustomMenuSelectionEvent.kt:23:21 'fun receiveEvent(targetTag: Int, eventName: String, params: WritableMap?): Unit' is deprecated. Use [RCTModernEventEmitter.receiveEvent] instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopHttpErrorEvent.kt:5:8 'interface RCTEventEmitter : JavaScriptModule' is deprecated. Use [RCTModernEventEmitter] instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopHttpErrorEvent.kt:11:3 'constructor<T : Event<T>>(viewTag: Int): Event<T>' is deprecated. Use constructor with explicit surfaceId instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopHttpErrorEvent.kt:22:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopHttpErrorEvent.kt:22:42 'interface RCTEventEmitter : JavaScriptModule' is deprecated. Use [RCTModernEventEmitter] instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopHttpErrorEvent.kt:23:21 'fun receiveEvent(targetTag: Int, eventName: String, params: WritableMap?): Unit' is deprecated. Use [RCTModernEventEmitter.receiveEvent] instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopLoadingErrorEvent.kt:5:8 'interface RCTEventEmitter : JavaScriptModule' is deprecated. Use [RCTModernEventEmitter] instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopLoadingErrorEvent.kt:11:3 'constructor<T : Event<T>>(viewTag: Int): Event<T>' is deprecated. Use constructor with explicit surfaceId instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopLoadingErrorEvent.kt:22:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopLoadingErrorEvent.kt:22:42 'interface RCTEventEmitter : JavaScriptModule' is deprecated. Use [RCTModernEventEmitter] instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopLoadingErrorEvent.kt:23:21 'fun receiveEvent(targetTag: Int, eventName: String, params: WritableMap?): Unit' is deprecated. Use [RCTModernEventEmitter.receiveEvent] instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopLoadingFinishEvent.kt:5:8 'interface RCTEventEmitter : JavaScriptModule' is deprecated. Use [RCTModernEventEmitter] instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopLoadingFinishEvent.kt:11:3 'constructor<T : Event<T>>(viewTag: Int): Event<T>' is deprecated. Use constructor with explicit surfaceId instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopLoadingFinishEvent.kt:22:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopLoadingFinishEvent.kt:22:42 'interface RCTEventEmitter : JavaScriptModule' is deprecated. Use [RCTModernEventEmitter] instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopLoadingFinishEvent.kt:23:21 'fun receiveEvent(targetTag: Int, eventName: String, params: WritableMap?): Unit' is deprecated. Use [RCTModernEventEmitter.receiveEvent] instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopLoadingProgressEvent.kt:5:8 'interface RCTEventEmitter : JavaScriptModule' is deprecated. Use [RCTModernEventEmitter] instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopLoadingProgressEvent.kt:11:3 'constructor<T : Event<T>>(viewTag: Int): Event<T>' is deprecated. Use constructor with explicit surfaceId instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopLoadingProgressEvent.kt:22:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopLoadingProgressEvent.kt:22:42 'interface RCTEventEmitter : JavaScriptModule' is deprecated. Use [RCTModernEventEmitter] instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopLoadingProgressEvent.kt:23:21 'fun receiveEvent(targetTag: Int, eventName: String, params: WritableMap?): Unit' is deprecated. Use [RCTModernEventEmitter.receiveEvent] instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopLoadingStartEvent.kt:5:8 'interface RCTEventEmitter : JavaScriptModule' is deprecated. Use [RCTModernEventEmitter] instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopLoadingStartEvent.kt:11:3 'constructor<T : Event<T>>(viewTag: Int): Event<T>' is deprecated. Use constructor with explicit surfaceId instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopLoadingStartEvent.kt:22:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopLoadingStartEvent.kt:22:42 'interface RCTEventEmitter : JavaScriptModule' is deprecated. Use [RCTModernEventEmitter] instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopLoadingStartEvent.kt:23:21 'fun receiveEvent(targetTag: Int, eventName: String, params: WritableMap?): Unit' is deprecated. Use [RCTModernEventEmitter.receiveEvent] instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopMessageEvent.kt:5:8 'interface RCTEventEmitter : JavaScriptModule' is deprecated. Use [RCTModernEventEmitter] instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopMessageEvent.kt:10:75 'constructor<T : Event<T>>(viewTag: Int): Event<T>' is deprecated. Use constructor with explicit surfaceId instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopMessageEvent.kt:21:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopMessageEvent.kt:21:42 'interface RCTEventEmitter : JavaScriptModule' is deprecated. Use [RCTModernEventEmitter] instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopMessageEvent.kt:22:21 'fun receiveEvent(targetTag: Int, eventName: String, params: WritableMap?): Unit' is deprecated. Use [RCTModernEventEmitter.receiveEvent] instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopNewWindowEvent.kt:5:8 'interface RCTEventEmitter : JavaScriptModule' is deprecated. Use [RCTModernEventEmitter] instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopNewWindowEvent.kt:11:3 'constructor<T : Event<T>>(viewTag: Int): Event<T>' is deprecated. Use constructor with explicit surfaceId instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopNewWindowEvent.kt:22:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopNewWindowEvent.kt:22:42 'interface RCTEventEmitter : JavaScriptModule' is deprecated. Use [RCTModernEventEmitter] instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopNewWindowEvent.kt:23:21 'fun receiveEvent(targetTag: Int, eventName: String, params: WritableMap?): Unit' is deprecated. Use [RCTModernEventEmitter.receiveEvent] instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopRenderProcessGoneEvent.kt:5:8 'interface RCTEventEmitter : JavaScriptModule' is deprecated. Use [RCTModernEventEmitter] instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopRenderProcessGoneEvent.kt:12:3 'constructor<T : Event<T>>(viewTag: Int): Event<T>' is deprecated. Use constructor with explicit surfaceId instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopRenderProcessGoneEvent.kt:23:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopRenderProcessGoneEvent.kt:23:42 'interface RCTEventEmitter : JavaScriptModule' is deprecated. Use [RCTModernEventEmitter] instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopRenderProcessGoneEvent.kt:24:21 'fun receiveEvent(targetTag: Int, eventName: String, params: WritableMap?): Unit' is deprecated. Use [RCTModernEventEmitter.receiveEvent] instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopShouldStartLoadWithRequestEvent.kt:5:8 'interface RCTEventEmitter : JavaScriptModule' is deprecated. Use [RCTModernEventEmitter] instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopShouldStartLoadWithRequestEvent.kt:10:89 'constructor<T : Event<T>>(viewTag: Int): Event<T>' is deprecated. Use constructor with explicit surfaceId instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopShouldStartLoadWithRequestEvent.kt:27:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopShouldStartLoadWithRequestEvent.kt:27:42 'interface RCTEventEmitter : JavaScriptModule' is deprecated. Use [RCTModernEventEmitter] instead.
+#22 1573.7 w: file:///app/node_modules/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/events/TopShouldStartLoadWithRequestEvent.kt:28:21 'fun receiveEvent(targetTag: Int, eventName: String, params: WritableMap?): Unit' is deprecated. Use [RCTModernEventEmitter.receiveEvent] instead.
+#22 1573.8 
+#22 1573.8 > Task :react-native-webview:javaPreCompileRelease
+#22 1576.9 
+#22 1576.9 > Task :react-native-webview:compileReleaseJavaWithJavac
+#22 1576.9 Note: Some input files use or override a deprecated API.
+#22 1576.9 Note: Recompile with -Xlint:deprecation for details.
+#22 1577.3 
+#22 1577.3 > Task :react-native-webview:bundleLibRuntimeToDirRelease
+#22 1579.4 > Task :react-native-async-storage_async-storage:generateReleaseBuildConfig
+#22 1579.4 > Task :react-native-async-storage_async-storage:generateReleaseResValues
+#22 1579.4 > Task :react-native-async-storage_async-storage:generateReleaseResources
+#22 1579.5 > Task :react-native-async-storage_async-storage:packageReleaseResources
+#22 1579.6 > Task :react-native-async-storage_async-storage:parseReleaseLocalResources
+#22 1579.6 > Task :react-native-async-storage_async-storage:generateReleaseRFile
+#22 1579.6 > Task :react-native-async-storage_async-storage:javaPreCompileRelease
+#22 1581.0 
+#22 1581.0 > Task :react-native-async-storage_async-storage:compileReleaseJavaWithJavac
+#22 1581.0 Note: Some input files use or override a deprecated API.
+#22 1581.0 Note: Recompile with -Xlint:deprecation for details.
+#22 1581.0 Note: /app/node_modules/@react-native-async-storage/async-storage/android/src/javaPackage/java/com/reactnativecommunity/asyncstorage/AsyncStoragePackage.java uses unchecked or unsafe operations.
+#22 1581.0 Note: Recompile with -Xlint:unchecked for details.
+#22 1581.1 
+#22 1581.1 > Task :react-native-async-storage_async-storage:bundleLibRuntimeToDirRelease
+#22 1582.0 > Task :react-native-community_netinfo:generateReleaseBuildConfig
+#22 1582.0 > Task :react-native-community_netinfo:generateReleaseResValues
+#22 1582.0 > Task :react-native-community_netinfo:generateReleaseResources
+#22 1582.0 > Task :react-native-community_netinfo:packageReleaseResources
+#22 1582.0 > Task :react-native-community_netinfo:parseReleaseLocalResources
+#22 1582.1 > Task :react-native-community_netinfo:generateReleaseRFile
+#22 1582.1 > Task :react-native-community_netinfo:javaPreCompileRelease
+#22 1582.8 /app/node_modules/@react-native-community/netinfo/android/src/main/java/com/reactnativecommunity/netinfo/NetInfoModule.java:47: warning: [removal] onCatalystInstanceDestroy() in NativeModule has been deprecated and marked for removal
+#22 1582.8     public void onCatalystInstanceDestroy() {
+#22 1582.8                 ^
+#22 1582.8 Note: Some input files use or override a deprecated API.
+#22 1582.8 Note: Recompile with -Xlint:deprecation for details.
+#22 1582.8 1 warning
+#22 1582.8 
+#22 1582.8 > Task :react-native-community_netinfo:compileReleaseJavaWithJavac
+#22 1582.8 
+#22 1582.8 > Task :react-native-community_netinfo:bundleLibRuntimeToDirRelease
+#22 1583.1 > Task :react-native-voice_voice:generateReleaseBuildConfig
+#22 1583.1 > Task :react-native-voice_voice:generateReleaseResValues
+#22 1583.2 > Task :react-native-voice_voice:generateReleaseResources
+#22 1583.2 > Task :react-native-voice_voice:packageReleaseResources
+#22 1583.2 > Task :react-native-voice_voice:parseReleaseLocalResources
+#22 1583.2 > Task :react-native-voice_voice:generateReleaseRFile
+#22 1583.3 > Task :react-native-voice_voice:javaPreCompileRelease
+#22 1584.1 
+#22 1584.1 > Task :react-native-voice_voice:compileReleaseJavaWithJavac
+#22 1584.1 Note: Some input files use or override a deprecated API.
+#22 1584.1 Note: Recompile with -Xlint:deprecation for details.
+#22 1584.2 
+#22 1584.2 > Task :react-native-voice_voice:bundleLibRuntimeToDirRelease
+#22 1584.7 > Task :expo:checkKotlinGradlePluginConfigurationErrors SKIPPED
+#22 1584.7 > Task :expo:generateReleaseBuildConfig
+#22 1584.7 > Task :expo:generateReleaseResValues
+#22 1584.7 > Task :expo:generateReleaseResources
+#22 1584.7 > Task :expo:packageReleaseResources
+#22 1584.8 > Task :expo:parseReleaseLocalResources
+#22 1584.8 > Task :expo:generateReleaseRFile
+#22 1584.8 > Task :expo-constants:checkKotlinGradlePluginConfigurationErrors SKIPPED
+#22 1584.8 > Task :expo-constants:generateReleaseBuildConfig
+#22 1584.8 > Task :expo-constants:generateReleaseResValues
+#22 1584.8 > Task :expo-constants:generateReleaseResources
+#22 1584.8 > Task :expo-constants:packageReleaseResources
+#22 1584.8 > Task :expo-constants:parseReleaseLocalResources
+#22 1584.8 > Task :expo-constants:generateReleaseRFile
+#22 1584.8 > Task :expo-modules-core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+#22 1584.9 > Task :expo-modules-core:generateReleaseBuildConfig
+#22 1584.9 > Task :expo-modules-core:generateReleaseResValues
+#22 1584.9 > Task :expo-modules-core:generateReleaseResources
+#22 1584.9 > Task :expo-modules-core:packageReleaseResources
+#22 1584.9 > Task :expo-modules-core:parseReleaseLocalResources
+#22 1584.9 > Task :expo-modules-core:generateReleaseRFile
+#22 1614.9 > Task :expo-modules-core:compileReleaseKotlin
+#22 1625.7 w: file:///app/node_modules/expo-modules-core/android/src/main/java/expo/modules/adapters/react/apploader/RNHeadlessAppLoader.kt:48:87 'val reactNativeHost: ReactNativeHost' is deprecated. You should not use ReactNativeHost directly in the New Architecture. Use ReactHost instead.
+#22 1625.7 w: file:///app/node_modules/expo-modules-core/android/src/main/java/expo/modules/adapters/react/apploader/RNHeadlessAppLoader.kt:91:85 'val reactNativeHost: ReactNativeHost' is deprecated. You should not use ReactNativeHost directly in the New Architecture. Use ReactHost instead.
+#22 1625.7 w: file:///app/node_modules/expo-modules-core/android/src/main/java/expo/modules/adapters/react/apploader/RNHeadlessAppLoader.kt:120:83 'val reactNativeHost: ReactNativeHost' is deprecated. You should not use ReactNativeHost directly in the New Architecture. Use ReactHost instead.
+#22 1625.7 w: file:///app/node_modules/expo-modules-core/android/src/main/java/expo/modules/apploader/AppLoaderProvider.kt:34:52 Unchecked cast of 'Class<*>!' to 'Class<out HeadlessAppLoader>'.
+#22 1625.7 w: file:///app/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/AppContext.kt:30:8 'typealias ErrorManagerModule = JSLoggerModule' is deprecated. Use JSLoggerModule instead.
+#22 1625.7 w: file:///app/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/AppContext.kt:253:21 'typealias ErrorManagerModule = JSLoggerModule' is deprecated. Use JSLoggerModule instead.
+#22 1625.7 w: file:///app/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/AppContext.kt:343:21 'val DEFAULT: Int' is deprecated. UIManagerType.DEFAULT will be deleted in the next release of React Native. Use [LEGACY] instead.
+#22 1625.7 w: file:///app/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/defaultmodules/NativeModulesProxyModule.kt:16:5 'fun Constants(legacyConstantsProvider: () -> Map<String, Any?>): Unit' is deprecated. Use `Constant` or `Property` instead.
+#22 1625.7 w: file:///app/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/jni/PromiseImpl.kt:65:51 'val errorManager: JSLoggerModule?' is deprecated. Use AppContext.jsLogger instead.
+#22 1625.7 w: file:///app/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/jni/PromiseImpl.kt:69:22 'fun reportExceptionToLogBox(codedException: CodedException): Unit' is deprecated. Use appContext.jsLogger.error(...) instead.
+#22 1625.7 w: file:///app/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/views/ViewDefinitionBuilder.kt:464:16 'val errorManager: JSLoggerModule?' is deprecated. Use AppContext.jsLogger instead.
+#22 1625.7 w: file:///app/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/views/ViewDefinitionBuilder.kt:464:30 'fun reportExceptionToLogBox(codedException: CodedException): Unit' is deprecated. Use appContext.jsLogger.error(...) instead.
+#22 1625.7 w: file:///app/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/views/ViewManagerDefinition.kt:41:16 'val errorManager: JSLoggerModule?' is deprecated. Use AppContext.jsLogger instead.
+#22 1625.7 w: file:///app/node_modules/expo-modules-core/android/src/main/java/expo/modules/kotlin/views/ViewManagerDefinition.kt:41:30 'fun reportExceptionToLogBox(codedException: CodedException): Unit' is deprecated. Use appContext.jsLogger.error(...) instead.
+#22 1626.3 
+#22 1626.3 > Task :expo-modules-core:javaPreCompileRelease
+#22 1628.3 
+#22 1628.3 > Task :expo-modules-core:compileReleaseJavaWithJavac
+#22 1628.3 Note: Some input files use or override a deprecated API.
+#22 1628.3 Note: Recompile with -Xlint:deprecation for details.
+#22 1630.3 
+#22 1630.3 > Task :expo-modules-core:bundleLibCompileToJarRelease
+#22 1634.4 
+#22 1634.4 > Task :expo-constants:compileReleaseKotlin
+#22 1634.4 w: file:///app/node_modules/expo-constants/android/src/main/java/expo/modules/constants/ConstantsModule.kt:12:5 'fun Constants(legacyConstantsProvider: () -> Map<String, Any?>): Unit' is deprecated. Use `Constant` or `Property` instead.
+#22 1634.4 
+#22 1634.4 > Task :expo-constants:javaPreCompileRelease
+#22 1635.1 > Task :expo-constants:compileReleaseJavaWithJavac
+#22 1635.1 > Task :expo-constants:bundleLibCompileToJarRelease
+#22 1635.1 > Task :expo-image-loader:checkKotlinGradlePluginConfigurationErrors SKIPPED
+#22 1635.1 > Task :expo-image-loader:generateReleaseBuildConfig
+#22 1635.1 > Task :expo-image-loader:generateReleaseResValues
+#22 1635.1 > Task :expo-image-loader:generateReleaseResources
+#22 1635.1 > Task :expo-image-loader:packageReleaseResources
+#22 1635.2 > Task :expo-image-loader:parseReleaseLocalResources
+#22 1635.2 > Task :expo-image-loader:generateReleaseRFile
+#22 1637.0 > Task :expo-image-loader:compileReleaseKotlin
+#22 1637.0 > Task :expo-image-loader:javaPreCompileRelease
+#22 1637.5 > Task :expo-image-loader:compileReleaseJavaWithJavac
+#22 1637.5 > Task :expo-image-loader:bundleLibCompileToJarRelease
+#22 1637.5 > Task :expo-image-picker:checkKotlinGradlePluginConfigurationErrors SKIPPED
+#22 1637.5 > Task :expo-image-picker:generateReleaseBuildConfig
+#22 1637.5 > Task :expo-image-picker:generateReleaseResValues
+#22 1637.5 > Task :expo-image-picker:generateReleaseResources
+#22 1637.5 > Task :expo-image-picker:packageReleaseResources
+#22 1637.5 > Task :expo-image-picker:parseReleaseLocalResources
+#22 1637.5 > Task :expo-image-picker:generateReleaseRFile
+#22 1645.3 
+#22 1645.3 > Task :expo-image-picker:compileReleaseKotlin
+#22 1645.3 w: file:///app/node_modules/expo-image-picker/android/src/main/java/expo/modules/imagepicker/ImagePickerConstants.kt:123:23 'static field TAG_ISO_SPEED_RATINGS: String' is deprecated. Deprecated in Java.
+#22 1645.3 
+#22 1645.3 > Task :expo-image-picker:javaPreCompileRelease
+#22 1645.8 > Task :expo-image-picker:compileReleaseJavaWithJavac
+#22 1645.8 > Task :expo-image-picker:bundleLibCompileToJarRelease
+#22 1652.5 
+#22 1652.5 > Task :expo:compileReleaseKotlin
+#22 1652.5 w: file:///app/node_modules/expo/android/src/main/java/expo/modules/ExpoModulesPackage.kt:34:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+#22 1652.5 w: file:///app/node_modules/expo/android/src/main/java/expo/modules/ExpoReactHostFactory.kt:8:8 'class ReactNativeHost : Any' is deprecated. Deprecated in Java.
+#22 1652.5 w: file:///app/node_modules/expo/android/src/main/java/expo/modules/ExpoReactHostFactory.kt:80:22 'class ReactNativeHost : Any' is deprecated. Deprecated in Java.
+#22 1652.5 w: file:///app/node_modules/expo/android/src/main/java/expo/modules/ReactActivityDelegateWrapper.kt:24:8 'class ReactNativeHost : Any' is deprecated. Deprecated in Java.
+#22 1652.5 w: file:///app/node_modules/expo/android/src/main/java/expo/modules/ReactActivityDelegateWrapper.kt:58:33 'class ReactNativeHost : Any' is deprecated. Deprecated in Java.
+#22 1652.5 w: file:///app/node_modules/expo/android/src/main/java/expo/modules/ReactActivityDelegateWrapper.kt:105:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+#22 1652.5 w: file:///app/node_modules/expo/android/src/main/java/expo/modules/ReactActivityDelegateWrapper.kt:105:38 'class ReactNativeHost : Any' is deprecated. Deprecated in Java.
+#22 1652.5 w: file:///app/node_modules/expo/android/src/main/java/expo/modules/ReactActivityDelegateWrapper.kt:113:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+#22 1652.5 w: file:///app/node_modules/expo/android/src/main/java/expo/modules/ReactActivityDelegateWrapper.kt:114:21 'val reactInstanceManager: ReactInstanceManager' is deprecated. Deprecated in Java.
+#22 1652.5 w: file:///app/node_modules/expo/android/src/main/java/expo/modules/ReactActivityDelegateWrapper.kt:168:36 'constructor(activity: Activity, reactNativeHost: ReactNativeHost?, appKey: String?, launchOptions: Bundle?, fabricEnabled: Boolean): ReactDelegate' is deprecated. Deprecated since 0.81.0, use one of the other constructors instead.
+#22 1652.5 w: file:///app/node_modules/expo/android/src/main/java/expo/modules/ReactActivityDelegateWrapper.kt:279:77 'val reactInstanceManager: ReactInstanceManager' is deprecated. Deprecated in Java.
+#22 1652.5 w: file:///app/node_modules/expo/android/src/main/java/expo/modules/ReactActivityDelegateWrapper.kt:282:22 'val reactInstanceManager: ReactInstanceManager' is deprecated. Deprecated in Java.
+#22 1652.5 w: file:///app/node_modules/expo/android/src/main/java/expo/modules/ReactActivityDelegateWrapper.kt:286:54 'val reactInstanceManager: ReactInstanceManager' is deprecated. Deprecated in Java.
+#22 1652.5 w: file:///app/node_modules/expo/android/src/main/java/expo/modules/ReactNativeHostWrapper.kt:6:8 'class ReactNativeHost : Any' is deprecated. Deprecated in Java.
+#22 1652.5 w: file:///app/node_modules/expo/android/src/main/java/expo/modules/ReactNativeHostWrapper.kt:15:9 'class ReactNativeHost : Any' is deprecated. Deprecated in Java.
+#22 1652.5 w: file:///app/node_modules/expo/android/src/main/java/expo/modules/ReactNativeHostWrapper.kt:47:60 'class ReactNativeHost : Any' is deprecated. Deprecated in Java.
+#22 1652.5 w: file:///app/node_modules/expo/android/src/main/java/expo/modules/ReactNativeHostWrapperBase.kt:7:8 'class ReactNativeHost : Any' is deprecated. Deprecated in Java.
+#22 1652.5 w: file:///app/node_modules/expo/android/src/main/java/expo/modules/ReactNativeHostWrapperBase.kt:16:23 'class ReactNativeHost : Any' is deprecated. Deprecated in Java.
+#22 1652.5 w: file:///app/node_modules/expo/android/src/main/java/expo/modules/ReactNativeHostWrapperBase.kt:89:16 'class ReactNativeHost : Any' is deprecated. Deprecated in Java.
+#22 1652.5 w: file:///app/node_modules/expo/android/src/main/java/expo/modules/ReactNativeHostWrapperBase.kt:101:38 'class ReactNativeHost : Any' is deprecated. Deprecated in Java.
+#22 1652.5 w: file:///app/node_modules/expo/android/src/main/java/expo/modules/fetch/ExpoFetchModule.kt:30:39 'constructor(reactContext: ReactContext): ForwardingCookieHandler' is deprecated. Use the default constructor.
+#22 1652.5 w: file:///app/node_modules/expo/android/src/main/java/expo/modules/fetch/NativeResponse.kt:42:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+#22 1652.5 w: file:///app/node_modules/expo/android/src/main/java/expo/modules/fetch/NativeResponse.kt:44:11 'fun deallocate(): Unit' is deprecated. Use sharedObjectDidRelease() instead.
+#22 1652.6 
+#22 1652.6 > Task :expo:javaPreCompileRelease
+#22 1654.0 > Task :expo:compileReleaseJavaWithJavac
+#22 1654.0 > Task :expo:bundleLibRuntimeToDirRelease
+#22 1656.6 > Task :react-native-image-picker:generateReleaseBuildConfig
+#22 1656.6 > Task :react-native-image-picker:generateReleaseResValues
+#22 1656.6 > Task :react-native-image-picker:generateReleaseResources
+#22 1656.7 > Task :react-native-image-picker:packageReleaseResources
+#22 1657.7 > Task :react-native-image-picker:parseReleaseLocalResources
+#22 1658.6 > Task :react-native-image-picker:generateReleaseRFile
+#22 1658.6 > Task :react-native-image-picker:javaPreCompileRelease
+#22 1666.4 
+#22 1666.4 > Task :react-native-image-picker:compileReleaseJavaWithJavac
+#22 1666.4 Note: /app/node_modules/react-native-image-picker/android/src/main/java/com/imagepicker/ImagePickerPackage.java uses or overrides a deprecated API.
+#22 1666.4 Note: Recompile with -Xlint:deprecation for details.
+#22 1668.1 
+#22 1668.1 > Task :react-native-image-picker:bundleLibRuntimeToDirRelease
+#22 1668.8 > Task :react-native-maps:generateReleaseBuildConfig
+#22 1668.8 > Task :react-native-maps:generateReleaseResValues
+#22 1669.0 > Task :react-native-maps:generateReleaseResources
+#22 1669.2 > Task :react-native-maps:packageReleaseResources
+#22 1669.4 > Task :react-native-maps:parseReleaseLocalResources
+#22 1669.4 > Task :react-native-maps:generateReleaseRFile
+#22 1669.5 > Task :react-native-maps:javaPreCompileRelease
+#22 1673.8 
+#22 1673.8 > Task :react-native-maps:compileReleaseJavaWithJavac
+#22 1673.8 Note: Some input files use or override a deprecated API.
+#22 1673.8 Note: Recompile with -Xlint:deprecation for details.
+#22 1673.8 Note: Some input files use unchecked or unsafe operations.
+#22 1673.8 Note: Recompile with -Xlint:unchecked for details.
+#22 1674.8 
+#22 1674.8 > Task :react-native-maps:bundleLibRuntimeToDirRelease
+#22 1676.6 > Task :expo-image-loader:bundleLibRuntimeToDirRelease
+#22 1676.8 > Task :expo-image-picker:bundleLibRuntimeToDirRelease
+#22 1678.9 > Task :expo-modules-core:bundleLibRuntimeToDirRelease
+#22 1690.1 > Task :expo-constants:bundleLibRuntimeToDirRelease
+#22 1693.7 > Task :app:checkReleaseDuplicateClasses
+#22 1693.8 > Task :app:buildKotlinToolingMetadata
+#22 1693.8 > Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+#22 1693.9 > Task :app:generateReleaseBuildConfig
+#22 1693.9 > Task :expo:writeReleaseAarMetadata
+#22 1693.9 > Task :expo-constants:writeReleaseAarMetadata
+#22 1693.9 > Task :expo-image-loader:writeReleaseAarMetadata
+#22 1694.0 > Task :expo-image-picker:writeReleaseAarMetadata
+#22 1694.0 > Task :expo-modules-core:writeReleaseAarMetadata
+#22 1694.0 > Task :react-native-async-storage_async-storage:writeReleaseAarMetadata
+#22 1694.0 > Task :react-native-community_netinfo:writeReleaseAarMetadata
+#22 1694.0 > Task :react-native-gesture-handler:writeReleaseAarMetadata
+#22 1694.0 > Task :react-native-image-picker:writeReleaseAarMetadata
+#22 1694.0 > Task :react-native-maps:writeReleaseAarMetadata
+#22 1694.0 > Task :react-native-safe-area-context:writeReleaseAarMetadata
+#22 1694.0 > Task :react-native-screens:writeReleaseAarMetadata
+#22 1694.1 > Task :react-native-voice_voice:writeReleaseAarMetadata
+#22 1694.1 > Task :react-native-webview:writeReleaseAarMetadata
+#22 1694.5 > Task :app:checkReleaseAarMetadata
+#22 1697.8 
+#22 1697.8 > Task :app:createBundleReleaseJsAndAssets
+#22 1697.8 Starting Metro Bundler
+#22 1697.9 warning: Bundler cache is empty, rebuilding (this may take a minute)
+#22 1701.4 Android ./index.ts ░░░░░░░░░░░░░░░░  0.0% (0/1)
+#22 1704.9 Android ./index.ts ▓▓▓▓▓░░░░░░░░░░░ 33.9% ( 88/278)
+#22 1708.5 Android ./index.ts ▓▓▓▓▓░░░░░░░░░░░ 33.9% (168/343)
+#22 1712.0 Android ./index.ts ▓▓▓▓▓░░░░░░░░░░░ 33.9% (254/446)
+#22 1715.5 Android ./index.ts ▓▓▓▓▓▓▓░░░░░░░░░ 49.7% (425/603)
+#22 1719.0 Android ./index.ts ▓▓▓▓▓▓▓▓░░░░░░░░ 53.0% (557/765)
+#22 1722.6 Android ./index.ts ▓▓▓▓▓▓▓▓▓░░░░░░░ 61.0% (677/920)
+#22 1726.1 Android ./index.ts ▓▓▓▓▓▓▓▓▓▓▓▓░░░░ 79.8% ( 899/1007)
+#22 1729.6 Android ./index.ts ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 96.9% (1096/1122)
+#22 1734.0 Android ./index.ts ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99.9% (1198/1198)
+#22 1734.0 Android Bundled 33894ms index.ts (1198 modules)
+#22 1734.1 Writing bundle output to: /app/android/app/build/generated/assets/createBundleReleaseJsAndAssets/index.android.bundle
+#22 1734.1 Writing sourcemap output to: /app/android/app/build/intermediates/sourcemaps/react/release/index.android.bundle.packager.map
+#22 1734.1 Copying 20 asset files
+#22 1734.2 Done writing bundle output
+#22 1734.3 Done writing sourcemap output
+#22 1757.1 
+#22 1757.1 > Task :app:generateReleaseResValues
+#22 1761.8 > Task :app:mapReleaseSourceSetPaths
+#22 1761.9 > Task :app:generateReleaseResources
+#22 1778.6 > Task :app:mergeReleaseResources
+#22 1778.9 > Task :app:packageReleaseResources
+#22 1779.1 > Task :app:parseReleaseLocalResources
+#22 1779.3 > Task :app:createReleaseCompatibleScreenManifests
+#22 1779.3 > Task :app:extractDeepLinksRelease
+#22 1779.3 > Task :expo:extractDeepLinksRelease
+#22 1779.8 > Task :expo:processReleaseManifest
+#22 1779.8 > Task :expo-constants:extractDeepLinksRelease
+#22 1779.8 > Task :expo-constants:processReleaseManifest
+#22 1779.8 > Task :expo-image-loader:extractDeepLinksRelease
+#22 1779.8 > Task :expo-image-loader:processReleaseManifest
+#22 1779.8 > Task :expo-image-picker:extractDeepLinksRelease
+#22 1780.0 > Task :expo-image-picker:processReleaseManifest
+#22 1780.0 > Task :expo-modules-core:extractDeepLinksRelease
+#22 1780.0 
+#22 1780.0 > Task :expo-modules-core:processReleaseManifest
+#22 1780.0 /app/node_modules/expo-modules-core/android/src/main/AndroidManifest.xml:8:9-11:45 Warning:
+#22 1780.0 	meta-data#com.facebook.soloader.enabled@android:value was tagged at AndroidManifest.xml:8 to replace other declarations but no other declaration present
+#22 1780.0 
+#22 1780.0 > Task :react-native-async-storage_async-storage:extractDeepLinksRelease
+#22 1780.1 
+#22 1780.1 > Task :react-native-async-storage_async-storage:processReleaseManifest
+#22 1780.1 package="com.reactnativecommunity.asyncstorage" found in source AndroidManifest.xml: /app/node_modules/@react-native-async-storage/async-storage/android/src/main/AndroidManifest.xml.
+#22 1780.1 Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+#22 1780.1 Recommendation: remove package="com.reactnativecommunity.asyncstorage" from the source AndroidManifest.xml: /app/node_modules/@react-native-async-storage/async-storage/android/src/main/AndroidManifest.xml.
+#22 1780.1 
+#22 1780.1 > Task :react-native-community_netinfo:extractDeepLinksRelease
+#22 1780.1 
+#22 1780.1 > Task :react-native-community_netinfo:processReleaseManifest
+#22 1780.1 package="com.reactnativecommunity.netinfo" found in source AndroidManifest.xml: /app/node_modules/@react-native-community/netinfo/android/src/main/AndroidManifest.xml.
+#22 1780.1 Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+#22 1780.1 Recommendation: remove package="com.reactnativecommunity.netinfo" from the source AndroidManifest.xml: /app/node_modules/@react-native-community/netinfo/android/src/main/AndroidManifest.xml.
+#22 1780.1 
+#22 1780.1 > Task :react-native-gesture-handler:extractDeepLinksRelease
+#22 1780.1 > Task :react-native-gesture-handler:processReleaseManifest
+#22 1780.1 > Task :react-native-image-picker:extractDeepLinksRelease
+#22 1780.1 
+#22 1780.1 > Task :react-native-image-picker:processReleaseManifest
+#22 1780.1 package="com.imagepicker" found in source AndroidManifest.xml: /app/node_modules/react-native-image-picker/android/src/main/AndroidManifest.xml.
+#22 1780.1 Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+#22 1780.1 Recommendation: remove package="com.imagepicker" from the source AndroidManifest.xml: /app/node_modules/react-native-image-picker/android/src/main/AndroidManifest.xml.
+#22 1780.1 
+#22 1780.1 > Task :react-native-maps:extractDeepLinksRelease
+#22 1780.2 > Task :react-native-maps:processReleaseManifest
+#22 1780.2 > Task :react-native-safe-area-context:extractDeepLinksRelease
+#22 1780.2 
+#22 1780.2 > Task :react-native-safe-area-context:processReleaseManifest
+#22 1780.2 package="com.th3rdwave.safeareacontext" found in source AndroidManifest.xml: /app/node_modules/react-native-safe-area-context/android/src/main/AndroidManifest.xml.
+#22 1780.2 Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+#22 1780.2 Recommendation: remove package="com.th3rdwave.safeareacontext" from the source AndroidManifest.xml: /app/node_modules/react-native-safe-area-context/android/src/main/AndroidManifest.xml.
+#22 1780.2 
+#22 1780.2 > Task :react-native-screens:extractDeepLinksRelease
+#22 1780.2 > Task :react-native-screens:processReleaseManifest
+#22 1780.2 > Task :react-native-voice_voice:extractDeepLinksRelease
+#22 1780.2 
+#22 1780.2 > Task :react-native-voice_voice:processReleaseManifest
+#22 1780.2 package="com.wenkesj.voice" found in source AndroidManifest.xml: /app/node_modules/@react-native-voice/voice/android/src/main/AndroidManifest.xml.
+#22 1780.2 Setting the namespace via the package attribute in the source AndroidManifest.xml is no longer supported, and the value is ignored.
+#22 1780.2 Recommendation: remove package="com.wenkesj.voice" from the source AndroidManifest.xml: /app/node_modules/@react-native-voice/voice/android/src/main/AndroidManifest.xml.
+#22 1780.2 
+#22 1780.2 > Task :react-native-webview:extractDeepLinksRelease
+#22 1780.3 > Task :react-native-webview:processReleaseManifest
+#22 1781.6 
+#22 1781.6 > Task :app:processReleaseMainManifest
+#22 1781.6 /app/android/app/src/main/AndroidManifest.xml Warning:
+#22 1781.6 	provider#expo.modules.filesystem.FileSystemFileProvider@android:authorities was tagged at AndroidManifest.xml:0 to replace other declarations but no other declaration present
+#22 1781.8 
+#22 1781.8 > Task :app:processReleaseManifest
+#22 1781.9 > Task :app:processReleaseManifestForPackage
+#22 1782.0 > Task :expo:compileReleaseLibraryResources
+#22 1782.1 > Task :expo-constants:compileReleaseLibraryResources
+#22 1782.1 > Task :expo-image-loader:compileReleaseLibraryResources
+#22 1782.1 > Task :expo-image-picker:compileReleaseLibraryResources
+#22 1782.1 > Task :expo-modules-core:compileReleaseLibraryResources
+#22 1782.1 > Task :react-native-async-storage_async-storage:compileReleaseLibraryResources
+#22 1782.1 > Task :react-native-community_netinfo:compileReleaseLibraryResources
+#22 1782.2 > Task :react-native-gesture-handler:compileReleaseLibraryResources
+#22 1782.2 > Task :react-native-image-picker:compileReleaseLibraryResources
+#22 1782.2 > Task :react-native-maps:compileReleaseLibraryResources
+#22 1782.2 > Task :react-native-safe-area-context:compileReleaseLibraryResources
+#22 1782.3 > Task :react-native-screens:compileReleaseLibraryResources
+#22 1782.3 > Task :react-native-voice_voice:compileReleaseLibraryResources
+#22 1782.3 > Task :react-native-webview:compileReleaseLibraryResources
+#22 1786.1 > Task :app:processReleaseResources
+#22 1786.3 > Task :expo:bundleLibCompileToJarRelease
+#22 1786.3 > Task :react-native-async-storage_async-storage:bundleLibCompileToJarRelease
+#22 1786.3 > Task :react-native-community_netinfo:bundleLibCompileToJarRelease
+#22 1786.3 > Task :react-native-gesture-handler:bundleLibCompileToJarRelease
+#22 1786.3 > Task :react-native-image-picker:bundleLibCompileToJarRelease
+#22 1786.4 > Task :react-native-maps:bundleLibCompileToJarRelease
+#22 1786.4 > Task :react-native-safe-area-context:bundleLibCompileToJarRelease
+#22 1786.5 > Task :react-native-screens:bundleLibCompileToJarRelease
+#22 1786.5 > Task :react-native-voice_voice:bundleLibCompileToJarRelease
+#22 1786.5 > Task :react-native-webview:bundleLibCompileToJarRelease
+#22 1791.3 
+#22 1791.3 > Task :app:compileReleaseKotlin
+#22 1791.3 w: file:///app/android/app/src/main/java/com/helpinminutes/app/MainApplication.kt:9:8 'class ReactNativeHost : Any' is deprecated. Deprecated in Java.
+#22 1791.3 w: file:///app/android/app/src/main/java/com/helpinminutes/app/MainApplication.kt:21:16 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+#22 1791.3 w: file:///app/android/app/src/main/java/com/helpinminutes/app/MainApplication.kt:21:33 'class ReactNativeHost : Any' is deprecated. Deprecated in Java.
+#22 1791.4 
+#22 1791.4 > Task :app:javaPreCompileRelease
+#22 1793.4 > Task :app:compileReleaseJavaWithJavac
+#22 1796.3 > Task :app:dexBuilderRelease
+#22 1796.5 > Task :app:desugarReleaseFileDependencies
+#22 1796.5 > Task :app:mergeReleaseStartupProfile
+#22 1826.6 > Task :app:mergeExtDexRelease
+#22 1957.2 > Task :app:mergeDexRelease
+#22 1957.3 > Task :expo:prepareReleaseArtProfile
+#22 1957.4 > Task :expo-constants:prepareReleaseArtProfile
+#22 1957.4 > Task :expo-image-loader:prepareReleaseArtProfile
+#22 1957.4 > Task :expo-image-picker:prepareReleaseArtProfile
+#22 1957.4 > Task :expo-modules-core:prepareReleaseArtProfile
+#22 1957.4 > Task :react-native-async-storage_async-storage:prepareReleaseArtProfile
+#22 1957.4 > Task :react-native-community_netinfo:prepareReleaseArtProfile
+#22 1957.4 > Task :react-native-gesture-handler:prepareReleaseArtProfile
+#22 1957.4 > Task :react-native-image-picker:prepareReleaseArtProfile
+#22 1957.5 > Task :react-native-maps:prepareReleaseArtProfile
+#22 1957.5 > Task :react-native-safe-area-context:prepareReleaseArtProfile
+#22 1957.5 > Task :react-native-screens:prepareReleaseArtProfile
+#22 1957.5 > Task :react-native-voice_voice:prepareReleaseArtProfile
+#22 1957.5 > Task :react-native-webview:prepareReleaseArtProfile
+#22 1959.0 > Task :app:mergeReleaseArtProfile
+#22 1959.2 > Task :react-native-gesture-handler:bundleLibRuntimeToJarRelease
+#22 1960.8 > Task :react-native-safe-area-context:bundleLibRuntimeToJarRelease
+#22 1961.0 > Task :react-native-screens:bundleLibRuntimeToJarRelease
+#22 1962.4 > Task :react-native-webview:bundleLibRuntimeToJarRelease
+#22 1962.7 > Task :react-native-async-storage_async-storage:bundleLibRuntimeToJarRelease
+#22 1962.8 > Task :react-native-community_netinfo:bundleLibRuntimeToJarRelease
+#22 1963.0 > Task :react-native-voice_voice:bundleLibRuntimeToJarRelease
+#22 1963.1 > Task :expo:bundleLibRuntimeToJarRelease
+#22 1963.5 > Task :react-native-image-picker:bundleLibRuntimeToJarRelease
+#22 1963.6 > Task :react-native-maps:bundleLibRuntimeToJarRelease
+#22 1964.1 > Task :expo-image-loader:bundleLibRuntimeToJarRelease
+#22 1964.2 > Task :expo-image-picker:bundleLibRuntimeToJarRelease
+#22 1964.8 > Task :expo-modules-core:bundleLibRuntimeToJarRelease
+#22 1967.7 > Task :expo-constants:bundleLibRuntimeToJarRelease
+#22 1968.8 > Task :app:mergeReleaseGlobalSynthetics
+#22 1969.9 > Task :app:compileReleaseArtProfile
+#22 1970.0 > Task :app:mergeReleaseShaders
+#22 1970.0 > Task :app:compileReleaseShaders NO-SOURCE
+#22 1970.0 > Task :app:generateReleaseAssets UP-TO-DATE
+#22 1970.1 > Task :expo:mergeReleaseShaders
+#22 1970.1 > Task :expo:compileReleaseShaders NO-SOURCE
+#22 1970.1 > Task :expo:generateReleaseAssets UP-TO-DATE
+#22 1970.1 > Task :expo:mergeReleaseAssets
+#22 1970.1 > Task :expo-constants:mergeReleaseShaders
+#22 1970.1 > Task :expo-constants:compileReleaseShaders NO-SOURCE
+#22 1970.1 > Task :expo-constants:generateReleaseAssets UP-TO-DATE
+#22 1970.1 > Task :expo-constants:mergeReleaseAssets
+#22 1970.1 > Task :expo-image-loader:mergeReleaseShaders
+#22 1970.1 > Task :expo-image-loader:compileReleaseShaders NO-SOURCE
+#22 1970.1 > Task :expo-image-loader:generateReleaseAssets UP-TO-DATE
+#22 1970.2 > Task :expo-image-loader:mergeReleaseAssets
+#22 1970.2 > Task :expo-image-picker:mergeReleaseShaders
+#22 1970.2 > Task :expo-image-picker:compileReleaseShaders NO-SOURCE
+#22 1970.2 > Task :expo-image-picker:generateReleaseAssets UP-TO-DATE
+#22 1970.2 > Task :expo-image-picker:mergeReleaseAssets
+#22 1970.2 > Task :expo-modules-core:mergeReleaseShaders
+#22 1970.2 > Task :expo-modules-core:compileReleaseShaders NO-SOURCE
+#22 1970.2 > Task :expo-modules-core:generateReleaseAssets UP-TO-DATE
+#22 1970.2 > Task :expo-modules-core:mergeReleaseAssets
+#22 1970.2 > Task :react-native-async-storage_async-storage:mergeReleaseShaders
+#22 1970.2 > Task :react-native-async-storage_async-storage:compileReleaseShaders NO-SOURCE
+#22 1970.2 > Task :react-native-async-storage_async-storage:generateReleaseAssets UP-TO-DATE
+#22 1970.2 > Task :react-native-async-storage_async-storage:mergeReleaseAssets
+#22 1970.2 > Task :react-native-community_netinfo:mergeReleaseShaders
+#22 1970.2 > Task :react-native-community_netinfo:compileReleaseShaders NO-SOURCE
+#22 1970.2 > Task :react-native-community_netinfo:generateReleaseAssets UP-TO-DATE
+#22 1970.2 > Task :react-native-community_netinfo:mergeReleaseAssets
+#22 1970.2 > Task :react-native-gesture-handler:mergeReleaseShaders
+#22 1970.2 > Task :react-native-gesture-handler:compileReleaseShaders NO-SOURCE
+#22 1970.2 > Task :react-native-gesture-handler:generateReleaseAssets UP-TO-DATE
+#22 1970.2 > Task :react-native-gesture-handler:mergeReleaseAssets
+#22 1970.2 > Task :react-native-image-picker:mergeReleaseShaders
+#22 1970.2 > Task :react-native-image-picker:compileReleaseShaders NO-SOURCE
+#22 1970.2 > Task :react-native-image-picker:generateReleaseAssets UP-TO-DATE
+#22 1970.2 > Task :react-native-image-picker:mergeReleaseAssets
+#22 1970.2 > Task :react-native-maps:mergeReleaseShaders
+#22 1970.2 > Task :react-native-maps:compileReleaseShaders NO-SOURCE
+#22 1970.2 > Task :react-native-maps:generateReleaseAssets UP-TO-DATE
+#22 1970.2 > Task :react-native-maps:mergeReleaseAssets
+#22 1970.3 > Task :react-native-safe-area-context:mergeReleaseShaders
+#22 1970.3 > Task :react-native-safe-area-context:compileReleaseShaders NO-SOURCE
+#22 1970.3 > Task :react-native-safe-area-context:generateReleaseAssets UP-TO-DATE
+#22 1970.3 > Task :react-native-safe-area-context:mergeReleaseAssets
+#22 1970.3 > Task :react-native-screens:mergeReleaseShaders
+#22 1970.3 > Task :react-native-screens:compileReleaseShaders NO-SOURCE
+#22 1970.3 > Task :react-native-screens:generateReleaseAssets UP-TO-DATE
+#22 1970.3 > Task :react-native-screens:mergeReleaseAssets
+#22 1970.3 > Task :react-native-voice_voice:mergeReleaseShaders
+#22 1970.3 > Task :react-native-voice_voice:compileReleaseShaders NO-SOURCE
+#22 1970.3 > Task :react-native-voice_voice:generateReleaseAssets UP-TO-DATE
+#22 1970.3 > Task :react-native-voice_voice:mergeReleaseAssets
+#22 1970.3 > Task :react-native-webview:mergeReleaseShaders
+#22 1970.3 > Task :react-native-webview:compileReleaseShaders NO-SOURCE
+#22 1970.3 > Task :react-native-webview:generateReleaseAssets UP-TO-DATE
+#22 1970.3 > Task :react-native-webview:mergeReleaseAssets
+#22 1970.7 > Task :app:mergeReleaseAssets
+#22 1970.8 > Task :app:compressReleaseAssets
+#22 1971.0 > Task :app:extractReleaseVersionControlInfo
+#22 1971.0 > Task :app:extractProguardFiles
+#22 1971.1 > Task :expo:processReleaseJavaRes
+#22 1971.1 > Task :expo:createFullJarRelease
+#22 1971.1 > Task :expo:extractProguardFiles
+#22 1971.1 > Task :expo-constants:processReleaseJavaRes
+#22 1971.1 > Task :expo-constants:createFullJarRelease
+#22 1971.1 > Task :expo-constants:extractProguardFiles
+#22 1971.2 > Task :expo-modules-core:processReleaseJavaRes
+#22 1971.2 > Task :expo-modules-core:createFullJarRelease
+#22 1971.2 > Task :expo-modules-core:extractProguardFiles
+#22 1979.1 > Task :expo-modules-core:generateReleaseLintModel
+#22 1979.2 > Task :expo-modules-core:prepareLintJarForPublish
+#22 1979.4 > Task :expo-constants:generateReleaseLintModel
+#22 1979.4 > Task :expo-constants:prepareLintJarForPublish
+#22 1979.5 > Task :expo-image-loader:processReleaseJavaRes
+#22 1979.5 > Task :expo-image-loader:createFullJarRelease
+#22 1979.5 > Task :expo-image-loader:extractProguardFiles
+#22 1979.7 > Task :expo-image-loader:generateReleaseLintModel
+#22 1979.7 > Task :expo-image-loader:prepareLintJarForPublish
+#22 1979.7 > Task :expo-image-picker:processReleaseJavaRes
+#22 1979.8 > Task :expo-image-picker:createFullJarRelease
+#22 1979.8 > Task :expo-image-picker:extractProguardFiles
+#22 1980.3 > Task :expo-image-picker:generateReleaseLintModel
+#22 1980.3 > Task :expo-image-picker:prepareLintJarForPublish
+#22 1981.4 > Task :expo:generateReleaseLintModel
+#22 1981.4 > Task :expo:prepareLintJarForPublish
+#22 1981.4 > Task :react-native-async-storage_async-storage:processReleaseJavaRes NO-SOURCE
+#22 1981.4 > Task :react-native-async-storage_async-storage:createFullJarRelease
+#22 1981.5 > Task :react-native-async-storage_async-storage:extractProguardFiles
+#22 1981.6 > Task :react-native-async-storage_async-storage:generateReleaseLintModel
+#22 1981.7 > Task :react-native-async-storage_async-storage:prepareLintJarForPublish
+#22 1981.7 > Task :react-native-community_netinfo:processReleaseJavaRes NO-SOURCE
+#22 1981.7 > Task :react-native-community_netinfo:createFullJarRelease
+#22 1981.7 > Task :react-native-community_netinfo:extractProguardFiles
+#22 1981.7 > Task :react-native-community_netinfo:generateReleaseLintModel
+#22 1981.7 > Task :react-native-community_netinfo:prepareLintJarForPublish
+#22 1981.7 > Task :react-native-gesture-handler:processReleaseJavaRes
+#22 1981.8 > Task :react-native-gesture-handler:createFullJarRelease
+#22 1981.8 > Task :react-native-gesture-handler:extractProguardFiles
+#22 1982.0 > Task :react-native-gesture-handler:generateReleaseLintModel
+#22 1982.0 > Task :react-native-gesture-handler:prepareLintJarForPublish
+#22 1982.0 > Task :react-native-image-picker:processReleaseJavaRes NO-SOURCE
+#22 1982.0 > Task :react-native-image-picker:createFullJarRelease
+#22 1982.0 > Task :react-native-image-picker:extractProguardFiles
+#22 1983.8 > Task :react-native-image-picker:generateReleaseLintModel
+#22 1983.9 > Task :react-native-image-picker:prepareLintJarForPublish
+#22 1983.9 > Task :react-native-maps:processReleaseJavaRes NO-SOURCE
+#22 1983.9 > Task :react-native-maps:createFullJarRelease
+#22 1983.9 > Task :react-native-maps:extractProguardFiles
+#22 1985.1 > Task :react-native-maps:generateReleaseLintModel
+#22 1985.1 > Task :react-native-maps:prepareLintJarForPublish
+#22 1985.1 > Task :react-native-safe-area-context:processReleaseJavaRes
+#22 1985.1 > Task :react-native-safe-area-context:createFullJarRelease
+#22 1985.2 > Task :react-native-safe-area-context:extractProguardFiles
+#22 1985.3 > Task :react-native-safe-area-context:generateReleaseLintModel
+#22 1985.3 > Task :react-native-safe-area-context:prepareLintJarForPublish
+#22 1985.3 > Task :react-native-screens:processReleaseJavaRes
+#22 1985.3 > Task :react-native-screens:createFullJarRelease
+#22 1985.3 > Task :react-native-screens:extractProguardFiles
+#22 1986.3 > Task :react-native-screens:generateReleaseLintModel
+#22 1986.4 > Task :react-native-screens:prepareLintJarForPublish
+#22 1986.4 > Task :react-native-voice_voice:processReleaseJavaRes NO-SOURCE
+#22 1986.4 > Task :react-native-voice_voice:createFullJarRelease
+#22 1986.4 > Task :react-native-voice_voice:extractProguardFiles
+#22 1986.6 > Task :react-native-voice_voice:generateReleaseLintModel
+#22 1986.6 > Task :react-native-voice_voice:prepareLintJarForPublish
+#22 1986.6 > Task :react-native-webview:processReleaseJavaRes
+#22 1986.6 > Task :react-native-webview:createFullJarRelease
+#22 1986.6 > Task :react-native-webview:extractProguardFiles
+#22 1986.7 > Task :react-native-webview:generateReleaseLintModel
+#22 1986.7 > Task :react-native-webview:prepareLintJarForPublish
+#22 1988.5 > Task :app:generateReleaseLintVitalReportModel
+#22 1988.6 > Task :react-native-gesture-handler:stripReleaseDebugSymbols NO-SOURCE
+#22 1988.6 > Task :react-native-gesture-handler:copyReleaseJniLibsProjectAndLocalJars
+#22 1988.6 > Task :react-native-gesture-handler:extractDeepLinksForAarRelease
+#22 2017.9 > Task :react-native-gesture-handler:extractReleaseAnnotations
+#22 2018.0 > Task :react-native-gesture-handler:mergeReleaseGeneratedProguardFiles
+#22 2018.0 > Task :react-native-gesture-handler:mergeReleaseConsumerProguardFiles
+#22 2018.5 > Task :react-native-gesture-handler:mergeReleaseJavaResource
+#22 2018.6 > Task :react-native-gesture-handler:syncReleaseLibJars
+#22 2018.7 > Task :react-native-gesture-handler:bundleReleaseLocalLintAar
+#22 2018.7 > Task :react-native-safe-area-context:stripReleaseDebugSymbols NO-SOURCE
+#22 2018.7 > Task :react-native-safe-area-context:copyReleaseJniLibsProjectAndLocalJars
+#22 2018.7 > Task :react-native-safe-area-context:extractDeepLinksForAarRelease
+#22 2018.8 > Task :react-native-safe-area-context:extractReleaseAnnotations
+#22 2018.8 > Task :react-native-safe-area-context:mergeReleaseGeneratedProguardFiles
+#22 2018.8 > Task :react-native-safe-area-context:mergeReleaseConsumerProguardFiles
+#22 2018.8 > Task :react-native-safe-area-context:mergeReleaseJavaResource
+#22 2018.8 > Task :react-native-safe-area-context:syncReleaseLibJars
+#22 2018.8 > Task :react-native-safe-area-context:bundleReleaseLocalLintAar
+#22 2019.4 > Task :react-native-screens:stripReleaseDebugSymbols
+#22 2019.5 > Task :react-native-screens:copyReleaseJniLibsProjectAndLocalJars
+#22 2019.5 > Task :react-native-screens:extractDeepLinksForAarRelease
+#22 2019.6 > Task :react-native-screens:extractReleaseAnnotations
+#22 2019.6 > Task :react-native-screens:mergeReleaseGeneratedProguardFiles
+#22 2019.6 > Task :react-native-screens:mergeReleaseConsumerProguardFiles
+#22 2019.6 > Task :react-native-screens:mergeReleaseJavaResource
+#22 2020.5 > Task :react-native-screens:syncReleaseLibJars
+#22 2020.6 > Task :react-native-screens:bundleReleaseLocalLintAar
+#22 2020.8 > Task :react-native-webview:stripReleaseDebugSymbols NO-SOURCE
+#22 2020.9 > Task :react-native-webview:copyReleaseJniLibsProjectAndLocalJars
+#22 2020.9 > Task :react-native-webview:extractDeepLinksForAarRelease
+#22 2021.0 > Task :react-native-webview:extractReleaseAnnotations
+#22 2021.0 > Task :react-native-webview:mergeReleaseGeneratedProguardFiles
+#22 2021.0 > Task :react-native-webview:mergeReleaseConsumerProguardFiles
+#22 2021.0 > Task :react-native-webview:mergeReleaseJavaResource
+#22 2021.1 > Task :react-native-webview:syncReleaseLibJars
+#22 2021.1 > Task :react-native-webview:bundleReleaseLocalLintAar
+#22 2021.1 > Task :react-native-async-storage_async-storage:stripReleaseDebugSymbols NO-SOURCE
+#22 2021.1 > Task :react-native-async-storage_async-storage:copyReleaseJniLibsProjectAndLocalJars
+#22 2021.1 > Task :react-native-async-storage_async-storage:extractDeepLinksForAarRelease
+#22 2021.1 > Task :react-native-async-storage_async-storage:extractReleaseAnnotations
+#22 2021.2 > Task :react-native-async-storage_async-storage:mergeReleaseGeneratedProguardFiles
+#22 2021.2 > Task :react-native-async-storage_async-storage:mergeReleaseConsumerProguardFiles
+#22 2021.2 > Task :react-native-async-storage_async-storage:mergeReleaseJavaResource
+#22 2021.2 > Task :react-native-async-storage_async-storage:syncReleaseLibJars
+#22 2021.2 > Task :react-native-async-storage_async-storage:bundleReleaseLocalLintAar
+#22 2021.2 > Task :react-native-community_netinfo:stripReleaseDebugSymbols NO-SOURCE
+#22 2021.2 > Task :react-native-community_netinfo:copyReleaseJniLibsProjectAndLocalJars
+#22 2021.2 > Task :react-native-community_netinfo:extractDeepLinksForAarRelease
+#22 2021.2 > Task :react-native-community_netinfo:extractReleaseAnnotations
+#22 2021.2 > Task :react-native-community_netinfo:mergeReleaseGeneratedProguardFiles
+#22 2021.3 > Task :react-native-community_netinfo:mergeReleaseConsumerProguardFiles
+#22 2021.3 > Task :react-native-community_netinfo:mergeReleaseJavaResource
+#22 2021.3 > Task :react-native-community_netinfo:syncReleaseLibJars
+#22 2021.3 > Task :react-native-community_netinfo:bundleReleaseLocalLintAar
+#22 2021.3 > Task :react-native-voice_voice:stripReleaseDebugSymbols NO-SOURCE
+#22 2021.3 > Task :react-native-voice_voice:copyReleaseJniLibsProjectAndLocalJars
+#22 2021.3 > Task :react-native-voice_voice:extractDeepLinksForAarRelease
+#22 2021.3 > Task :react-native-voice_voice:extractReleaseAnnotations
+#22 2021.3 > Task :react-native-voice_voice:mergeReleaseGeneratedProguardFiles
+#22 2021.3 > Task :react-native-voice_voice:mergeReleaseConsumerProguardFiles
+#22 2021.3 > Task :react-native-voice_voice:mergeReleaseJavaResource
+#22 2021.3 > Task :react-native-voice_voice:syncReleaseLibJars
+#22 2021.4 > Task :react-native-voice_voice:bundleReleaseLocalLintAar
+#22 2021.4 > Task :expo:stripReleaseDebugSymbols NO-SOURCE
+#22 2021.4 > Task :expo:copyReleaseJniLibsProjectAndLocalJars
+#22 2021.4 > Task :expo:extractDeepLinksForAarRelease
+#22 2021.5 > Task :expo:extractReleaseAnnotations
+#22 2021.5 > Task :expo:mergeReleaseGeneratedProguardFiles
+#22 2021.5 > Task :expo:mergeReleaseConsumerProguardFiles
+#22 2021.5 > Task :expo:mergeReleaseJavaResource
+#22 2021.6 > Task :expo:syncReleaseLibJars
+#22 2021.6 > Task :expo:bundleReleaseLocalLintAar
+#22 2021.6 > Task :react-native-image-picker:stripReleaseDebugSymbols NO-SOURCE
+#22 2021.6 > Task :react-native-image-picker:copyReleaseJniLibsProjectAndLocalJars
+#22 2021.6 > Task :react-native-image-picker:extractDeepLinksForAarRelease
+#22 2021.7 > Task :react-native-image-picker:extractReleaseAnnotations
+#22 2021.7 > Task :react-native-image-picker:mergeReleaseGeneratedProguardFiles
+#22 2021.7 > Task :react-native-image-picker:mergeReleaseConsumerProguardFiles
+#22 2021.7 > Task :react-native-image-picker:mergeReleaseJavaResource
+#22 2021.7 > Task :react-native-image-picker:syncReleaseLibJars
+#22 2021.7 > Task :react-native-image-picker:bundleReleaseLocalLintAar
+#22 2021.8 > Task :react-native-maps:stripReleaseDebugSymbols NO-SOURCE
+#22 2021.8 > Task :react-native-maps:copyReleaseJniLibsProjectAndLocalJars
+#22 2021.8 > Task :react-native-maps:extractDeepLinksForAarRelease
+#22 2021.8 > Task :react-native-maps:extractReleaseAnnotations
+#22 2021.8 > Task :react-native-maps:mergeReleaseGeneratedProguardFiles
+#22 2021.8 > Task :react-native-maps:mergeReleaseConsumerProguardFiles
+#22 2021.8 > Task :react-native-maps:mergeReleaseJavaResource
+#22 2021.9 > Task :react-native-maps:syncReleaseLibJars
+#22 2021.9 > Task :react-native-maps:bundleReleaseLocalLintAar
+#22 2021.9 > Task :expo-image-loader:stripReleaseDebugSymbols NO-SOURCE
+#22 2021.9 > Task :expo-image-loader:copyReleaseJniLibsProjectAndLocalJars
+#22 2021.9 > Task :expo-image-loader:extractDeepLinksForAarRelease
+#22 2021.9 > Task :expo-image-loader:extractReleaseAnnotations
+#22 2021.9 > Task :expo-image-loader:mergeReleaseGeneratedProguardFiles
+#22 2021.9 > Task :expo-image-loader:mergeReleaseConsumerProguardFiles
+#22 2021.9 > Task :expo-image-loader:mergeReleaseJavaResource
+#22 2022.0 > Task :expo-image-loader:syncReleaseLibJars
+#22 2022.0 > Task :expo-image-loader:bundleReleaseLocalLintAar
+#22 2022.0 > Task :expo-image-picker:stripReleaseDebugSymbols NO-SOURCE
+#22 2022.0 > Task :expo-image-picker:copyReleaseJniLibsProjectAndLocalJars
+#22 2022.0 > Task :expo-image-picker:extractDeepLinksForAarRelease
+#22 2022.0 > Task :expo-image-picker:extractReleaseAnnotations
+#22 2022.0 > Task :expo-image-picker:mergeReleaseGeneratedProguardFiles
+#22 2022.0 > Task :expo-image-picker:mergeReleaseConsumerProguardFiles
+#22 2022.0 > Task :expo-image-picker:mergeReleaseJavaResource
+#22 2022.1 > Task :expo-image-picker:syncReleaseLibJars
+#22 2022.3 > Task :expo-image-picker:bundleReleaseLocalLintAar
+#22 2022.9 > Task :expo-modules-core:stripReleaseDebugSymbols
+#22 2022.9 > Task :expo-modules-core:copyReleaseJniLibsProjectAndLocalJars
+#22 2022.9 > Task :expo-modules-core:extractDeepLinksForAarRelease
+#22 2023.0 > Task :expo-modules-core:extractReleaseAnnotations
+#22 2023.0 > Task :expo-modules-core:mergeReleaseGeneratedProguardFiles
+#22 2023.1 > Task :expo-modules-core:mergeReleaseConsumerProguardFiles
+#22 2023.1 > Task :expo-modules-core:mergeReleaseJavaResource
+#22 2023.6 > Task :expo-modules-core:syncReleaseLibJars
+#22 2023.6 > Task :expo-modules-core:bundleReleaseLocalLintAar
+#22 2023.8 > Task :expo-constants:stripReleaseDebugSymbols NO-SOURCE
+#22 2023.8 > Task :expo-constants:copyReleaseJniLibsProjectAndLocalJars
+#22 2023.8 > Task :expo-constants:extractDeepLinksForAarRelease
+#22 2023.8 > Task :expo-constants:extractReleaseAnnotations
+#22 2023.8 > Task :expo-constants:mergeReleaseGeneratedProguardFiles
+#22 2023.8 > Task :expo-constants:mergeReleaseConsumerProguardFiles
+#22 2023.8 > Task :expo-constants:mergeReleaseJavaResource
+#22 2023.8 > Task :expo-constants:syncReleaseLibJars
+#22 2023.8 > Task :expo-constants:bundleReleaseLocalLintAar
+#22 2023.9 > Task :expo-constants:writeReleaseLintModelMetadata
+#22 2023.9 > Task :expo-image-loader:writeReleaseLintModelMetadata
+#22 2023.9 > Task :expo-image-picker:writeReleaseLintModelMetadata
+#22 2023.9 > Task :expo-modules-core:writeReleaseLintModelMetadata
+#22 2053.9 > Task :expo:lintVitalAnalyzeRelease
+#22 2058.9 > Task :expo:writeReleaseLintModelMetadata
+#22 2062.8 > Task :expo-constants:lintVitalAnalyzeRelease
+#22 2065.1 > Task :expo-image-loader:lintVitalAnalyzeRelease
+#22 2078.2 > Task :expo-image-picker:lintVitalAnalyzeRelease
+#22 2108.3 > Task :expo-modules-core:lintVitalAnalyzeRelease
+#22 2142.8 > Task :react-native-async-storage_async-storage:lintVitalAnalyzeRelease
+#22 2142.9 > Task :react-native-async-storage_async-storage:writeReleaseLintModelMetadata
+#22 2146.1 > Task :react-native-community_netinfo:lintVitalAnalyzeRelease
+#22 2146.2 > Task :react-native-community_netinfo:writeReleaseLintModelMetadata
+#22 2161.2 > Task :react-native-gesture-handler:lintVitalAnalyzeRelease
+#22 2161.3 > Task :react-native-gesture-handler:writeReleaseLintModelMetadata
+#22 2163.9 > Task :react-native-image-picker:lintVitalAnalyzeRelease
+#22 2163.9 > Task :react-native-image-picker:writeReleaseLintModelMetadata
+#22 2169.1 > Task :react-native-maps:lintVitalAnalyzeRelease
+#22 2169.1 > Task :react-native-maps:writeReleaseLintModelMetadata
+#22 2173.6 > Task :react-native-safe-area-context:lintVitalAnalyzeRelease
+#22 2173.6 > Task :react-native-safe-area-context:writeReleaseLintModelMetadata
+#22 2191.4 > Task :react-native-screens:lintVitalAnalyzeRelease
+#22 2191.5 > Task :react-native-screens:writeReleaseLintModelMetadata
+#22 2193.2 > Task :react-native-voice_voice:lintVitalAnalyzeRelease
+#22 2193.3 > Task :react-native-voice_voice:writeReleaseLintModelMetadata
+#22 2197.9 > Task :react-native-webview:lintVitalAnalyzeRelease
+#22 2197.9 > Task :react-native-webview:writeReleaseLintModelMetadata
+#22 2202.1 > Task :app:lintVitalAnalyzeRelease
+#22 2202.3 > Task :expo:generateReleaseLintVitalModel
+#22 2202.3 > Task :expo-constants:generateReleaseLintVitalModel
+#22 2202.4 > Task :expo-image-loader:generateReleaseLintVitalModel
+#22 2202.5 > Task :expo-image-picker:generateReleaseLintVitalModel
+#22 2202.6 > Task :expo-modules-core:generateReleaseLintVitalModel
+#22 2202.7 > Task :react-native-async-storage_async-storage:generateReleaseLintVitalModel
+#22 2202.7 > Task :react-native-community_netinfo:generateReleaseLintVitalModel
+#22 2202.7 > Task :react-native-gesture-handler:generateReleaseLintVitalModel
+#22 2202.8 > Task :react-native-image-picker:generateReleaseLintVitalModel
+#22 2202.8 > Task :react-native-maps:generateReleaseLintVitalModel
+#22 2202.8 > Task :react-native-safe-area-context:generateReleaseLintVitalModel
+#22 2202.9 > Task :react-native-screens:generateReleaseLintVitalModel
+#22 2202.9 > Task :react-native-voice_voice:generateReleaseLintVitalModel
+#22 2203.0 > Task :react-native-webview:generateReleaseLintVitalModel
+#22 2203.4 > Task :app:lintVitalReportRelease
+#22 2203.4 > Task :app:lintVitalRelease
+#22 2203.5 > Task :app:processReleaseJavaRes
+#22 2206.2 > Task :app:mergeReleaseJavaResource
+#22 2206.9 > Task :app:optimizeReleaseResources
+#22 2208.4 > Task :app:collectReleaseDependencies
+#22 2208.7 > Task :app:sdkReleaseDependencyData
+#22 2208.7 > Task :app:validateSigningRelease
+#22 2208.7 > Task :app:writeReleaseAppMetadata
+#22 2208.8 > Task :app:writeReleaseSigningConfigVersions
+#22 2210.4 > Task :app:packageRelease
+#22 2210.5 > Task :app:createReleaseApkListingFileRedirect
+#22 2210.5 > Task :app:assembleRelease
+#22 2210.6 > Task :expo:bundleReleaseAar
+#22 2210.9 > Task :expo:mapReleaseSourceSetPaths
+#22 2212.2 > Task :expo:mergeReleaseResources
+#22 2214.9 > Task :expo:verifyReleaseResources
+#22 2214.9 > Task :expo:assembleRelease
+#22 2215.0 > Task :expo-constants:bundleReleaseAar
+#22 2215.0 > Task :expo-constants:mapReleaseSourceSetPaths
+#22 2215.1 > Task :expo-constants:mergeReleaseResources
+#22 2215.3 > Task :expo-constants:verifyReleaseResources
+#22 2215.3 > Task :expo-constants:assembleRelease
+#22 2215.3 > Task :expo-image-loader:bundleReleaseAar
+#22 2215.3 > Task :expo-image-loader:mapReleaseSourceSetPaths
+#22 2216.1 > Task :expo-image-loader:mergeReleaseResources
+#22 2217.2 > Task :expo-image-loader:verifyReleaseResources
+#22 2217.2 > Task :expo-image-loader:assembleRelease
+#22 2217.2 > Task :expo-image-picker:bundleReleaseAar
+#22 2217.2 > Task :expo-image-picker:mapReleaseSourceSetPaths
+#22 2217.9 > Task :expo-image-picker:mergeReleaseResources
+#22 2219.0 > Task :expo-image-picker:verifyReleaseResources
+#22 2219.0 > Task :expo-image-picker:assembleRelease
+#22 2219.1 > Task :expo-modules-core:bundleReleaseAar
+#22 2219.1 > Task :expo-modules-core:mapReleaseSourceSetPaths
+#22 2219.8 > Task :expo-modules-core:mergeReleaseResources
+#22 2220.7 > Task :expo-modules-core:verifyReleaseResources
+#22 2220.7 > Task :expo-modules-core:assembleRelease
+#22 2220.7 > Task :react-native-async-storage_async-storage:bundleReleaseAar
+#22 2220.8 > Task :react-native-async-storage_async-storage:mapReleaseSourceSetPaths
+#22 2221.3 > Task :react-native-async-storage_async-storage:mergeReleaseResources
+#22 2222.3 > Task :react-native-async-storage_async-storage:verifyReleaseResources
+#22 2222.3 > Task :react-native-async-storage_async-storage:assembleRelease
+#22 2222.3 > Task :react-native-community_netinfo:bundleReleaseAar
+#22 2222.3 > Task :react-native-community_netinfo:mapReleaseSourceSetPaths
+#22 2223.0 > Task :react-native-community_netinfo:mergeReleaseResources
+#22 2224.2 > Task :react-native-community_netinfo:verifyReleaseResources
+#22 2224.2 > Task :react-native-community_netinfo:assembleRelease
+#22 2224.3 > Task :react-native-gesture-handler:bundleReleaseAar
+#22 2224.4 > Task :react-native-gesture-handler:mapReleaseSourceSetPaths
+#22 2225.1 > Task :react-native-gesture-handler:mergeReleaseResources
+#22 2226.1 > Task :react-native-gesture-handler:verifyReleaseResources
+#22 2226.1 > Task :react-native-gesture-handler:assembleRelease
+#22 2226.1 > Task :react-native-image-picker:bundleReleaseAar
+#22 2226.1 > Task :react-native-image-picker:mapReleaseSourceSetPaths
+#22 2226.6 > Task :react-native-image-picker:mergeReleaseResources
+#22 2227.7 > Task :react-native-image-picker:verifyReleaseResources
+#22 2227.7 > Task :react-native-image-picker:assembleRelease
+#22 2227.8 > Task :react-native-maps:bundleReleaseAar
+#22 2227.9 > Task :react-native-maps:mapReleaseSourceSetPaths
+#22 2228.7 > Task :react-native-maps:mergeReleaseResources
+#22 2229.8 > Task :react-native-maps:verifyReleaseResources
+#22 2229.8 > Task :react-native-maps:assembleRelease
+#22 2229.8 > Task :react-native-safe-area-context:bundleReleaseAar
+#22 2229.8 > Task :react-native-safe-area-context:mapReleaseSourceSetPaths
+#22 2230.3 > Task :react-native-safe-area-context:mergeReleaseResources
+#22 2231.2 > Task :react-native-safe-area-context:verifyReleaseResources
+#22 2231.2 > Task :react-native-safe-area-context:assembleRelease
+#22 2231.2 > Task :react-native-screens:bundleReleaseAar
+#22 2231.2 > Task :react-native-screens:mapReleaseSourceSetPaths
+#22 2232.5 > Task :react-native-screens:mergeReleaseResources
+#22 2234.9 > Task :react-native-screens:verifyReleaseResources
+#22 2234.9 > Task :react-native-screens:assembleRelease
+#22 2234.9 > Task :react-native-voice_voice:bundleReleaseAar
+#22 2235.0 > Task :react-native-voice_voice:mapReleaseSourceSetPaths
+#22 2235.6 > Task :react-native-voice_voice:mergeReleaseResources
+#22 2236.4 > Task :react-native-voice_voice:verifyReleaseResources
+#22 2236.5 > Task :react-native-voice_voice:assembleRelease
+#22 2236.5 > Task :react-native-webview:bundleReleaseAar
+#22 2236.5 > Task :react-native-webview:mapReleaseSourceSetPaths
+#22 2236.9 > Task :react-native-webview:mergeReleaseResources
+#22 2237.7 > Task :react-native-webview:verifyReleaseResources
+#22 2237.7 > Task :react-native-webview:assembleRelease
+#22 2238.0 
+#22 2238.0 [Incubating] Problems report is available at: file:///app/android/build/reports/problems/problems-report.html
+#22 2238.0 
+#22 2238.0 Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+#22 2238.0 
+#22 2238.0 You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+#22 2238.0 
+#22 2238.0 For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+#22 2238.0 
+#22 2238.1 BUILD SUCCESSFUL in 37m 17s
+#22 2238.1 652 actionable tasks: 652 executed
+#22 DONE 2239.8s
+
+#23 [artifact 1/1] RUN set -eux;   mkdir -p /out;   if [ "release" = "release" ]; then     cp -f /app/android/app/build/outputs/apk/release/app-release.apk /out/Superheroo-release.apk;   elif [ "release" = "standalone" ]; then     cp -f /app/android/app/build/outputs/apk/debug/app-debug.apk /out/Superheroo-standalone.apk;   else     cp -f /app/android/app/build/outputs/apk/debug/app-debug.apk /out/Superheroo-debug.apk;   fi
+#23 4.474 + mkdir -p /out
+#23 4.509 + [ release = release ]
+#23 4.509 + cp -f /app/android/app/build/outputs/apk/release/app-release.apk /out/Superheroo-release.apk
+#23 DONE 4.8s
+
+#24 [stage-2 1/1] COPY --from=artifact /out/ /out/
+#24 DONE 0.1s
+
+#25 exporting to image
+#25 exporting layers
+#25 exporting layers 2.4s done
+#25 exporting manifest sha256:b07318460f1f7bfb5da4f777b86a98115af7251713741d70627686a11fc19a23 0.0s done
+#25 exporting config sha256:e4ab555fc55e55c1987ea306c5edf982c33d942668f7ca577c6aff3e24121699 done
+#25 exporting attestation manifest sha256:2221e4ecbd4d0f3bf350b1ab5977da25973a27665220bb3174c0be056b03f517 0.0s done
+#25 exporting manifest list sha256:084c76052f7eb2a4240270c2ea5bf83dfaf86e24853acba48c3744009bc55666 done
+#25 naming to docker.io/library/superheroo-apk-v3:latest done
+#25 DONE 2.5s

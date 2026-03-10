@@ -1,0 +1,679 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.apk
+#1 transferring dockerfile: 7.82kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for ghcr.io/cirruslabs/android-sdk:34
+#2 DONE 1.4s
+
+#3 [build  1/18] FROM ghcr.io/cirruslabs/android-sdk:34@sha256:1c2e7e9c4490dbc1f85364556aa08e550945e6dffb29baab86d5fe2c7be0773a
+#3 resolve ghcr.io/cirruslabs/android-sdk:34@sha256:1c2e7e9c4490dbc1f85364556aa08e550945e6dffb29baab86d5fe2c7be0773a done
+#3 DONE 0.0s
+
+#4 [build  2/18] WORKDIR /app
+#4 CACHED
+
+#5 [internal] load .dockerignore
+#5 transferring context: 2B done
+#5 DONE 0.0s
+
+#6 [build  3/18] RUN apt-get update -qq   && apt-get install -y --no-install-recommends curl ca-certificates gnupg git openjdk-17-jdk   && curl -fsSL https://deb.nodesource.com/setup_22.x | bash -   && apt-get install -y --no-install-recommends nodejs   && rm -rf /var/lib/apt/lists/*
+#6 15.86 Reading package lists...
+#6 17.02 Building dependency tree...
+#6 17.32 Reading state information...
+#6 17.59 ca-certificates is already the newest version (20240203).
+#6 17.59 ca-certificates set to manually installed.
+#6 17.59 The following additional packages will be installed:
+#6 17.59   dirmngr git-man gnupg-utils gpg gpg-agent gpgconf gpgsm gpgv keyboxd
+#6 17.59   libcurl3t64-gnutls libcurl4t64 libksba8 openjdk-17-jdk-headless
+#6 17.59   openjdk-17-jre openjdk-17-jre-headless pinentry-curses
+#6 17.59 Suggested packages:
+#6 17.59   pinentry-gnome3 tor gettext-base git-daemon-run | git-daemon-sysvinit
+#6 17.59   git-doc git-email git-gui gitk gitweb git-cvs git-mediawiki git-svn
+#6 17.59   parcimonie xloadimage gpg-wks-server scdaemon openjdk-17-demo
+#6 17.59   openjdk-17-source visualvm libnss-mdns fonts-ipafont-gothic
+#6 17.59   fonts-ipafont-mincho fonts-wqy-microhei | fonts-wqy-zenhei fonts-indic
+#6 17.59   pinentry-doc
+#6 17.59 Recommended packages:
+#6 17.59   less gnupg-l10n gpg-wks-client
+#6 17.70 The following NEW packages will be installed:
+#6 17.70   dirmngr gnupg gnupg-utils gpg-agent gpgsm keyboxd libksba8 openjdk-17-jdk
+#6 17.70   openjdk-17-jdk-headless openjdk-17-jre openjdk-17-jre-headless
+#6 17.70   pinentry-curses
+#6 17.70 The following packages will be upgraded:
+#6 17.70   curl git git-man gpg gpgconf gpgv libcurl3t64-gnutls libcurl4t64
+#6 18.48 8 upgraded, 12 newly installed, 0 to remove and 188 not upgraded.
+#6 18.48 Need to get 129 MB of archives.
+#6 18.48 After this operation, 278 MB of additional disk space will be used.
+#6 18.48 Get:1 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 gpgv amd64 2.4.4-2ubuntu17.4 [158 kB]
+#6 20.64 Get:2 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 curl amd64 8.5.0-2ubuntu10.7 [227 kB]
+#6 21.13 Get:3 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libcurl4t64 amd64 8.5.0-2ubuntu10.7 [342 kB]
+#6 21.53 Get:4 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 gpg amd64 2.4.4-2ubuntu17.4 [565 kB]
+#6 21.91 Get:5 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 gpgconf amd64 2.4.4-2ubuntu17.4 [104 kB]
+#6 21.96 Get:6 http://archive.ubuntu.com/ubuntu noble/main amd64 libksba8 amd64 1.6.6-1build1 [122 kB]
+#6 22.01 Get:7 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 dirmngr amd64 2.4.4-2ubuntu17.4 [323 kB]
+#6 22.11 Get:8 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libcurl3t64-gnutls amd64 8.5.0-2ubuntu10.7 [334 kB]
+#6 22.24 Get:9 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 git-man all 1:2.43.0-1ubuntu7.3 [1,100 kB]
+#6 23.42 Get:10 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 git amd64 1:2.43.0-1ubuntu7.3 [3,680 kB]
+#6 24.92 Get:11 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 gnupg-utils amd64 2.4.4-2ubuntu17.4 [109 kB]
+#6 24.94 Get:12 http://archive.ubuntu.com/ubuntu noble/main amd64 pinentry-curses amd64 1.2.1-3ubuntu5 [35.2 kB]
+#6 24.95 Get:13 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 gpg-agent amd64 2.4.4-2ubuntu17.4 [227 kB]
+#6 25.01 Get:14 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 gpgsm amd64 2.4.4-2ubuntu17.4 [232 kB]
+#6 25.06 Get:15 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 keyboxd amd64 2.4.4-2ubuntu17.4 [78.3 kB]
+#6 25.08 Get:16 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 gnupg all 2.4.4-2ubuntu17.4 [359 kB]
+#6 25.17 Get:17 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 openjdk-17-jre-headless amd64 17.0.18+8-1~24.04.1 [48.0 MB]
+#6 36.03 Get:18 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 openjdk-17-jre amd64 17.0.18+8-1~24.04.1 [234 kB]
+#6 36.06 Get:19 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 openjdk-17-jdk-headless amd64 17.0.18+8-1~24.04.1 [71.5 MB]
+#6 ...
+
+#7 [internal] load build context
+#7 transferring context: 143.50MB 2.1s done
+#7 DONE 2.1s
+
+#6 [build  3/18] RUN apt-get update -qq   && apt-get install -y --no-install-recommends curl ca-certificates gnupg git openjdk-17-jdk   && curl -fsSL https://deb.nodesource.com/setup_22.x | bash -   && apt-get install -y --no-install-recommends nodejs   && rm -rf /var/lib/apt/lists/*
+#6 52.15 Get:20 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 openjdk-17-jdk amd64 17.0.18+8-1~24.04.1 [1,533 kB]
+#6 53.83 debconf: delaying package configuration, since apt-utils is not installed
+#6 53.95 Fetched 129 MB in 36s (3,635 kB/s)
+#6 54.10 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 55312 files and directories currently installed.)
+#6 54.26 Preparing to unpack .../gpgv_2.4.4-2ubuntu17.4_amd64.deb ...
+#6 54.27 Unpacking gpgv (2.4.4-2ubuntu17.4) over (2.4.4-2ubuntu17) ...
+#6 54.42 Setting up gpgv (2.4.4-2ubuntu17.4) ...
+#6 54.58 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 55312 files and directories currently installed.)
+#6 54.61 Preparing to unpack .../00-curl_8.5.0-2ubuntu10.7_amd64.deb ...
+#6 54.62 Unpacking curl (8.5.0-2ubuntu10.7) over (8.5.0-2ubuntu10.6) ...
+#6 54.79 Preparing to unpack .../01-libcurl4t64_8.5.0-2ubuntu10.7_amd64.deb ...
+#6 54.80 Unpacking libcurl4t64:amd64 (8.5.0-2ubuntu10.7) over (8.5.0-2ubuntu10.6) ...
+#6 54.98 Preparing to unpack .../02-gpg_2.4.4-2ubuntu17.4_amd64.deb ...
+#6 54.98 Unpacking gpg (2.4.4-2ubuntu17.4) over (2.4.4-2ubuntu17) ...
+#6 55.17 Preparing to unpack .../03-gpgconf_2.4.4-2ubuntu17.4_amd64.deb ...
+#6 55.17 Unpacking gpgconf (2.4.4-2ubuntu17.4) over (2.4.4-2ubuntu17) ...
+#6 55.43 Selecting previously unselected package libksba8:amd64.
+#6 55.44 Preparing to unpack .../04-libksba8_1.6.6-1build1_amd64.deb ...
+#6 55.44 Unpacking libksba8:amd64 (1.6.6-1build1) ...
+#6 55.88 Selecting previously unselected package dirmngr.
+#6 55.89 Preparing to unpack .../05-dirmngr_2.4.4-2ubuntu17.4_amd64.deb ...
+#6 56.19 Unpacking dirmngr (2.4.4-2ubuntu17.4) ...
+#6 56.36 Preparing to unpack .../06-libcurl3t64-gnutls_8.5.0-2ubuntu10.7_amd64.deb ...
+#6 56.37 Unpacking libcurl3t64-gnutls:amd64 (8.5.0-2ubuntu10.7) over (8.5.0-2ubuntu10.6) ...
+#6 56.54 Preparing to unpack .../07-git-man_1%3a2.43.0-1ubuntu7.3_all.deb ...
+#6 56.54 Unpacking git-man (1:2.43.0-1ubuntu7.3) over (1:2.43.0-1ubuntu7.1) ...
+#6 56.74 Preparing to unpack .../08-git_1%3a2.43.0-1ubuntu7.3_amd64.deb ...
+#6 57.02 Unpacking git (1:2.43.0-1ubuntu7.3) over (1:2.43.0-1ubuntu7.1) ...
+#6 57.63 Selecting previously unselected package gnupg-utils.
+#6 57.63 Preparing to unpack .../09-gnupg-utils_2.4.4-2ubuntu17.4_amd64.deb ...
+#6 57.64 Unpacking gnupg-utils (2.4.4-2ubuntu17.4) ...
+#6 57.81 Selecting previously unselected package pinentry-curses.
+#6 57.81 Preparing to unpack .../10-pinentry-curses_1.2.1-3ubuntu5_amd64.deb ...
+#6 57.82 Unpacking pinentry-curses (1.2.1-3ubuntu5) ...
+#6 57.97 Selecting previously unselected package gpg-agent.
+#6 57.97 Preparing to unpack .../11-gpg-agent_2.4.4-2ubuntu17.4_amd64.deb ...
+#6 57.97 Unpacking gpg-agent (2.4.4-2ubuntu17.4) ...
+#6 58.13 Selecting previously unselected package gpgsm.
+#6 58.14 Preparing to unpack .../12-gpgsm_2.4.4-2ubuntu17.4_amd64.deb ...
+#6 58.15 Unpacking gpgsm (2.4.4-2ubuntu17.4) ...
+#6 58.31 Selecting previously unselected package keyboxd.
+#6 58.31 Preparing to unpack .../13-keyboxd_2.4.4-2ubuntu17.4_amd64.deb ...
+#6 58.31 Unpacking keyboxd (2.4.4-2ubuntu17.4) ...
+#6 58.46 Selecting previously unselected package gnupg.
+#6 58.46 Preparing to unpack .../14-gnupg_2.4.4-2ubuntu17.4_all.deb ...
+#6 58.46 Unpacking gnupg (2.4.4-2ubuntu17.4) ...
+#6 58.66 Selecting previously unselected package openjdk-17-jre-headless:amd64.
+#6 58.66 Preparing to unpack .../15-openjdk-17-jre-headless_17.0.18+8-1~24.04.1_amd64.deb ...
+#6 58.67 Unpacking openjdk-17-jre-headless:amd64 (17.0.18+8-1~24.04.1) ...
+#6 59.86 Selecting previously unselected package openjdk-17-jre:amd64.
+#6 59.86 Preparing to unpack .../16-openjdk-17-jre_17.0.18+8-1~24.04.1_amd64.deb ...
+#6 59.86 Unpacking openjdk-17-jre:amd64 (17.0.18+8-1~24.04.1) ...
+#6 60.03 Selecting previously unselected package openjdk-17-jdk-headless:amd64.
+#6 60.03 Preparing to unpack .../17-openjdk-17-jdk-headless_17.0.18+8-1~24.04.1_amd64.deb ...
+#6 60.05 Unpacking openjdk-17-jdk-headless:amd64 (17.0.18+8-1~24.04.1) ...
+#6 60.59 Selecting previously unselected package openjdk-17-jdk:amd64.
+#6 60.59 Preparing to unpack .../18-openjdk-17-jdk_17.0.18+8-1~24.04.1_amd64.deb ...
+#6 60.59 Unpacking openjdk-17-jdk:amd64 (17.0.18+8-1~24.04.1) ...
+#6 60.72 Setting up libksba8:amd64 (1.6.6-1build1) ...
+#6 60.72 Setting up pinentry-curses (1.2.1-3ubuntu5) ...
+#6 60.80 Setting up libcurl4t64:amd64 (8.5.0-2ubuntu10.7) ...
+#6 60.80 Setting up libcurl3t64-gnutls:amd64 (8.5.0-2ubuntu10.7) ...
+#6 60.81 Setting up openjdk-17-jre-headless:amd64 (17.0.18+8-1~24.04.1) ...
+#6 61.13 Setting up gpgconf (2.4.4-2ubuntu17.4) ...
+#6 61.14 Setting up git-man (1:2.43.0-1ubuntu7.3) ...
+#6 61.14 Setting up curl (8.5.0-2ubuntu10.7) ...
+#6 61.14 Setting up gpg (2.4.4-2ubuntu17.4) ...
+#6 61.15 Setting up gnupg-utils (2.4.4-2ubuntu17.4) ...
+#6 61.15 Setting up gpg-agent (2.4.4-2ubuntu17.4) ...
+#6 61.91 Created symlink /etc/systemd/user/sockets.target.wants/gpg-agent.socket → /usr/lib/systemd/user/gpg-agent.socket.
+#6 62.57 Created symlink /etc/systemd/user/sockets.target.wants/gpg-agent-ssh.socket → /usr/lib/systemd/user/gpg-agent-ssh.socket.
+#6 63.21 Created symlink /etc/systemd/user/sockets.target.wants/gpg-agent-extra.socket → /usr/lib/systemd/user/gpg-agent-extra.socket.
+#6 63.85 Created symlink /etc/systemd/user/sockets.target.wants/gpg-agent-browser.socket → /usr/lib/systemd/user/gpg-agent-browser.socket.
+#6 63.87 Setting up gpgsm (2.4.4-2ubuntu17.4) ...
+#6 63.88 Setting up dirmngr (2.4.4-2ubuntu17.4) ...
+#6 64.53 Created symlink /etc/systemd/user/sockets.target.wants/dirmngr.socket → /usr/lib/systemd/user/dirmngr.socket.
+#6 64.79 Setting up keyboxd (2.4.4-2ubuntu17.4) ...
+#6 65.44 Created symlink /etc/systemd/user/sockets.target.wants/keyboxd.socket → /usr/lib/systemd/user/keyboxd.socket.
+#6 65.46 Setting up git (1:2.43.0-1ubuntu7.3) ...
+#6 65.59 Setting up gnupg (2.4.4-2ubuntu17.4) ...
+#6 65.60 Processing triggers for hicolor-icon-theme (0.17-2) ...
+#6 65.75 Processing triggers for libc-bin (2.39-0ubuntu8.3) ...
+#6 65.98 Processing triggers for ca-certificates-java (20240118) ...
+#6 66.51 done.
+#6 66.56 Setting up openjdk-17-jdk-headless:amd64 (17.0.18+8-1~24.04.1) ...
+#6 67.37 Setting up openjdk-17-jre:amd64 (17.0.18+8-1~24.04.1) ...
+#6 67.43 Setting up openjdk-17-jdk:amd64 (17.0.18+8-1~24.04.1) ...
+#6 68.02 [38;5;79m2026-03-10 15:21:37 - Installing pre-requisites[0m
+#6 68.07 
+#6 68.07 WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+#6 68.07 
+#6 68.87 Hit:1 http://archive.ubuntu.com/ubuntu noble InRelease
+#6 68.87 Hit:2 http://security.ubuntu.com/ubuntu noble-security InRelease
+#6 69.04 Hit:3 http://archive.ubuntu.com/ubuntu noble-updates InRelease
+#6 69.27 Hit:4 http://archive.ubuntu.com/ubuntu noble-backports InRelease
+#6 72.01 Reading package lists...
+#6 73.17 Building dependency tree...
+#6 73.46 Reading state information...
+#6 73.48 188 packages can be upgraded. Run 'apt list --upgradable' to see them.
+#6 73.54 
+#6 73.54 WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+#6 73.54 
+#6 73.58 Reading package lists...
+#6 74.66 Building dependency tree...
+#6 74.94 Reading state information...
+#6 75.18 ca-certificates is already the newest version (20240203).
+#6 75.18 curl is already the newest version (8.5.0-2ubuntu10.7).
+#6 75.18 gnupg is already the newest version (2.4.4-2ubuntu17.4).
+#6 75.18 The following additional packages will be installed:
+#6 75.18   apt libapt-pkg6.0t64
+#6 75.18 Suggested packages:
+#6 75.18   apt-doc aptitude | synaptic | wajig powermgmt-base
+#6 75.24 The following NEW packages will be installed:
+#6 75.25   apt-transport-https
+#6 75.25 The following packages will be upgraded:
+#6 75.25   apt libapt-pkg6.0t64
+#6 75.95 2 upgraded, 1 newly installed, 0 to remove and 186 not upgraded.
+#6 75.95 Need to get 2,364 kB of archives.
+#6 75.95 After this operation, 47.1 kB of additional disk space will be used.
+#6 75.95 Get:1 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libapt-pkg6.0t64 amd64 2.8.3 [985 kB]
+#6 77.82 Get:2 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 apt amd64 2.8.3 [1,376 kB]
+#6 78.30 Get:3 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 apt-transport-https all 2.8.3 [3,970 B]
+#6 78.66 debconf: delaying package configuration, since apt-utils is not installed
+#6 78.75 Fetched 2,364 kB in 3s (781 kB/s)
+#6 78.89 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 55915 files and directories currently installed.)
+#6 78.92 Preparing to unpack .../libapt-pkg6.0t64_2.8.3_amd64.deb ...
+#6 78.93 Unpacking libapt-pkg6.0t64:amd64 (2.8.3) over (2.7.14build2) ...
+#6 79.09 Setting up libapt-pkg6.0t64:amd64 (2.8.3) ...
+#6 79.25 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 55915 files and directories currently installed.)
+#6 79.27 Preparing to unpack .../archives/apt_2.8.3_amd64.deb ...
+#6 79.90 Unpacking apt (2.8.3) over (2.7.14build2) ...
+#6 80.74 Setting up apt (2.8.3) ...
+#6 82.60 Selecting previously unselected package apt-transport-https.
+#6 82.60 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 55915 files and directories currently installed.)
+#6 82.64 Preparing to unpack .../apt-transport-https_2.8.3_all.deb ...
+#6 82.65 Unpacking apt-transport-https (2.8.3) ...
+#6 82.84 Setting up apt-transport-https (2.8.3) ...
+#6 82.85 Processing triggers for libc-bin (2.39-0ubuntu8.3) ...
+#6 83.67 
+#6 83.67 WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+#6 83.67 
+#6 84.55 Hit:1 http://security.ubuntu.com/ubuntu noble-security InRelease
+#6 84.81 Hit:2 http://archive.ubuntu.com/ubuntu noble InRelease
+#6 85.31 Hit:3 http://archive.ubuntu.com/ubuntu noble-updates InRelease
+#6 85.48 Hit:4 http://archive.ubuntu.com/ubuntu noble-backports InRelease
+#6 90.12 Get:5 https://deb.nodesource.com/node_22.x nodistro InRelease [12.1 kB]
+#6 91.81 Get:6 https://deb.nodesource.com/node_22.x nodistro/main amd64 Packages [9,081 B]
+#6 92.05 Fetched 21.2 kB in 8s (2,608 B/s)
+#6 92.05 Reading package lists...
+#6 93.26 Building dependency tree...
+#6 93.58 Reading state information...
+#6 93.62 186 packages can be upgraded. Run 'apt list --upgradable' to see them.
+#6 93.65 [1;34m2026-03-10 15:22:03 - Repository configured successfully.[0m
+#6 93.67 [38;5;79m2026-03-10 15:22:03 - To install Node.js, run: apt install nodejs -y[0m
+#6 93.70 [38;5;79m2026-03-10 15:22:03 - You can use N|solid Runtime as a node.js alternative[0m
+#6 93.72 [1;32m2026-03-10 15:22:03 - To install N|solid Runtime, run: apt install nsolid -y 
+#6 93.72 [0m
+#6 93.83 Reading package lists...
+#6 94.95 Building dependency tree...
+#6 95.28 Reading state information...
+#6 95.65 The following NEW packages will be installed:
+#6 95.65   nodejs
+#6 95.96 0 upgraded, 1 newly installed, 0 to remove and 186 not upgraded.
+#6 95.96 Need to get 37.8 MB of archives.
+#6 95.96 After this operation, 237 MB of additional disk space will be used.
+#6 95.96 Get:1 https://deb.nodesource.com/node_22.x nodistro/main amd64 nodejs amd64 22.22.1-1nodesource1 [37.8 MB]
+#6 103.6 debconf: delaying package configuration, since apt-utils is not installed
+#6 103.7 Fetched 37.8 MB in 7s (5,058 kB/s)
+#6 103.9 Selecting previously unselected package nodejs.
+#6 103.9 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 55919 files and directories currently installed.)
+#6 103.9 Preparing to unpack .../nodejs_22.22.1-1nodesource1_amd64.deb ...
+#6 104.0 Unpacking nodejs (22.22.1-1nodesource1) ...
+#6 106.8 Setting up nodejs (22.22.1-1nodesource1) ...
+#6 DONE 107.4s
+
+#8 [build  4/18] COPY package.json package-lock.json app.json app.config.js tsconfig.json index.ts App.tsx ./
+#8 DONE 0.1s
+
+#9 [build  5/18] COPY google-services.json ./google-services.json
+#9 DONE 0.0s
+
+#10 [build  6/18] RUN npm ci
+#10 4.124 npm warn deprecated whatwg-encoding@2.0.0: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+#10 4.467 npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+#10 7.956 npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+#10 10.24 npm warn deprecated domexception@4.0.0: Use your platform's native DOMException instead
+#10 11.64 npm warn deprecated abab@2.0.6: Use your platform's native atob() and btoa() methods instead
+#10 14.20 npm warn deprecated @react-native-voice/voice@3.1.5: This package is deprecated. Use expo-speech-recognition instead.
+#10 17.37 npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+#10 17.63 npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+#10 17.63 npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+#10 17.96 npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+#10 18.67 npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+#10 19.80 npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+#10 20.57 npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+#10 20.62 npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+#10 24.95 
+#10 24.95 added 1152 packages, and audited 1153 packages in 24s
+#10 24.95 
+#10 24.95 127 packages are looking for funding
+#10 24.95   run `npm fund` for details
+#10 24.97 
+#10 24.97 5 low severity vulnerabilities
+#10 24.97 
+#10 24.97 To address all issues (including breaking changes), run:
+#10 24.97   npm audit fix --force
+#10 24.97 
+#10 24.97 Run `npm audit` for details.
+#10 24.97 npm notice
+#10 24.97 npm notice New major version of npm available! 10.9.4 -> 11.11.0
+#10 24.97 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.11.0
+#10 24.97 npm notice To update run: npm install -g npm@11.11.0
+#10 24.97 npm notice
+#10 DONE 27.0s
+
+#11 [build  7/18] COPY assets ./assets
+#11 DONE 0.3s
+
+#12 [build  8/18] COPY src ./src
+#12 DONE 0.1s
+
+#13 [build  9/18] COPY gradle-dist/gradle-8.14.3-bin.zip /tmp/gradle-8.14.3-bin.zip
+#13 DONE 0.4s
+
+#14 [build 10/18] RUN CI=1 npx expo prebuild --platform android --clean
+#14 2.552 ! No git repo found in current directory
+#14 2.553 › Use git to track file changes before running commands that modify project files.
+#14 2.554 Git status is dirty but the command will continue because the terminal is not interactive.
+#14 2.581 - Clearing android
+#14 2.586 ✔ Cleared android code
+#14 2.622 - Creating native directory (./android)
+#14 3.443 ✔ Created native directory
+#14 3.444 - Updating package.json
+#14 3.457 ✔ Updated package.json | no changes
+#14 3.458 - Running prebuild
+#14 60.82 » android: userInterfaceStyle: Install expo-system-ui in your project to enable this feature.
+#14 60.82 - Running prebuild
+#14 60.84 ✔ Finished prebuild
+#14 DONE 61.2s
+
+#15 [build 11/18] RUN CI=1 npx expo prebuild --platform android
+#15 2.984 - Creating native directory (./android)
+#15 3.698 ✔ Created native directory | reusing /android
+#15 3.700 - Updating package.json
+#15 3.715 ✔ Updated package.json | no changes
+#15 3.716 - Running prebuild
+#15 20.85 - Running prebuild
+#15 20.85 » android: userInterfaceStyle: Install expo-system-ui in your project to enable this feature.
+#15 20.87 ✔ Finished prebuild
+#15 DONE 21.2s
+
+#16 [build 12/18] RUN set -eux;   GP="/app/android/gradle.properties";   touch "$GP";   if ! grep -q '^android.useAndroidX=' "$GP"; then     printf '%s\n' 'android.useAndroidX=true' >> "$GP";   fi;   if ! grep -q '^android.enableJetifier=' "$GP"; then     printf '%s\n' 'android.enableJetifier=true' >> "$GP";   fi
+#16 0.247 + GP=/app/android/gradle.properties
+#16 0.248 + touch /app/android/gradle.properties
+#16 0.282 + grep -q ^android.useAndroidX= /app/android/gradle.properties
+#16 0.321 + grep -q ^android.enableJetifier= /app/android/gradle.properties
+#16 0.426 + printf %s\n android.enableJetifier=true
+#16 DONE 0.4s
+
+#17 [build 13/18] RUN set -eux;   APP_GRADLE="/app/android/app/build.gradle";   sed -i 's/\\\\n/\\n/g' "$APP_GRADLE" || true;   if ! grep -q "configurations.all" "$APP_GRADLE"; then     bash -c 'printf "%s\n" ""       "configurations.all {"       "    exclude group: \"com.android.support\", module: \"support-compat\""       "    exclude group: \"com.android.support\", module: \"support-v4\""       "    exclude group: \"com.android.support\", module: \"versionedparcelable\""       "}" >> "'"$APP_GRADLE"'"';   fi
+#17 0.153 + APP_GRADLE=/app/android/app/build.gradle
+#17 0.154 + sed -i s/\\\\n/\\n/g /app/android/app/build.gradle
+#17 0.198 + grep -q configurations.all /app/android/app/build.gradle
+#17 0.238 + bash -c printf "%s\n" ""       "configurations.all {"       "    exclude group: \"com.android.support\", module: \"support-compat\""       "    exclude group: \"com.android.support\", module: \"support-v4\""       "    exclude group: \"com.android.support\", module: \"versionedparcelable\""       "}" >> "/app/android/app/build.gradle"
+#17 DONE 0.3s
+
+#18 [build 14/18] RUN set -eux;   if [ "release" = "release" ]; then     SDKMANAGER="/opt/android-sdk-linux/cmdline-tools/latest/bin/sdkmanager";     test -x "$SDKMANAGER";     export ANDROID_SDK_ROOT="/opt/android-sdk-linux";     export ANDROID_HOME="/opt/android-sdk-linux";     for i in 1 2 3; do       yes | "$SDKMANAGER" --sdk_root="/opt/android-sdk-linux" --install         "platform-tools"         "platforms;android-36"         "build-tools;36.0.0"         && break;       echo "sdkmanager failed (attempt $i). Clearing caches and retrying..." >&2;       rm -rf /root/.android/cache || true;       rm -rf "/opt/android-sdk-linux/.android/cache" || true;       sleep 3;     done;     test -d "/opt/android-sdk-linux/build-tools/36.0.0";   fi
+#18 0.252 + [ release = release ]
+#18 0.254 + SDKMANAGER=/opt/android-sdk-linux/cmdline-tools/latest/bin/sdkmanager
+#18 0.254 + test -x /opt/android-sdk-linux/cmdline-tools/latest/bin/sdkmanager
+#18 0.255 + export ANDROID_SDK_ROOT=/opt/android-sdk-linux
+#18 0.255 + export ANDROID_HOME=/opt/android-sdk-linux
+#18 0.258 + yes
+#18 0.258 + /opt/android-sdk-linux/cmdline-tools/latest/bin/sdkmanager --sdk_root=/opt/android-sdk-linux --install platform-tools platforms;android-36 build-tools;36.0.0
+#18 2.735 Loading package information...                                                  Loading local repository...                                                     [                                       ] 3% Loading local repository...        [                                       ] 3% Fetch remote repository...         [=                                      ] 3% Fetch remote repository...         [=                                      ] 4% Fetch remote repository...         [=                                      ] 5% Fetch remote repository...         [==                                     ] 5% Fetch remote repository...         [==                                     ] 6% Fetch remote repository...         [==                                     ] 7% Fetch remote repository...         [==                                     ] 7% Computing updates...               [===                                    ] 8% Computing updates...               [===                                    ] 10% Computing updates...              [===                                    ] 10% Installing Android SDK Build-Tools[===                                    ] 10% Downloading build-tools_r36_linux.[====                                   ] 10% Downloading build-tools_r36_linux.[====                                   ] 11% Downloading build-tools_r36_linux.[====                                   ] 12% Downloading build-tools_r36_linux.[=====                                  ] 13% Downloading build-tools_r36_linux.[=====                                  ] 14% Downloading build-tools_r36_linux.[=====                                  ] 15% Downloading build-tools_r36_linux.[======                                 ] 15% Downloading build-tools_r36_linux.[======                                 ] 16% Downloading build-tools_r36_linux.[======                                 ] 17% Downloading build-tools_r36_linux.[=======                                ] 18% Downloading build-tools_r36_linux.[=======                                ] 18% Unzipping...                      [=======                                ] 18% Unzipping... android-16/NOTICE.txt[=======                                ] 18% Unzipping... android-16/aapt      [=======                                ] 18% Unzipping... android-16/aapt2     [=======                                ] 18% Unzipping... android-16/aarch64-li[=======                                ] 18% Unzipping... android-16/aidl      [=======                                ] 18% Unzipping... android-16/apksigner [=======                                ] 18% Unzipping... android-16/arm-linux-[=======                                ] 18% Unzipping... android-16/bcc_compat[=======                                ] 18% Unzipping... android-16/core-lambd[=======                                ] 18% Unzipping... android-16/d8        [=======                                ] 18% Unzipping... android-16/dexdump   [=======                                ] 18% Unzipping... android-16/i686-linux[=======                                ] 18% Unzipping... android-16/lld       [=======                                ] 18% Unzipping... android-16/llvm-rs-cc[=======                                ] 18% Unzipping... android-16/mipsel-lin[=======                                ] 18% Unzipping... android-16/runtime.pr[=======                                ] 18% Unzipping... android-16/source.pro[=======                                ] 18% Unzipping... android-16/split-sele[=======                                ] 18% Unzipping... android-16/x86_64-lin[=======                                ] 18% Unzipping... android-16/zipalign  [=======                                ] 19% Unzipping... android-16/zipalign  [=======                                ] 19% Unzipping... android-16/lib/apksig[=======                                ] 19% Unzipping... android-16/lib/d8.jar[=======                                ] 20% Unzipping... android-16/lib/d8.jar[========                               ] 20% Unzipping... android-16/lib/d8.jar[========                               ] 20% Unzipping... android-16/lib64/libL[========                               ] 21% Unzipping... android-16/lib64/libL[========                               ] 22% Unzipping... android-16/lib64/libL[========                               ] 22% Unzipping... android-16/lib64/libb[========                               ] 22% Unzipping... android-16/lib64/libc[=========                              ] 23% Unzipping... android-16/lib64/libc[=========                              ] 23% Unzipping... android-16/lld-bin/ll[=========                              ] 24% Unzipping... android-16/lld-bin/ll[=========                              ] 24% Unzipping... android-16/renderscri[=========                              ] 25% Unzipping... android-16/renderscri[===============                        ] 40% Unzipping... android-16/renderscri[===============                        ] 40% Installing Android SDK Platform 36[===============                        ] 40% Downloading platform-36_r02.zip...[================                       ] 40% Downloading platform-36_r02.zip...[================                       ] 41% Downloading platform-36_r02.zip...[================                       ] 42% Downloading platform-36_r02.zip...[=================                      ] 43% Downloading platform-36_r02.zip...[=================                      ] 44% Downloading platform-36_r02.zip...[=================                      ] 45% Downloading platform-36_r02.zip...[==================                     ] 45% Downloading platform-36_r02.zip...[==================                     ] 46% Downloading platform-36_r02.zip...[==================                     ] 47% Downloading platform-36_r02.zip...[==================                     ] 48% Downloading platform-36_r02.zip...[==================                     ] 48% Unzipping... android-16/renderscri[==================                     ] 48% Unzipping... android-36/android-st[===================                    ] 48% Unzipping... android-36/android-st[===================                    ] 48% Unzipping... android-36/android.ja[===================                    ] 49% Unzipping... android-36/android.ja[===================                    ] 50% Unzipping... android-36/android.ja[====================                   ] 50% Unzipping... android-36/android.ja[====================                   ] 51% Unzipping... android-36/android.ja[====================                   ] 51% Unzipping... android-36/build.prop[====================                   ] 51% Unzipping... android-36/core-for-s[====================                   ] 51% Unzipping... android-36/data/NOTIC[====================                   ] 51% Unzipping... android-36/data/activ[====================                   ] 51% Unzipping... android-36/data/annot[====================                   ] 51% Unzipping... android-36/data/api-v[====================                   ] 52% Unzipping... android-36/data/api-v[====================                   ] 52% Unzipping... android-36/data/broad[====================                   ] 52% Unzipping... android-36/data/categ[====================                   ] 52% Unzipping... android-36/data/featu[====================                   ] 52% Unzipping... android-36/data/res/a[====================                   ] 52% Unzipping... android-36/data/res/c[====================                   ] 52% Unzipping... android-36/data/res/d[=====================                  ] 53% Unzipping... android-36/data/res/d[=====================                  ] 53% Unzipping... android-36/data/res/i[=====================                  ] 53% Unzipping... android-36/data/res/l[=====================                  ] 53% Unzipping... android-36/data/res/m[=====================                  ] 53% Unzipping... android-36/data/res/r[=====================                  ] 53% Unzipping... android-36/data/res/t[=====================                  ] 53% Unzipping... android-36/data/res/v[=====================                  ] 54% Unzipping... android-36/data/res/v[=====================                  ] 55% Unzipping... android-36/data/res/v[=====================                  ] 55% Unzipping... android-36/data/res/x[=====================                  ] 55% Unzipping... android-36/data/servi[=====================                  ] 55% Unzipping... android-36/data/widge[=====================                  ] 55% Unzipping... android-36/framework.[=====================                  ] 55% Unzipping... android-36/optional/a[=====================                  ] 55% Unzipping... android-36/optional/l[=====================                  ] 55% Unzipping... android-36/optional/o[=====================                  ] 55% Unzipping... android-36/optional/w[=====================                  ] 55% Unzipping... android-36/sdk.proper[=====================                  ] 55% Unzipping... android-36/skins/HVGA[=====================                  ] 55% Unzipping... android-36/skins/NOTI[=====================                  ] 55% Unzipping... android-36/skins/QVGA[=====================                  ] 55% Unzipping... android-36/skins/WQVG[=====================                  ] 55% Unzipping... android-36/skins/WSVG[=====================                  ] 55% Unzipping... android-36/skins/WVGA[=====================                  ] 55% Unzipping... android-36/skins/WXGA[=====================                  ] 55% Unzipping... android-36/source.pro[=====================                  ] 55% Unzipping... android-36/templates/[=====================                  ] 55% Unzipping... android-36/uiautomato[===========================            ] 70% Unzipping... android-36/uiautomato[===========================            ] 70% Installing Android SDK Platform-To[===========================            ] 70% Downloading platform-tools_r37.0.0[============================           ] 70% Downloading platform-tools_r37.0.0[============================           ] 71% Downloading platform-tools_r37.0.0[============================           ] 72% Downloading platform-tools_r37.0.0[=============================          ] 73% Downloading platform-tools_r37.0.0[=============================          ] 74% Downloading platform-tools_r37.0.0[=============================          ] 75% Downloading platform-tools_r37.0.0[==============================         ] 75% Downloading platform-tools_r37.0.0[==============================         ] 76% Downloading platform-tools_r37.0.0[==============================         ] 77% Downloading platform-tools_r37.0.0[==============================         ] 77% Unzipping... android-36/uiautomato[==============================         ] 77% Unzipping... platform-tools/NOTICE[===============================        ] 78% Unzipping... platform-tools/NOTICE[===============================        ] 78% Unzipping... platform-tools/adb   [===============================        ] 79% Unzipping... platform-tools/adb   [===============================        ] 80% Unzipping... platform-tools/adb   [================================       ] 80% Unzipping... platform-tools/adb   [================================       ] 81% Unzipping... platform-tools/adb   [================================       ] 82% Unzipping... platform-tools/adb   [================================       ] 82% Unzipping... platform-tools/etc1to[================================       ] 82% Unzipping... platform-tools/fastbo[=================================      ] 83% Unzipping... platform-tools/fastbo[=================================      ] 83% Unzipping... platform-tools/hprof-[=================================      ] 83% Unzipping... platform-tools/lib64/[=================================      ] 83% Unzipping... platform-tools/make_f[=================================      ] 83% Unzipping... platform-tools/mke2fs[=================================      ] 84% Unzipping... platform-tools/mke2fs[=================================      ] 84% Unzipping... platform-tools/source[=================================      ] 84% Unzipping... platform-tools/sqlite[=================================      ] 85% Unzipping... platform-tools/sqlite[=======================================] 100% Unzipping... platform-tools/sqlit
+#18 41.69 
+#18 41.74 + break
+#18 41.74 + test -d /opt/android-sdk-linux/build-tools/36.0.0
+#18 DONE 41.8s
+
+#19 [build 11/18] RUN CI=1 npx expo prebuild --platform android
+#19 CACHED
+
+#20 [build 12/18] RUN set -eux;   GP="/app/android/gradle.properties";   touch "$GP";   if ! grep -q '^android.useAndroidX=' "$GP"; then     printf '%s\n' 'android.useAndroidX=true' >> "$GP";   fi;   if ! grep -q '^android.enableJetifier=' "$GP"; then     printf '%s\n' 'android.enableJetifier=true' >> "$GP";   fi
+#20 CACHED
+
+#21 [build  6/18] RUN npm ci
+#21 CACHED
+
+#22 [build  7/18] COPY assets ./assets
+#22 CACHED
+
+#23 [build  9/18] COPY gradle-dist/gradle-8.14.3-bin.zip /tmp/gradle-8.14.3-bin.zip
+#23 CACHED
+
+#24 [build 10/18] RUN CI=1 npx expo prebuild --platform android --clean
+#24 CACHED
+
+#25 [build 13/18] RUN set -eux;   APP_GRADLE="/app/android/app/build.gradle";   sed -i 's/\\\\n/\\n/g' "$APP_GRADLE" || true;   if ! grep -q "configurations.all" "$APP_GRADLE"; then     bash -c 'printf "%s\n" ""       "configurations.all {"       "    exclude group: \"com.android.support\", module: \"support-compat\""       "    exclude group: \"com.android.support\", module: \"support-v4\""       "    exclude group: \"com.android.support\", module: \"versionedparcelable\""       "}" >> "'"$APP_GRADLE"'"';   fi
+#25 CACHED
+
+#26 [build 14/18] RUN set -eux;   if [ "release" = "release" ]; then     SDKMANAGER="/opt/android-sdk-linux/cmdline-tools/latest/bin/sdkmanager";     test -x "$SDKMANAGER";     export ANDROID_SDK_ROOT="/opt/android-sdk-linux";     export ANDROID_HOME="/opt/android-sdk-linux";     for i in 1 2 3; do       yes | "$SDKMANAGER" --sdk_root="/opt/android-sdk-linux" --install         "platform-tools"         "platforms;android-36"         "build-tools;36.0.0"         && break;       echo "sdkmanager failed (attempt $i). Clearing caches and retrying..." >&2;       rm -rf /root/.android/cache || true;       rm -rf "/opt/android-sdk-linux/.android/cache" || true;       sleep 3;     done;     test -d "/opt/android-sdk-linux/build-tools/36.0.0";   fi
+#26 CACHED
+
+#27 [build  5/18] COPY google-services.json ./google-services.json
+#27 CACHED
+
+#28 [build  4/18] COPY package.json package-lock.json app.json app.config.js tsconfig.json index.ts App.tsx ./
+#28 CACHED
+
+#29 [build  8/18] COPY src ./src
+#29 CACHED
+
+#30 [build 15/18] RUN set -eux;   GP="/app/android/gradle.properties";   touch "$GP";   if grep -q '^reactNativeArchitectures=' "$GP"; then     sed -i 's/^reactNativeArchitectures=.*/reactNativeArchitectures=arm64-v8a/' "$GP";   else     printf '%s\n' 'reactNativeArchitectures=arm64-v8a' >> "$GP";   fi;   if grep -q '^org.gradle.jvmargs=' "$GP"; then     sed -i 's/^org.gradle.jvmargs=.*/org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m -Dfile.encoding=UTF-8/' "$GP";   else     printf '%s\n' 'org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m -Dfile.encoding=UTF-8' >> "$GP";   fi;   if grep -q '^kotlin.daemon.jvmargs=' "$GP"; then     sed -i 's/^kotlin.daemon.jvmargs=.*/kotlin.daemon.jvmargs=-Xmx2048m/' "$GP";   else     printf '%s\n' 'kotlin.daemon.jvmargs=-Xmx2048m' >> "$GP";   fi;   if grep -q '^org.gradle.workers.max=' "$GP"; then     sed -i 's/^org.gradle.workers.max=.*/org.gradle.workers.max=1/' "$GP";   else     printf '%s\n' 'org.gradle.workers.max=1' >> "$GP";   fi;   if grep -q '^org.gradle.parallel=' "$GP"; then     sed -i 's/^org.gradle.parallel=.*/org.gradle.parallel=false/' "$GP";   else     printf '%s\n' 'org.gradle.parallel=false' >> "$GP";   fi;   if grep -q '^org.gradle.vfs.watch=' "$GP"; then     sed -i 's/^org.gradle.vfs.watch=.*/org.gradle.vfs.watch=false/' "$GP";   else     printf '%s\n' 'org.gradle.vfs.watch=false' >> "$GP";   fi
+#30 0.315 + GP=/app/android/gradle.properties
+#30 0.317 + touch /app/android/gradle.properties
+#30 0.352 + grep -q ^reactNativeArchitectures= /app/android/gradle.properties
+#30 0.394 + sed -i s/^reactNativeArchitectures=.*/reactNativeArchitectures=arm64-v8a/ /app/android/gradle.properties
+#30 0.433 + grep -q ^org.gradle.jvmargs= /app/android/gradle.properties
+#30 0.473 + sed -i s/^org.gradle.jvmargs=.*/org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m -Dfile.encoding=UTF-8/ /app/android/gradle.properties
+#30 0.515 + grep -q ^kotlin.daemon.jvmargs= /app/android/gradle.properties
+#30 0.553 + printf %s\n kotlin.daemon.jvmargs=-Xmx2048m
+#30 0.554 + grep -q ^org.gradle.workers.max= /app/android/gradle.properties
+#30 0.596 + printf %s\n org.gradle.workers.max=1
+#30 0.596 + grep -q ^org.gradle.parallel= /app/android/gradle.properties
+#30 0.635 + sed -i s/^org.gradle.parallel=.*/org.gradle.parallel=false/ /app/android/gradle.properties
+#30 0.739 + grep -q ^org.gradle.vfs.watch= /app/android/gradle.properties
+#30 0.788 + printf %s\n org.gradle.vfs.watch=false
+#30 DONE 0.8s
+
+#31 [build 16/18] WORKDIR /app/android
+#31 DONE 0.0s
+
+#32 [build 17/18] RUN set -eux;   GRADLE_DIST="gradle-8.14.3-bin.zip";   if [ ! -f "/tmp/${GRADLE_DIST}" ]; then     curl -L --retry 5 --retry-delay 5 --max-time 600       "https://services.gradle.org/distributions/${GRADLE_DIST}"       -o "/tmp/${GRADLE_DIST}";   fi;   if [ -f "/app/android/gradle/wrapper/gradle-wrapper.properties" ]; then     sed -i "s|distributionUrl=.*|distributionUrl=file:///tmp/${GRADLE_DIST}|" /app/android/gradle/wrapper/gradle-wrapper.properties;   fi
+#32 0.267 + GRADLE_DIST=gradle-8.14.3-bin.zip
+#32 0.269 + [ ! -f /tmp/gradle-8.14.3-bin.zip ]
+#32 0.269 + [ -f /app/android/gradle/wrapper/gradle-wrapper.properties ]
+#32 0.270 + sed -i s|distributionUrl=.*|distributionUrl=file:///tmp/gradle-8.14.3-bin.zip| /app/android/gradle/wrapper/gradle-wrapper.properties
+#32 DONE 0.4s
+
+#33 [build 18/18] RUN set -eux;   if [ "release" = "release" ]; then     sed -i 's/signingConfig signingConfigs\\.release/signingConfig signingConfigs.debug/g' /app/android/app/build.gradle || true;     ./gradlew --no-daemon --max-workers 1 assembleRelease -x lint -x test;   elif [ "release" = "standalone" ]; then     ./gradlew --no-daemon --max-workers 1 :app:bundleDebugJsAndAssets -x lint -x test       || ./gradlew --no-daemon --max-workers 1 :app:createBundleDebugJsAndAssets -x lint -x test       || ./gradlew --no-daemon --max-workers 1 bundleDebugJsAndAssets -x lint -x test       || ./gradlew --no-daemon --max-workers 1 createBundleDebugJsAndAssets -x lint -x test;     ./gradlew --no-daemon --max-workers 1 assembleDebug -x lint -x test;   else     ./gradlew --no-daemon --max-workers 1 assembleDebug -x lint -x test;   fi
+#33 0.224 + [ release = release ]
+#33 0.225 + sed -i s/signingConfig signingConfigs\\.release/signingConfig signingConfigs.debug/g /app/android/app/build.gradle
+#33 0.270 + ./gradlew --no-daemon --max-workers 1 assembleRelease -x lint -x test
+#33 1.122 Downloading file:/tmp/gradle-8.14.3-bin.zip
+#33 1.407 .............10%.............20%.............30%.............40%.............50%.............60%.............70%.............80%.............90%..............100%
+#33 3.999 
+#33 3.999 Welcome to Gradle 8.14.3!
+#33 4.000 
+#33 4.000 Here are the highlights of this release:
+#33 4.002  - Java 24 support
+#33 4.002  - GraalVM Native Image toolchain selection
+#33 4.002  - Enhancements to test reporting
+#33 4.002  - Build Authoring improvements
+#33 4.002 
+#33 4.002 For more details see https://docs.gradle.org/8.14.3/release-notes.html
+#33 4.002 
+#33 4.498 To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+#33 7.898 Daemon will be stopped at the end of the build 
+#33 138.2 
+#33 138.2 > Configure project :expo-gradle-plugin:expo-autolinking-plugin
+#33 138.2 w: file:///app/node_modules/expo-modules-autolinking/android/expo-gradle-plugin/expo-autolinking-plugin/build.gradle.kts:25:3: 'kotlinOptions(KotlinJvmOptionsDeprecated /* = KotlinJvmOptions */.() -> Unit): Unit' is deprecated. Please migrate to the compilerOptions DSL. More details are here: https://kotl.in/u1r8ln
+#33 146.2 
+#33 146.2 > Configure project :expo-gradle-plugin:expo-autolinking-settings-plugin
+#33 146.2 w: file:///app/node_modules/expo-modules-autolinking/android/expo-gradle-plugin/expo-autolinking-settings-plugin/build.gradle.kts:30:3: 'kotlinOptions(KotlinJvmOptionsDeprecated /* = KotlinJvmOptions */.() -> Unit): Unit' is deprecated. Please migrate to the compilerOptions DSL. More details are here: https://kotl.in/u1r8ln
+#33 148.6 
+#33 148.6 > Task :expo-gradle-plugin:expo-autolinking-plugin-shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+#33 149.1 > Task :gradle-plugin:settings-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+#33 149.1 > Task :gradle-plugin:shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+#33 178.6 > Task :expo-gradle-plugin:expo-autolinking-plugin-shared:compileKotlin
+#33 179.1 > Task :gradle-plugin:shared:compileKotlin
+#33 214.2 > Task :expo-gradle-plugin:expo-autolinking-plugin-shared:compileJava NO-SOURCE
+#33 214.2 > Task :expo-gradle-plugin:expo-autolinking-plugin-shared:processResources NO-SOURCE
+#33 214.2 > Task :expo-gradle-plugin:expo-autolinking-plugin-shared:classes UP-TO-DATE
+#33 214.7 > Task :expo-gradle-plugin:expo-autolinking-plugin-shared:jar
+#33 214.7 > Task :expo-gradle-plugin:expo-autolinking-settings-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+#33 223.9 > Task :gradle-plugin:shared:compileJava NO-SOURCE
+#33 223.9 > Task :gradle-plugin:shared:processResources NO-SOURCE
+#33 223.9 > Task :gradle-plugin:shared:classes UP-TO-DATE
+#33 223.9 > Task :gradle-plugin:shared:jar
+#33 244.7 > Task :expo-gradle-plugin:expo-autolinking-settings-plugin:compileKotlin
+#33 253.9 > Task :gradle-plugin:settings-plugin:compileKotlin
+#33 280.7 > Task :gradle-plugin:settings-plugin:compileJava NO-SOURCE
+#33 280.7 > Task :gradle-plugin:settings-plugin:pluginDescriptors
+#33 280.8 > Task :gradle-plugin:settings-plugin:processResources
+#33 280.8 > Task :gradle-plugin:settings-plugin:classes
+#33 280.8 > Task :gradle-plugin:settings-plugin:jar
+#33 280.9 > Task :expo-gradle-plugin:expo-autolinking-settings-plugin:compileJava NO-SOURCE
+#33 280.9 > Task :expo-gradle-plugin:expo-autolinking-settings-plugin:pluginDescriptors
+#33 280.9 > Task :expo-gradle-plugin:expo-autolinking-settings-plugin:processResources
+#33 280.9 > Task :expo-gradle-plugin:expo-autolinking-settings-plugin:classes
+#33 280.9 > Task :expo-gradle-plugin:expo-autolinking-settings-plugin:jar
+#33 302.4 
+#33 302.4 > Configure project :expo-module-gradle-plugin
+#33 302.4 w: file:///app/node_modules/expo-modules-core/expo-module-gradle-plugin/build.gradle.kts:58:3: 'kotlinOptions(KotlinJvmOptionsDeprecated /* = KotlinJvmOptions */.() -> Unit): Unit' is deprecated. Please migrate to the compilerOptions DSL. More details are here: https://kotl.in/u1r8ln
+#33 338.1 
+#33 338.1 > Task :gradle-plugin:react-native-gradle-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+#33 341.2 > Task :expo-module-gradle-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+#33 341.3 > Task :expo-module-gradle-plugin:pluginDescriptors
+#33 341.3 > Task :expo-module-gradle-plugin:processResources
+#33 341.3 > Task :expo-gradle-plugin:expo-autolinking-plugin:checkKotlinGradlePluginConfigurationErrors SKIPPED
+#33 360.4 > Task :expo-gradle-plugin:expo-autolinking-plugin:compileKotlin
+#33 360.4 > Task :expo-gradle-plugin:expo-autolinking-plugin:compileJava NO-SOURCE
+#33 360.4 > Task :expo-gradle-plugin:expo-autolinking-plugin:pluginDescriptors
+#33 360.5 > Task :expo-gradle-plugin:expo-autolinking-plugin:processResources
+#33 360.5 > Task :expo-gradle-plugin:expo-autolinking-plugin:classes
+#33 360.5 > Task :expo-gradle-plugin:expo-autolinking-plugin:jar
+#33 368.0 > Task :gradle-plugin:react-native-gradle-plugin:compileKotlin
+#33 379.7 > Task :gradle-plugin:react-native-gradle-plugin:compileJava NO-SOURCE
+#33 379.8 > Task :gradle-plugin:react-native-gradle-plugin:pluginDescriptors
+#33 379.8 > Task :gradle-plugin:react-native-gradle-plugin:processResources
+#33 379.8 > Task :gradle-plugin:react-native-gradle-plugin:classes
+#33 379.8 > Task :gradle-plugin:react-native-gradle-plugin:jar
+#33 386.8 
+#33 386.8 > Task :expo-module-gradle-plugin:compileKotlin
+#33 386.8 w: file:///app/node_modules/expo-modules-core/expo-module-gradle-plugin/src/main/kotlin/expo/modules/plugin/android/AndroidLibraryExtension.kt:9:24 'var targetSdk: Int?' is deprecated. Will be removed from library DSL in v9.0. Use testOptions.targetSdk or/and lint.targetSdk instead.
+#33 386.9 
+#33 386.9 > Task :expo-module-gradle-plugin:compileJava NO-SOURCE
+#33 386.9 > Task :expo-module-gradle-plugin:classes
+#33 386.9 > Task :expo-module-gradle-plugin:jar
+#33 448.4 
+#33 448.4 > Configure project :
+#33 448.4 [32m[ExpoRootProject][0m Using the following versions:
+#33 448.4   - buildTools:  [32m36.0.0[0m
+#33 448.4   - minSdk:      [32m24[0m
+#33 448.4   - compileSdk:  [32m36[0m
+#33 448.4   - targetSdk:   [32m36[0m
+#33 448.4   - ndk:         [32m27.1.12297006[0m
+#33 448.4   - kotlin:      [32m2.1.20[0m
+#33 448.4   - ksp:         [32m2.1.20-2.0.1[0m
+#33 463.1 
+#33 463.1 > Configure project :expo
+#33 463.1 
+#33 463.1 Using expo modules
+#33 464.6   - [32mexpo-constants[0m (18.0.13)
+#33 467.2   - [32mexpo-image-loader[0m (4.7.0)
+#33 467.8   - [32mexpo-image-picker[0m (15.0.7)
+#33 497.8 
+#33 497.8 > Configure project :expo-modules-core
+#33 497.8 Checking the license for package NDK (Side by side) 27.1.12297006 in /opt/android-sdk-linux/licenses
+#33 497.8 License for package NDK (Side by side) 27.1.12297006 accepted.
+#33 497.8 Preparing "Install NDK (Side by side) 27.1.12297006 v.27.1.12297006".
+#33 772.8 "Install NDK (Side by side) 27.1.12297006 v.27.1.12297006" ready.
+#33 772.8 Installing NDK (Side by side) 27.1.12297006 in /opt/android-sdk-linux/ndk/27.1.12297006
+#33 772.8 "Install NDK (Side by side) 27.1.12297006 v.27.1.12297006" complete.
+#33 773.5 "Install NDK (Side by side) 27.1.12297006 v.27.1.12297006" finished.
+#33 774.7 
+#33 774.7 > Configure project :expo
+#33 774.7   - [32mexpo-modules-core[0m (3.0.29)
+#33 774.7   - [33m[📦][0m [32mexpo-application[0m (6.1.5)
+#33 774.7   - [33m[📦][0m [32mexpo-asset[0m (12.0.12)
+#33 774.7   - [33m[📦][0m [32mexpo-document-picker[0m (14.0.8)
+#33 774.7   - [33m[📦][0m [32mexpo-file-system[0m (19.0.21)
+#33 774.7   - [33m[📦][0m [32mexpo-font[0m (14.0.11)
+#33 774.7   - [33m[📦][0m [32mexpo-image-manipulator[0m (55.0.9)
+#33 774.7   - [33m[📦][0m [32mexpo-keep-awake[0m (15.0.8)
+#33 774.7   - [33m[📦][0m [32mexpo-location[0m (19.0.8)
+#33 774.7   - [33m[📦][0m [32mexpo-notifications[0m (0.31.5)
+#33 774.7   - [33m[📦][0m [32mexpo-secure-store[0m (15.0.8)
+#33 774.7 
+#33 1146.7 Checking the license for package Android SDK Build-Tools 35 in /opt/android-sdk-linux/licenses
+#33 1146.7 License for package Android SDK Build-Tools 35 accepted.
+#33 1146.7 Preparing "Install Android SDK Build-Tools 35 v.35.0.0".
+#33 1175.6 "Install Android SDK Build-Tools 35 v.35.0.0" ready.
+#33 1175.6 Installing Android SDK Build-Tools 35 in /opt/android-sdk-linux/build-tools/35.0.0
+#33 1175.6 "Install Android SDK Build-Tools 35 v.35.0.0" complete.
+#33 1175.6 "Install Android SDK Build-Tools 35 v.35.0.0" finished.
+#33 1175.8 [=========                              ] 25%                                   [=========                              ] 25% Fetch remote repository...        [=======================================] 100% Fetch remote repository...       
+#33 1191.6 Checking the license for package Android SDK Platform 35 in /opt/android-sdk-linux/licenses
+#33 1191.6 License for package Android SDK Platform 35 accepted.
+#33 1191.6 Preparing "Install Android SDK Platform 35 (revision 2)".
+#33 1219.3 "Install Android SDK Platform 35 (revision 2)" ready.
+#33 1219.3 Installing Android SDK Platform 35 in /opt/android-sdk-linux/platforms/android-35
+#33 1219.3 "Install Android SDK Platform 35 (revision 2)" complete.
+#33 1219.4 "Install Android SDK Platform 35 (revision 2)" finished.
+#33 1219.4 [=========                              ] 25%                                   [=========                              ] 25% Fetch remote repository...        [=======================================] 100% Fetch remote repository...       
+#33 1226.1 
+#33 1226.1 > Task :app:generateAutolinkingPackageList
+#33 1226.1 > Task :app:generateCodegenSchemaFromJavaScript SKIPPED
+#33 1226.1 > Task :app:generateCodegenArtifactsFromSchema SKIPPED
+#33 1226.1 > Task :app:generateReactNativeEntryPoint
+#33 1227.2 > Task :expo:generatePackagesList
+#33 1227.2 > Task :expo:preBuild
+#33 1228.5 
+#33 1228.5 > Task :expo-constants:createExpoConfig
+#33 1228.5 
+#33 1228.5 > Task :expo-constants:preBuild
+#33 1228.5 > Task :expo-image-loader:preBuild UP-TO-DATE
+#33 1228.5 > Task :expo-image-picker:preBuild UP-TO-DATE
+#33 1228.5 > Task :expo-modules-core:preBuild UP-TO-DATE
+#33 1228.5 > Task :react-native-async-storage_async-storage:preBuild UP-TO-DATE
+#33 1228.5 The NODE_ENV environment variable is required but was not specified. Ensure the project is bundled with Expo CLI or NODE_ENV is set. Using only .env.local and .env
+#33 1228.5 > Task :react-native-community_netinfo:preBuild UP-TO-DATE
+#33 1228.5 > Task :react-native-gesture-handler:preBuild UP-TO-DATE
+#33 1228.5 > Task :react-native-image-picker:preBuild UP-TO-DATE
+#33 1228.5 > Task :react-native-maps:preBuild UP-TO-DATE
+#33 1228.5 > Task :react-native-safe-area-context:preBuild UP-TO-DATE
+#33 1228.5 > Task :react-native-screens:preBuild UP-TO-DATE
+#33 1228.6 > Task :react-native-voice_voice:preBuild UP-TO-DATE
+#33 1228.6 > Task :react-native-webview:preBuild UP-TO-DATE
+#33 1228.6 > Task :app:preBuild
+#33 1228.6 > Task :app:preReleaseBuild
+#33 1228.9 > Task :app:mergeReleaseJniLibFolders
+#33 1228.9 > Task :expo:preReleaseBuild
+#33 1228.9 > Task :expo:mergeReleaseJniLibFolders
+#33 1228.9 > Task :expo:mergeReleaseNativeLibs NO-SOURCE
+#33 1228.9 > Task :expo:copyReleaseJniLibsProjectOnly
+#33 1228.9 > Task :expo-constants:preReleaseBuild
+#33 1228.9 > Task :expo-constants:mergeReleaseJniLibFolders
+#33 1228.9 > Task :expo-constants:mergeReleaseNativeLibs NO-SOURCE
+#33 1228.9 > Task :expo-constants:copyReleaseJniLibsProjectOnly
+#33 1228.9 > Task :expo-image-loader:preReleaseBuild UP-TO-DATE
+#33 1229.0 > Task :expo-image-loader:mergeReleaseJniLibFolders
+#33 1229.0 > Task :expo-image-loader:mergeReleaseNativeLibs NO-SOURCE
+#33 1229.0 > Task :expo-image-loader:copyReleaseJniLibsProjectOnly
+#33 1229.0 > Task :expo-image-picker:preReleaseBuild UP-TO-DATE
+#33 1229.0 > Task :expo-image-picker:mergeReleaseJniLibFolders
+#33 1229.0 > Task :expo-image-picker:mergeReleaseNativeLibs NO-SOURCE
+#33 1229.0 > Task :expo-image-picker:copyReleaseJniLibsProjectOnly
+#33 1229.0 > Task :expo-modules-core:preReleaseBuild UP-TO-DATE
+#33 1231.0 
+#33 1231.0 > Task :expo-modules-core:configureCMakeRelWithDebInfo[arm64-v8a]
+#33 1231.0 Checking the license for package CMake 3.22.1 in /opt/android-sdk-linux/licenses
+#33 1231.0 License for package CMake 3.22.1 accepted.
+#33 1231.0 Preparing "Install CMake 3.22.1 v.3.22.1".
+#33 1237.7 "Install CMake 3.22.1 v.3.22.1" ready.
+#33 1237.7 Installing CMake 3.22.1 in /opt/android-sdk-linux/cmake/3.22.1
+#33 1237.7 "Install CMake 3.22.1 v.3.22.1" complete.
+#33 1237.7 "Install CMake 3.22.1 v.3.22.1" finished.
+#33 1317.7 
+#33 1317.7 The message received from the daemon indicates that the daemon has disappeared.
+#33 1317.7 Build request sent: Build{id=1a696eb2-0d22-4b9c-8ba1-5fa91bce10aa, currentDir=/app/android}
+#33 1317.7 Attempting to read last messages from the daemon log...
+#33 1318.1 Daemon pid: 48
+#33 1318.1   log file: /tmp/gradle/daemon/8.14.3/daemon-48.out.log
+#33 1318.1 ----- Last 20 lines from daemon log file - daemon-48.out.log -----
+#33 1318.1 [=========                              ] 25% Fetch remote repository...        
+#33 1318.1 [=======================================] 100% Fetch remote repository...       
+#33 1318.1 Checking the license for package Android SDK Platform 35 in /opt/android-sdk-linux/licenses
+#33 1318.1 License for package Android SDK Platform 35 accepted.
+#33 1318.1 Preparing "Install Android SDK Platform 35 (revision 2)".
+#33 1318.1 "Install Android SDK Platform 35 (revision 2)" ready.
+#33 1318.1 Installing Android SDK Platform 35 in /opt/android-sdk-linux/platforms/android-35
+#33 1318.1 "Install Android SDK Platform 35 (revision 2)" complete.
+#33 1318.1 "Install Android SDK Platform 35 (revision 2)" finished.
+#33 1318.1 [=========                              ] 25%                                   
+#33 1318.1 [=========                              ] 25% Fetch remote repository...        
+#33 1318.1 [=======================================] 100% Fetch remote repository...       
+#33 1318.1 The NODE_ENV environment variable is required but was not specified. Ensure the project is bundled with Expo CLI or NODE_ENV is set. Using only .env.local and .env
+#33 1318.1 Checking the license for package CMake 3.22.1 in /opt/android-sdk-linux/licenses
+#33 1318.1 License for package CMake 3.22.1 accepted.
+#33 1318.1 Preparing "Install CMake 3.22.1 v.3.22.1".
+#33 1318.1 "Install CMake 3.22.1 v.3.22.1" ready.
+#33 1318.1 Installing CMake 3.22.1 in /opt/android-sdk-linux/cmake/3.22.1
+#33 1318.1 "Install CMake 3.22.1 v.3.22.1" complete.
+#33 1318.1 "Install CMake 3.22.1 v.3.22.1" finished.----- End of the daemon log -----
+#33 1318.1 
+#33 1318.3 
+#33 1318.3 FAILURE: Build failed with an exception.
+#33 1318.3 
+#33 1318.3 * What went wrong:
+#33 1318.3 Gradle build daemon disappeared unexpectedly (it may have been killed or may have crashed)
+#33 1318.3 
+#33 1318.3 * Try:
+#33 1318.3 > Run with --stacktrace option to get the stack trace.
+#33 1318.3 > Run with --info or --debug option to get more log output.
+#33 1318.3 > Run with --scan to get full insights.
+#33 1318.3 > Get more help at https://help.gradle.org.
+#33 ERROR: process "/bin/sh -c set -eux;   if [ \"$APK_VARIANT\" = \"release\" ]; then     sed -i 's/signingConfig signingConfigs\\\\.release/signingConfig signingConfigs.debug/g' /app/android/app/build.gradle || true;     ./gradlew --no-daemon --max-workers 1 assembleRelease -x lint -x test;   elif [ \"$APK_VARIANT\" = \"standalone\" ]; then     ./gradlew --no-daemon --max-workers 1 :app:bundleDebugJsAndAssets -x lint -x test       || ./gradlew --no-daemon --max-workers 1 :app:createBundleDebugJsAndAssets -x lint -x test       || ./gradlew --no-daemon --max-workers 1 bundleDebugJsAndAssets -x lint -x test       || ./gradlew --no-daemon --max-workers 1 createBundleDebugJsAndAssets -x lint -x test;     ./gradlew --no-daemon --max-workers 1 assembleDebug -x lint -x test;   else     ./gradlew --no-daemon --max-workers 1 assembleDebug -x lint -x test;   fi" did not complete successfully: cannot allocate memory
+------
+ > [build 18/18] RUN set -eux;   if [ "release" = "release" ]; then     sed -i 's/signingConfig signingConfigs\\.release/signingConfig signingConfigs.debug/g' /app/android/app/build.gradle || true;     ./gradlew --no-daemon --max-workers 1 assembleRelease -x lint -x test;   elif [ "release" = "standalone" ]; then     ./gradlew --no-daemon --max-workers 1 :app:bundleDebugJsAndAssets -x lint -x test       || ./gradlew --no-daemon --max-workers 1 :app:createBundleDebugJsAndAssets -x lint -x test       || ./gradlew --no-daemon --max-workers 1 bundleDebugJsAndAssets -x lint -x test       || ./gradlew --no-daemon --max-workers 1 createBundleDebugJsAndAssets -x lint -x test;     ./gradlew --no-daemon --max-workers 1 assembleDebug -x lint -x test;   else     ./gradlew --no-daemon --max-workers 1 assembleDebug -x lint -x test;   fi:
+1318.3 FAILURE: Build failed with an exception.
+1318.3 
+1318.3 * What went wrong:
+1318.3 Gradle build daemon disappeared unexpectedly (it may have been killed or may have crashed)
+1318.3 
+1318.3 * Try:
+1318.3 > Run with --stacktrace option to get the stack trace.
+1318.3 > Run with --info or --debug option to get more log output.
+1318.3 > Run with --scan to get full insights.
+1318.3 > Get more help at https://help.gradle.org.
+------
+Dockerfile.apk:144
+--------------------
+ 143 |       fi
+ 144 | >>> RUN set -eux; \
+ 145 | >>>   if [ "$APK_VARIANT" = "release" ]; then \
+ 146 | >>>     # Make release installable without requiring a private keystore (dev-only).
+ 147 | >>>     # This swaps the release signing config to use the standard debug keystore.
+ 148 | >>>     sed -i 's/signingConfig signingConfigs\\.release/signingConfig signingConfigs.debug/g' /app/android/app/build.gradle || true; \
+ 149 | >>>     ./gradlew --no-daemon --max-workers 1 assembleRelease -x lint -x test; \
+ 150 | >>>   elif [ "$APK_VARIANT" = "standalone" ]; then \
+ 151 | >>>     # Bundle JS during the build so the APK does NOT require Metro (fixes "Unable to load script" on devices).
+ 152 | >>>     # React Native's Gradle tasks differ across versions/plugins; try the common task names.
+ 153 | >>>     ./gradlew --no-daemon --max-workers 1 :app:bundleDebugJsAndAssets -x lint -x test \
+ 154 | >>>       || ./gradlew --no-daemon --max-workers 1 :app:createBundleDebugJsAndAssets -x lint -x test \
+ 155 | >>>       || ./gradlew --no-daemon --max-workers 1 bundleDebugJsAndAssets -x lint -x test \
+ 156 | >>>       || ./gradlew --no-daemon --max-workers 1 createBundleDebugJsAndAssets -x lint -x test; \
+ 157 | >>>     ./gradlew --no-daemon --max-workers 1 assembleDebug -x lint -x test; \
+ 158 | >>>   else \
+ 159 | >>>     ./gradlew --no-daemon --max-workers 1 assembleDebug -x lint -x test; \
+ 160 | >>>   fi
+ 161 |     
+--------------------
+ERROR: failed to build: failed to solve: ResourceExhausted: process "/bin/sh -c set -eux;   if [ \"$APK_VARIANT\" = \"release\" ]; then     sed -i 's/signingConfig signingConfigs\\\\.release/signingConfig signingConfigs.debug/g' /app/android/app/build.gradle || true;     ./gradlew --no-daemon --max-workers 1 assembleRelease -x lint -x test;   elif [ \"$APK_VARIANT\" = \"standalone\" ]; then     ./gradlew --no-daemon --max-workers 1 :app:bundleDebugJsAndAssets -x lint -x test       || ./gradlew --no-daemon --max-workers 1 :app:createBundleDebugJsAndAssets -x lint -x test       || ./gradlew --no-daemon --max-workers 1 bundleDebugJsAndAssets -x lint -x test       || ./gradlew --no-daemon --max-workers 1 createBundleDebugJsAndAssets -x lint -x test;     ./gradlew --no-daemon --max-workers 1 assembleDebug -x lint -x test;   else     ./gradlew --no-daemon --max-workers 1 assembleDebug -x lint -x test;   fi" did not complete successfully: cannot allocate memory

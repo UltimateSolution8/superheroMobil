@@ -148,18 +148,25 @@ export function HelperTaskScreen({ route, navigation }: Props) {
   const locationSub = useRef<Location.LocationSubscription | null>(null);
   const lastEmitAt = useRef<number>(0);
   const mapRef = useRef<MapView | null>(null);
+  const advancingRef = useRef(false);
 
   const load = useCallback(async () => {
     setBusy(true);
     setError(null);
     try {
       const t = await withAuth((at) => api.getTask(at, taskId));
-      setTask(t);
-    } catch {
-      setError(t('error.load_task'));
+      if (mountedRef.current) {
+        setTask(t);
+      }
+    } catch (err) {
+      if (mountedRef.current) {
+        setError(t('error.load_task'));
+      }
     } finally {
-      setBusy(false);
-      setInitialLoad(false);
+      if (mountedRef.current) {
+        setBusy(false);
+        setInitialLoad(false);
+      }
     }
   }, [taskId, t, withAuth]);
 
@@ -534,19 +541,23 @@ export function HelperTaskScreen({ route, navigation }: Props) {
         }
 
         if (uploadSuccess && mountedRef.current) {
-          // Refresh the task from the server to get the real selfie URL
-          safeSetState(() => setNotice(t('helper.task.processing_selfie')));
-          try {
-            const refreshed = await withAuth((at) => api.getTask(at, taskId));
-            setTask(refreshed);
-          } catch {
-            // Even if refresh fails, the upload succeeded — set a flag so UI unblocks
-            const optimisticTask = {
-              ...task,
-              [stage === 'ARRIVAL' ? 'arrivalSelfieUrl' : 'completionSelfieUrl']: 'uploaded'
-            } as Task;
-            setTask(optimisticTask);
-          }
+          // Unblock UI immediately; refresh task in background without blocking.
+          const optimisticTask = {
+            ...task,
+            [stage === 'ARRIVAL' ? 'arrivalSelfieUrl' : 'completionSelfieUrl']: 'uploaded'
+          } as Task;
+          setTask(optimisticTask);
+          safeSetState(() => setNotice(null));
+          void (async () => {
+            try {
+              const refreshed = await withAuth((at) => api.getTask(at, taskId));
+              if (mountedRef.current) {
+                setTask(refreshed);
+              }
+            } catch {
+              // keep optimistic state
+            }
+          })();
         }
         return uploadSuccess;
       } catch (err) {
@@ -564,7 +575,8 @@ export function HelperTaskScreen({ route, navigation }: Props) {
   );
 
   const advance = useCallback(async (providedOtp?: string) => {
-    if (!next || busy) return;
+    if (!next || busy || advancingRef.current) return;
+    advancingRef.current = true;
     if (busyTimeoutRef.current) {
       clearTimeout(busyTimeoutRef.current);
       busyTimeoutRef.current = null;
@@ -575,6 +587,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
     busyTimeoutRef.current = setTimeout(() => {
       if (!mountedRef.current) return;
       setBusy(false);
+      advancingRef.current = false;
       setError(t('error.upload_timeout'));
     }, 45_000);
     try {
@@ -582,66 +595,104 @@ export function HelperTaskScreen({ route, navigation }: Props) {
         if (!arrivalSelfieDone) {
           const done = await uploadCheckpointSelfie('ARRIVAL');
           if (!done) {
-            setBusy(false);
+            if (mountedRef.current) {
+              setBusy(false);
+              advancingRef.current = false;
+            }
             return;
           }
         }
       }
       if (next === 'STARTED') {
         if (!providedOtp || !providedOtp.trim()) {
-          setError(t('error.arrival_otp_required'));
-          setBusy(false);
+          if (mountedRef.current) {
+            setError(t('error.arrival_otp_required'));
+            setBusy(false);
+            advancingRef.current = false;
+          }
           return;
         }
       }
       if (next === 'COMPLETED') {
         if (!completionSelfieDone) {
-          setError(t('error.completion_selfie_required'));
-          setBusy(false);
+          if (mountedRef.current) {
+            setError(t('error.completion_selfie_required'));
+            setBusy(false);
+            advancingRef.current = false;
+          }
           return;
         }
         if (!providedOtp || !providedOtp.trim()) {
-          setError(t('error.completion_otp_required'));
-          setBusy(false);
+          if (mountedRef.current) {
+            setError(t('error.completion_otp_required'));
+            setBusy(false);
+            advancingRef.current = false;
+          }
           return;
         }
       }
 
       const otp = providedOtp?.trim() || null;
       const updated = await withAuth((at) => api.updateTaskStatus(at, taskId, next, otp));
-      setTask(updated);
-      setNotice(`${t('helper.task.status_updated')}: ${statusLabel(next)}`);
-      setTimeout(() => setNotice(null), 1500);
+      if (mountedRef.current) {
+        setTask(updated);
+        setNotice(`${t('helper.task.status_updated')}: ${statusLabel(next)}`);
+        setTimeout(() => { if (mountedRef.current) setNotice(null); }, 1500);
+      }
     } catch (e) {
-      if (e instanceof Error && e.message) {
-        setError(e.message);
-      } else {
-        setError(t('error.update_status'));
+      if (mountedRef.current) {
+        if (e instanceof Error && e.message) {
+          setError(e.message);
+        } else {
+          setError(t('error.update_status'));
+        }
       }
     } finally {
       if (busyTimeoutRef.current) {
         clearTimeout(busyTimeoutRef.current);
         busyTimeoutRef.current = null;
       }
-      setBusy(false);
+      if (mountedRef.current) {
+        setBusy(false);
+        advancingRef.current = false;
+      }
     }
   }, [arrivalSelfieDone, busy, completionSelfieDone, next, statusLabel, t, taskId, uploadCheckpointSelfie, withAuth]);
-
   const uploadCompletionSelfie = useCallback(async () => {
     if (completionSelfieBusy || completionSelfieDone) return;
     setCompletionSelfieBusy(true);
     setError(null);
     try {
       const done = await uploadCheckpointSelfie('COMPLETION');
-      if (!done) return;
-      const refreshed = await withAuth((at) => api.getTask(at, taskId));
-      setTask(refreshed);
-      setNotice(t('error.completion_uploaded'));
-      setTimeout(() => setNotice(null), 2000);
+      if (!done) {
+        if (mountedRef.current) setCompletionSelfieBusy(false);
+        return;
+      }
+      if (mountedRef.current) {
+        setTask((prev) =>
+          prev ? ({ ...prev, completionSelfieUrl: prev.completionSelfieUrl ?? 'uploaded' } as Task) : prev,
+        );
+        setNotice(t('error.completion_uploaded'));
+        setTimeout(() => { if (mountedRef.current) setNotice(null); }, 2000);
+      }
+      void (async () => {
+        try {
+          const refreshed = await withAuth((at) => api.getTask(at, taskId));
+          if (mountedRef.current) {
+            setTask(refreshed);
+          }
+        } catch {
+          // keep optimistic state
+        }
+      })();
     } catch {
-      setError(t('error.upload_selfie'));
+      if (mountedRef.current) {
+        setError(t('error.upload_selfie'));
+      }
     } finally {
-      setCompletionSelfieBusy(false);
+      if (mountedRef.current) {
+        setCompletionSelfieBusy(false);
+      }
     }
   }, [completionSelfieBusy, completionSelfieDone, taskId, t, uploadCheckpointSelfie, withAuth]);
 
@@ -886,9 +937,9 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       {showStickyFooter ? (
         <View style={styles.stickyFooter}>
           <PrimaryButton
-            label={`${t('helper.task.mark')} ${statusLabel(next)}`}
+            label={`${t('helper.task.mark')} ${statusLabel(next as TaskStatus)}`}
             onPress={() => advance()}
-            disabled={!next || (next === 'COMPLETED' && !completionSelfieDone)}
+            disabled={!next || ((next as TaskStatus) === 'COMPLETED' && !completionSelfieDone)}
             loading={busy}
             style={styles.stickyBtn}
           />
@@ -1038,6 +1089,7 @@ const styles = StyleSheet.create({
   muted: { color: theme.colors.muted, fontSize: 12, lineHeight: 18 },
   desc: { color: theme.colors.text, fontSize: 14, lineHeight: 20 },
   otpHint: { color: theme.colors.muted, fontSize: 12, marginBottom: 6 },
+  formWrap: { padding: theme.space.md, gap: theme.space.sm, backgroundColor: theme.colors.card, borderRadius: theme.radius.md, borderWidth: 1, borderColor: theme.colors.border, marginBottom: theme.space.md },
   actions: { flexDirection: 'row', gap: theme.space.sm, paddingTop: 8 },
   half: { flex: 1 },
   flex1: { flex: 1 },

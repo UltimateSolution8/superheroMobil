@@ -24,7 +24,7 @@ export function SosScreen() {
     setError(null);
     setSuccess(null);
     try {
-      await withAuth((t) => api.createSupportTicket(t, {
+      await withAuth((token) => api.createSupportTicket(token, {
         category: 'SAFETY',
         subject: t('sos.subject'),
         message: t('sos.message'),
