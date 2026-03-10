@@ -6,43 +6,45 @@ import { useAuth } from '../../auth/AuthContext';
 import { Screen } from '../../ui/Screen';
 import { theme } from '../../ui/theme';
 import type { BuyerStackParamList, HelperStackParamList } from '../../navigation/types';
+import { useI18n } from '../../i18n/I18nProvider';
 
 type Props = NativeStackScreenProps<BuyerStackParamList & HelperStackParamList, 'Menu'>;
 
 export function MenuScreen({ navigation }: Props) {
   const { user, signOut } = useAuth();
+  const { t } = useI18n();
 
   const items = useMemo(() => {
     if (!user) return [];
     const home = user.role === 'HELPER' ? 'HelperHome' : 'BuyerHome';
     return [
-      { key: 'profile', label: 'Profile', screen: 'Profile' },
-      { key: 'tasks', label: 'Tasks', screen: home },
-      { key: 'history', label: 'History', screen: 'History' },
-      { key: 'payment', label: 'Payment', screen: 'Payments' },
-      { key: 'settings', label: 'Settings', screen: 'Settings' },
-      { key: 'support', label: 'Support', screen: 'SupportTickets' },
-      { key: 'sos', label: 'SOS', screen: 'SOS' },
-      { key: 'terms', label: 'Terms & Safety', screen: 'Terms' },
-      { key: 'diagnostics', label: 'Diagnostics', screen: 'Diagnostics' },
+      { key: 'profile', label: t('menu.profile'), screen: 'Profile' },
+      { key: 'tasks', label: t('menu.tasks'), screen: home },
+      { key: 'history', label: t('menu.earnings'), screen: 'History' },
+      { key: 'payment', label: t('menu.wallet'), screen: 'Payments' },
+      { key: 'settings', label: t('menu.settings'), screen: 'Settings' },
+      { key: 'support', label: t('menu.support'), screen: 'SupportTickets' },
+      { key: 'sos', label: t('menu.sos'), screen: 'SOS' },
+      { key: 'terms', label: t('menu.terms'), screen: 'Terms' },
+      { key: 'diagnostics', label: t('menu.diagnostics'), screen: 'Diagnostics' },
     ] as const;
-  }, [user]);
+  }, [t, user]);
 
   return (
     <Screen>
       <View style={styles.topBar}>
-        <Text style={styles.h1}>Menu</Text>
+        <Text style={styles.h1}>{t('menu.title')}</Text>
         <Text onPress={() => navigation.goBack()} style={styles.link}>
-          Back
+          {t('common.back')}
         </Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll}>
         {user ? (
           <View style={styles.profileCard}>
-            <Text style={styles.profileName}>{user.displayName || 'Superheroo User'}</Text>
+            <Text style={styles.profileName}>{user.displayName || t('menu.default_name')}</Text>
             <Text style={styles.profileMeta}>
-              {user.role === 'HELPER' ? 'Superheroo' : 'Super-customer'} • {user.phone}
+              {user.role === 'HELPER' ? t('role.superherooo') : t('role.citizen')} • {user.phone}
             </Text>
           </View>
         ) : null}
@@ -59,7 +61,7 @@ export function MenuScreen({ navigation }: Props) {
             </Pressable>
           ))}
           <Pressable style={[styles.row, styles.signOut]} onPress={signOut}>
-            <Text style={styles.signOutText}>Sign out</Text>
+            <Text style={styles.signOutText}>{t('menu.sign_out')}</Text>
           </Pressable>
         </View>
       </ScrollView>

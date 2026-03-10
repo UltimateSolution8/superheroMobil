@@ -13,6 +13,7 @@ import { PrimaryButton } from '../../ui/PrimaryButton';
 import { Screen } from '../../ui/Screen';
 import { TextField } from '../../ui/TextField';
 import { theme } from '../../ui/theme';
+import { useI18n } from '../../i18n/I18nProvider';
 
 type Props = NativeStackScreenProps<any, any>;
 
@@ -30,6 +31,7 @@ function MsgRow({ item }: { item: SupportMessage }) {
 
 export function SupportTicketScreen({ navigation, route }: Props) {
   const { withAuth } = useAuth();
+  const { t } = useI18n();
   const online = useIsOnline();
   const ticketId = String(route.params?.ticketId || '');
 
@@ -49,11 +51,11 @@ export function SupportTicketScreen({ navigation, route }: Props) {
       setTicket(res);
     } catch (e) {
       if (e instanceof ApiError && e.status === 401) return;
-      setError('Could not load ticket.');
+      setError(t('support.ticket_load_error'));
     } finally {
       setLoading(false);
     }
-  }, [ticketId, withAuth]);
+  }, [t, ticketId, withAuth]);
 
   useEffect(() => {
     load();
@@ -80,25 +82,25 @@ export function SupportTicketScreen({ navigation, route }: Props) {
       await load();
     } catch (e) {
       if (e instanceof ApiError && e.status === 401) return;
-      setError('Could not send message.');
+      setError(t('support.message_send_error'));
     } finally {
       setSending(false);
     }
-  }, [canSend, load, reply, ticketId, withAuth]);
+  }, [canSend, load, reply, t, ticketId, withAuth]);
 
   return (
     <Screen style={styles.screen}>
       <View style={styles.topBar}>
         <Text onPress={() => navigation.goBack()} style={styles.link}>
-          Back
+          {t('common.back')}
         </Text>
-        <Text style={styles.h1}>{ticket?.subject ?? 'Ticket'}</Text>
+        <Text style={styles.h1}>{ticket?.subject ?? t('support.ticket_title')}</Text>
         <Text onPress={load} style={styles.link}>
-          Refresh
+          {t('common.refresh')}
         </Text>
       </View>
 
-      {!online ? <Notice kind="warning" text="You are offline." /> : null}
+      {!online ? <Notice kind="warning" text={t('common.offline')} /> : null}
       {error ? <Notice kind="danger" text={error} /> : null}
 
       {ticket ? (
@@ -113,15 +115,15 @@ export function SupportTicketScreen({ navigation, route }: Props) {
         keyExtractor={(m) => m.id}
         renderItem={({ item }) => <MsgRow item={item} />}
         contentContainerStyle={styles.list}
-        ListEmptyComponent={<Text style={styles.muted}>{loading ? 'Loading…' : 'No messages.'}</Text>}
+        ListEmptyComponent={<Text style={styles.muted}>{loading ? t('common.loading') : t('support.no_messages')}</Text>}
         initialNumToRender={12}
         windowSize={8}
         removeClippedSubviews
       />
 
       <View style={styles.replyCard}>
-        <TextField label="Your message" value={reply} onChangeText={setReply} placeholder="Type your reply…" multiline />
-        <PrimaryButton label="Send" onPress={onSend} disabled={!canSend} loading={sending} />
+        <TextField label={t('support.reply_label')} value={reply} onChangeText={setReply} placeholder={t('support.reply_placeholder')} multiline />
+        <PrimaryButton label={t('common.send')} onPress={onSend} disabled={!canSend} loading={sending} />
       </View>
     </Screen>
   );

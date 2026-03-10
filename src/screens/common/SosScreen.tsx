@@ -26,8 +26,8 @@ export function SosScreen() {
     try {
       await withAuth((t) => api.createSupportTicket(t, {
         category: 'SAFETY',
-        subject: 'SOS emergency',
-        message: 'SOS triggered from mobile app. Please call the user immediately.',
+        subject: t('sos.subject'),
+        message: t('sos.message'),
       }));
       setSuccess(t('sos.success'));
       await Linking.openURL(`tel:${SOS_NUMBER}`);
@@ -36,7 +36,7 @@ export function SosScreen() {
     } finally {
       setBusy(false);
     }
-  }, [busy, withAuth]);
+  }, [busy, t, withAuth]);
 
   return (
     <Screen>

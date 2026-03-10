@@ -11,11 +11,13 @@ import { PrimaryButton } from '../../ui/PrimaryButton';
 import { Notice } from '../../ui/Notice';
 import { theme } from '../../ui/theme';
 import type { BuyerStackParamList, HelperStackParamList } from '../../navigation/types';
+import { useI18n } from '../../i18n/I18nProvider';
 
 type Props = NativeStackScreenProps<BuyerStackParamList & HelperStackParamList, 'Profile'>;
 
 export function ProfileScreen({ navigation }: Props) {
   const { withAuth } = useAuth();
+  const { t } = useI18n();
   const [displayName, setDisplayName] = useState('');
   const [phone, setPhone] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
@@ -32,9 +34,9 @@ export function ProfileScreen({ navigation }: Props) {
       setEmail(me.email ?? null);
       setRole(me.role ?? '');
     } catch {
-      setError('Could not load profile.');
+      setError(t('profile.load_error'));
     }
-  }, [withAuth]);
+  }, [t, withAuth]);
 
   useEffect(() => {
     load();
@@ -49,28 +51,30 @@ export function ProfileScreen({ navigation }: Props) {
 
   const save = useCallback(async () => {
     if (!displayName.trim()) {
-      setError('Display name is required.');
+      setError(t('profile.name_required'));
       return;
     }
     setBusy(true);
     setError(null);
     try {
       await withAuth((t) => api.updateMe(t, displayName.trim()));
-      setNotice('Profile updated.');
+      setNotice(t('profile.saved'));
       setTimeout(() => setNotice(null), 1500);
     } catch {
-      setError('Could not update profile.');
+      setError(t('profile.update_error'));
     } finally {
       setBusy(false);
     }
-  }, [displayName, withAuth]);
+  }, [displayName, t, withAuth]);
+
+  const roleLabel = role === 'HELPER' ? t('role.superherooo') : role === 'BUYER' ? t('role.citizen') : role || '-';
 
   return (
     <Screen>
       <View style={styles.topBar}>
-        <Text style={styles.h1}>Profile</Text>
+        <Text style={styles.h1}>{t('profile.title')}</Text>
         <Text onPress={() => navigation.goBack()} style={styles.link}>
-          Back
+          {t('common.back')}
         </Text>
       </View>
 
@@ -78,17 +82,17 @@ export function ProfileScreen({ navigation }: Props) {
       {error ? <Notice kind="danger" text={error} /> : null}
 
       <View style={styles.card}>
-        <Text style={styles.label}>Role</Text>
-        <Text style={styles.value}>{role || '-'}</Text>
+        <Text style={styles.label}>{t('profile.role')}</Text>
+        <Text style={styles.value}>{roleLabel}</Text>
 
-        <Text style={styles.label}>Phone</Text>
+        <Text style={styles.label}>{t('profile.phone')}</Text>
         <Text style={styles.value}>{phone || '-'}</Text>
 
-        <Text style={styles.label}>Email</Text>
+        <Text style={styles.label}>{t('profile.email')}</Text>
         <Text style={styles.value}>{email || '-'}</Text>
 
-        <TextField label="Display name" value={displayName} onChangeText={setDisplayName} placeholder="Your name" />
-        <PrimaryButton label="Save" onPress={save} loading={busy} />
+        <TextField label={t('profile.display_name')} value={displayName} onChangeText={setDisplayName} placeholder={t('profile.display_name_placeholder')} />
+        <PrimaryButton label={t('common.save')} onPress={save} loading={busy} />
       </View>
     </Screen>
   );

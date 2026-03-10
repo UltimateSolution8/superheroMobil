@@ -5,16 +5,20 @@ type Dictionary = Record<string, string>;
 export const strings: Record<LanguageCode, Dictionary> = {
   en: {
     // App
-    'app.name': 'Superheroo',
+    'app.name': 'Superherooo',
     'app.tagline': 'Help in minutes',
+    'app.admin_not_supported': 'Admin role is not supported in the mobile app.',
+    'language.en': 'EN',
+    'language.hi': 'हिं',
+    'language.te': 'తెల',
 
     // Login
-    'login.need_help': 'Book a Superheroo',
-    'login.can_help': 'Be a Superheroo',
+    'login.need_help': 'Book a Superherooo',
+    'login.can_help': 'Be a Superherooo',
     'role.title': 'Choose your path',
     'role.subtitle': 'Fast local help with escrow protection.',
-    'role.book': 'Book a Superheroo',
-    'role.be': 'Be a Superheroo',
+    'role.book': 'Book a Superherooo',
+    'role.be': 'Be a Superherooo',
     'login.phone': 'Phone',
     'login.phone_placeholder': '10-digit mobile number',
     'login.send_otp': 'Send OTP',
@@ -29,6 +33,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'login.otp_call': 'Get OTP on call',
     'login.diagnostics': 'Diagnostics',
     'login.terms': 'By continuing, you agree to our Terms and acknowledge our Privacy Policy.',
+    'auth.session_expired': 'Your session has expired. Please log in again.',
 
     // OTP
     'otp.title': 'Verify OTP',
@@ -60,14 +65,14 @@ export const strings: Record<LanguageCode, Dictionary> = {
 
     // Signup - Helper
     'signup.helper.title': 'Sign up',
-    'signup.helper.subtitle': 'Create a helper account and complete KYC to go online.',
+    'signup.helper.subtitle': 'Create a Superherooo account and complete KYC to go online.',
     'signup.helper.kyc_notice': 'KYC documents are required after signup to accept tasks.',
 
     // Onboarding
     'onboard.page1_title': 'Post Small Tasks',
     'onboard.page1_sub': 'Get help in minutes for errands, loading, or quick fixes.',
     'onboard.page2_title': 'Track Your Hero Live',
-    'onboard.page2_sub': 'See the Superheroo move in real time with ETA updates.',
+    'onboard.page2_sub': 'See the Superherooo move in real time with ETA updates.',
     'onboard.page3_title': 'Secure Escrow Payment',
     'onboard.page3_sub': 'Pay safely and release only after completion.',
     'onboard.next': 'Next',
@@ -76,7 +81,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
 
     // Terms
     'terms.title': 'Terms & Safety',
-    'terms.line1': 'Superheroo is a hyperlocal help platform. We connect super-customers who need quick help with verified Superheroos.',
+    'terms.line1': 'Superherooo is a hyperlocal help platform. We connect citizens who need quick help with verified Superherooos.',
     'terms.line2': 'Banned tasks: illegal activities, weapons, drugs, adult services, harassment, medical procedures, financial fraud, gambling, or anything unsafe.',
     'terms.line3': 'Safety rules: always meet in public or monitored spaces, avoid sharing OTPs or bank details, and verify the task details before starting.',
     'terms.line4': 'Payments: demo escrow holds buyer funds until completion and approval. Platform fees may apply.',
@@ -113,6 +118,17 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'buyer.voice_start': 'Speak',
     'buyer.voice_stop': 'Stop',
 
+    // Schedule
+    'schedule.title': 'Schedule task',
+    'schedule.now': 'Now',
+    'schedule.later': 'Schedule later',
+    'schedule.date_label': 'Date (YYYY-MM-DD)',
+    'schedule.date_placeholder': '2026-03-10',
+    'schedule.time_label': 'Time (HH:MM)',
+    'schedule.time_placeholder': '18:30',
+    'schedule.help': 'Uses your phone local time.',
+    'schedule.invalid_datetime': 'Enter a valid future date & time.',
+
     // Urgency
     'urgency.low': 'Low',
     'urgency.normal': 'Normal',
@@ -121,15 +137,15 @@ export const strings: Record<LanguageCode, Dictionary> = {
 
     // Buyer - Task Status
     'buyer.task.title': 'Task',
-    'buyer.task.call_hero': 'Call Superheroo',
-    'buyer.task.searching': 'Searching for Superheroos…',
-    'buyer.task.assigned': 'Superheroo assigned',
-    'buyer.task.arrived': 'Superheroo arrived',
+    'buyer.task.call_hero': 'Call Superherooo',
+    'buyer.task.searching': 'Searching for Superherooos…',
+    'buyer.task.assigned': 'Superherooo assigned',
+    'buyer.task.arrived': 'Superherooo arrived',
     'buyer.task.started': 'Work started',
     'buyer.task.completed': 'Completed',
     'buyer.task.cancelled': 'Cancelled',
-    'buyer.task.hero_arrived': 'Superheroo has arrived at your location.',
-    'buyer.task.hero_label': 'Superheroo',
+    'buyer.task.hero_arrived': 'Superherooo has arrived at your location.',
+    'buyer.task.hero_label': 'Superherooo',
     'buyer.task.urgency': 'Urgency',
     'buyer.task.eta': 'ETA',
     'buyer.task.minutes': 'min',
@@ -143,7 +159,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'buyer.task.cancel_reason': 'Cancellation reason',
     'buyer.task.cancel_placeholder': 'Share why you are cancelling',
     'buyer.task.cancel_task': 'Cancel task',
-    'buyer.task.completed_notice': 'Marked as completed by Superheroo.',
+    'buyer.task.completed_notice': 'Marked as completed by Superherooo.',
     'buyer.task.continue': 'Continue',
     'buyer.task.rating_label': 'Rate your experience',
     'buyer.task.rating_comment': 'Comment (optional)',
@@ -156,12 +172,12 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'helper.online': 'Go online',
     'helper.offline': 'Go offline',
     'helper.waiting': 'Waiting for tasks nearby…',
-    'helper.kmc_notice': 'Complete KYC and wait for admin approval before going online as a Superheroo.',
+    'helper.kmc_notice': 'Complete KYC and wait for admin approval before going online as a Superherooo.',
     'helper.availability': 'Availability',
-    'helper.nearby_tasks': 'Nearby tasks for Superheroos',
+    'helper.nearby_tasks': 'Nearby tasks for Superherooos',
     'helper.complete_kyc': 'Complete KYC',
     'helper.no_offers': 'No offers yet.',
-    'helper.go_online_receive': 'Go online to receive nearby tasks as a Superheroo.',
+    'helper.go_online_receive': 'Go online to receive nearby tasks as a Superherooo.',
     'helper.accept': 'Accept',
     'helper.km_away': 'km away',
 
@@ -177,7 +193,8 @@ export const strings: Record<LanguageCode, Dictionary> = {
 
     // Helper - Task
     'helper.task.title': 'Job',
-    'helper.task.call_customer': 'Call super-customer',
+    'helper.task.job': 'Job',
+    'helper.task.call_customer': 'Call citizen',
     'helper.task.distance_eta': 'Distance',
     'helper.task.eta_label': 'ETA',
     'helper.task.minutes': 'min',
@@ -255,6 +272,13 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'helper.video_kyc.status': 'Current status',
     'helper.video_kyc.refresh': 'Refresh status',
     'helper.video_kyc.video_submitted': 'Video KYC submitted. Admin will review.',
+    'helper.live_kyc.title': 'Live KYC',
+    'helper.live_kyc.subtitle': 'Join a live verification call when the admin starts it.',
+    'helper.live_kyc.check': 'Check live session',
+    'helper.live_kyc.join': 'Join live KYC',
+    'helper.live_kyc.none': 'No live session is active yet.',
+    'helper.live_kyc.error': 'Could not check live session.',
+    'helper.live_kyc.status': 'Session status',
 
     // Helper - Notices
     'helper.notice.offline': 'You are offline.',
@@ -262,7 +286,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'helper.notice.location_off': 'Location is turned off. Enable Location in device settings and try again.',
     'helper.notice.location_permission': 'Location permission is required to go online.',
     'helper.notice.permission_missing': 'Location permission missing. Using demo fallback location.',
-    'helper.notice.pending_approval': 'Your helper account is pending approval. Please wait for admin verification.',
+    'helper.notice.pending_approval': 'మీ Superherooo ఖాతా అనుమతి కోసం పెండింగ్‌లో ఉంది. దయచేసి అడ్మిన్ ధృవీకరణ కోసం వేచి ఉండండి.',
     'helper.notice.offer_expired': 'Offer expired or task already taken.',
     'helper.notice.could_not_accept': 'Could not accept task.',
     'helper.notice.could_not_go_online': 'Could not go online. Try again.',
@@ -270,8 +294,8 @@ export const strings: Record<LanguageCode, Dictionary> = {
     // Menu
     'menu.profile': 'Profile',
     'menu.tasks': 'Tasks',
-    'menu.history': 'History',
-    'menu.payment': 'Payment',
+    'menu.history': 'Superherooo Earnings',
+    'menu.payment': 'Superherooo Wallet',
     'menu.settings': 'Settings',
     'menu.support': 'Support',
     'menu.sos': 'SOS',
@@ -290,8 +314,8 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'profile.load_error': 'Could not load profile.',
     'profile.update_error': 'Could not update profile.',
     'profile.name_required': 'Display name is required.',
-    'profile.superheroo': 'Superheroo',
-    'profile.super_customer': 'Super-customer',
+    'profile.superheroo': 'Superherooo',
+    'profile.super_customer': 'Citizen',
 
     // Settings
     'settings.title': 'Settings',
@@ -306,13 +330,13 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'settings.pin_must_be_4': 'PIN must be 4 digits.',
 
     // Payments
-    'payments.title': 'Payment',
+    'payments.title': 'Superherooo Wallet',
     'payments.balance': 'Balance',
     'payments.load_error': 'Could not load balance.',
     'payments.refresh': 'Refresh',
 
     // History
-    'history.title': 'History',
+    'history.title': 'Superherooo Earnings',
     'history.load_error': 'Could not load task history.',
     'history.no_tasks': 'No tasks yet.',
     'history.loading': 'Loading…',
@@ -382,30 +406,33 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'error.cancel_task': 'Could not cancel the task.',
     'error.update_status': 'Could not update status.',
     'error.upload_selfie': 'Selfie upload failed. Please try again.',
+    'error.process_selfie': 'Could not process captured image.',
+    'error.upload_timeout': 'Upload is taking too long. Please try again.',
     'error.arrival_otp_required': 'Arrival OTP is required to start work.',
     'error.completion_selfie_required': 'Please upload the completion selfie first.',
     'error.completion_otp_required': 'Completion OTP is required to finish work.',
     'error.upload_notice': 'Uploading arrival selfie...',
     'error.upload_notice_completion': 'Uploading completion selfie...',
     'error.completion_uploaded': 'Completion selfie uploaded. Enter OTP to finish.',
+    'error.signup': 'Could not create account. Please try again.',
     'error.voice_unavailable': 'Voice input unavailable. Check mic permission.',
     'error.voice_failed': 'Voice input failed. Please try again.',
     'error.maps_api_key': 'Google Maps API key is missing. Please add it to the app config.',
 
     // Buyer App
-    'buyer.user': 'Superheroo User',
+    'buyer.user': 'Superherooo User',
 
     // Additional - Task Screen
     'task.title': 'Task',
     'task.refresh': 'Refresh',
     'task.back': 'Back',
-    'task.call_hero': 'Call Superheroo',
-    'task.hero_on_the_way': 'Superheroo on the way',
-    'task.live_location': 'Live location updates while Superheroo is en route.',
+    'task.call_hero': 'Call Superherooo',
+    'task.hero_on_the_way': 'Superherooo on the way',
+    'task.live_location': 'Live location updates while Superherooo is en route.',
     'task.distance': 'Distance',
     'task.eta': 'ETA',
     'task.updated': 'Updated',
-    'task.hero_arrived': 'Superheroo has arrived at your location.',
+    'task.hero_arrived': 'Superherooo has arrived at your location.',
     'task.urgency': 'Urgency',
     'task.budget': 'Budget',
     'task.arrival_otp': 'Arrival OTP',
@@ -413,31 +440,37 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'task.cancellation_reason': 'Cancellation reason',
     'task.share_cancelling': 'Share why you are cancelling',
     'task.cancel_task': 'Cancel task',
-    'task.completed_notice': 'Marked as completed by Superheroo.',
+    'task.completed_notice': 'Marked as completed by Superherooo.',
     'task.continue': 'Continue',
     'task.completed_title': 'Task completed',
-    'task.rate_experience': 'Your Superheroo finished the task. Please rate the experience.',
-    'task.rate_hero': 'Rate your Superheroo',
+    'task.rate_experience': 'Your Superherooo finished the task. Please rate the experience.',
+    'task.rate_hero': 'Rate your Superherooo',
     'task.your_rating': 'Your rating',
-    'task.helper_rating': 'Superheroo rating',
+    'task.helper_rating': 'Superherooo rating',
     'task.jobs_done': 'tasks done',
     'task.comment_optional': 'Comment (optional)',
     'task.share_feedback': 'Share feedback',
     'task.submit_rating': 'Submit rating',
 
     // Additional - Helper Task Screen
-    'helper.task.super_customer': 'Super-customer',
-    'helper.task.arrival_otp_hint': 'Ask the super-customer for the arrival OTP to start work.',
+    'helper.task.super_customer': 'Citizen',
+    'helper.task.arrival_otp_hint': 'Ask the citizen for the arrival OTP to start work.',
     'helper.task.completion': 'Completion',
     'helper.task.completion_hint': 'Upload completion selfie first, then enter OTP to finish.',
     'helper.task.upload_selfie': 'Upload completion selfie',
     'helper.task.selfie_uploaded': 'Completion selfie uploaded',
+    'helper.task.processing_selfie': 'Processing selfie...',
+    'helper.task.getting_location': 'Getting location...',
+    'helper.task.resolving_address': 'Resolving address...',
+    'helper.task.queue_arrival_selfie': 'Queuing arrival selfie...',
+    'helper.task.queue_completion_selfie': 'Queuing completion selfie...',
+    'helper.task.status_updated': 'Status updated',
     'helper.task.mark_status': 'Mark',
-    'helper.task.great_work': 'Great work! Please rate your super-customer.',
-    'helper.task.rate_customer': 'Rate super-customer',
+    'helper.task.great_work': 'Great work! Please rate your citizen.',
+    'helper.task.rate_customer': 'Rate citizen',
 
     // Additional - Helper Home Screen
-    'helper.superheroo': 'Superheroo',
+    'helper.superheroo': 'Superherooo',
     'helper.sort_by': 'Sort by',
 
     // Additional - Helper KYC Screen
@@ -450,11 +483,11 @@ export const strings: Record<LanguageCode, Dictionary> = {
     // Additional - Menu Screen
     'menu.menu': 'Menu',
     'menu.back': 'Back',
-    'menu.superheroo_user': 'Superheroo User',
+    'menu.superheroo_user': 'Superherooo User',
     'menu.sign_out': 'Sign out',
 
     // Additional - History Screen
-    'history.history': 'History',
+    'history.history': 'Superherooo Earnings',
     'history.status': 'Status',
     'history.back': 'Back',
 
@@ -463,14 +496,200 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'support.new': 'New',
     'support.create_new': 'Create new ticket',
 
+    // Additional - Active Task
+    'active_task.title': 'Active Task',
+    'active_task.tap': 'Tap to open',
+
     // Additional - Common
     'common.loading': 'Loading…',
     'common.no_results': 'No results',
+    'common.cancel': 'Cancel',
+    'common.choose_gallery': 'Choose from gallery',
+    'common.back': 'Back',
+    'common.refresh': 'Refresh',
+    'common.save': 'Save',
+    'common.send': 'Send',
+    'common.offline': 'You are offline.',
+    'common.call': 'Call',
+
+    // Currency
+    'currency.inr': 'INR',
+
+    // Roles
+    'role.citizen': 'Citizen',
+    'role.superherooo': 'Superherooo',
+
+    // Status labels
+    'status.searching': 'Searching',
+    'status.assigned': 'Assigned',
+    'status.arrived': 'Arrived',
+    'status.started': 'Started',
+    'status.completed': 'Completed',
+    'status.cancelled': 'Cancelled',
+
+    // Email Login
+    'email.placeholder': 'you@example.com',
+
+    // OTP
+    'otp.label': 'OTP',
+    'otp.dev_label': 'Dev OTP:',
+
+    // Signup chooser
+    'signup.choose_title': 'Sign up',
+    'signup.choose_subtitle': 'Choose account type',
+
+    // Errors
+    'error.send_otp': 'Could not send OTP. Check your network and try again.',
+    'error.verify_otp': 'Could not verify OTP. Check your network and try again.',
+    'error.sign_in': 'Could not sign in. Check your network and try again.',
+    'error.camera_permission': 'Camera permission is required to capture a selfie.',
+    'error.camera_unavailable': 'Camera is unavailable. Please choose from gallery.',
+    'error.gallery_permission': 'Gallery permission is required to select a selfie.',
+    'error.gallery_unavailable': 'Could not open gallery.',
+    'error.location_permission_fallback': 'Location permission not granted. Using demo fallback location.',
+    'error.location_fallback': 'Current location unavailable. Using demo fallback location.',
+    'error.location_failed': 'Could not get your location',
+
+    // Diagnostics
+    'diagnostics.title': 'Diagnostics',
+    'diagnostics.api_base': 'API_BASE_URL',
+    'diagnostics.socket_url': 'SOCKET_URL',
+    'diagnostics.health_url': 'Health URL',
+    'diagnostics.ping': 'Ping /actuator/health',
+    'diagnostics.empty_body': '(empty body)',
+
+    // Menu
+    'menu.title': 'Menu',
+    'menu.profile': 'Profile',
+    'menu.tasks': 'Tasks',
+    'menu.earnings': 'Superherooo Earnings',
+    'menu.wallet': 'Superherooo Wallet',
+    'menu.settings': 'Settings',
+    'menu.support': 'Support',
+    'menu.sos': 'SOS',
+    'menu.terms': 'Terms & Safety',
+    'menu.diagnostics': 'Diagnostics',
+    'menu.default_name': 'Superherooo User',
+
+    // Payments
+    'payments.wallet_title': 'Superherooo Wallet',
+    'payments.earnings_title': 'Superherooo Earnings',
+    'payments.demo_balance': 'Demo balance',
+    'payments.escrow_note': 'Escrow is deducted when a task is created and released to the Superherooo 5 minutes after completion.',
+
+    // History
+    'history.budget': 'Budget',
+
+    // Settings
+    'settings.title': 'Settings',
+    'settings.language': 'Language',
+    'settings.pin_label': '4-digit PIN',
+    'settings.pin_enabled': 'PIN is enabled for quick login.',
+    'settings.pin_disabled': 'Set a PIN for fast sign-in.',
+    'settings.pin_input': 'PIN',
+    'settings.pin_set': 'Set PIN',
+    'settings.pin_remove': 'Remove PIN',
+    'settings.pin_error_length': 'PIN must be 4 digits.',
+
+    // PIN Lock
+    'pin.title': 'Enter PIN',
+    'pin.subtitle': 'Unlock Superherooo to continue.',
+    'pin.label': '4-digit PIN',
+    'pin.placeholder': '••••',
+    'pin.error_length': 'Enter your 4-digit PIN.',
+    'pin.error_incorrect': 'Incorrect PIN. Try again.',
+    'pin.checking': 'Checking…',
+    'pin.unlock': 'Unlock',
+
+    // Support
+    'support.title': 'Support',
+    'support.new': 'New',
+    'support.load_error': 'Could not load tickets.',
+    'support.empty': 'No tickets yet.',
+    'support.create_ticket': 'Create new ticket',
+    'support.new_title': 'New Ticket',
+    'support.ai_notice': 'AI will respond first. If needed, a human support agent will follow up.',
+    'support.category': 'Category',
+    'support.category_payment': 'Payment',
+    'support.category_safety': 'Safety',
+    'support.category_quality': 'Quality',
+    'support.category_other': 'Other',
+    'support.details': 'Details',
+    'support.subject_optional': 'Subject (optional)',
+    'support.subject_placeholder': 'Example: \"Refund not received\"',
+    'support.message_label': 'Message (10+ chars)',
+    'support.message_placeholder': 'Tell us what happened and what you want us to do.',
+    'support.create_error': 'Could not create ticket.',
+    'support.ticket_load_error': 'Could not load ticket.',
+    'support.message_send_error': 'Could not send message.',
+    'support.ticket_title': 'Ticket',
+    'support.no_messages': 'No messages.',
+    'support.reply_label': 'Your message',
+    'support.reply_placeholder': 'Type your reply…',
+
+    // Buyer - extras
+    'buyer.searching_suggestions': 'Searching suggestions…',
+    'buyer.selected_address': 'Selected address',
+    'buyer.task.completion_otp': 'Completion OTP',
+
+    // Helper - extras
+    'helper.offer.urgency': 'Urgency',
+    'helper.offer.eta': 'ETA',
+    'helper.offer.budget': 'Budget',
+    'helper.sort_tasks': 'Sort tasks',
+    'helper.kyc.must_complete': 'Complete KYC and wait for admin approval before going online.',
+    'helper.go_online_error': 'Could not go online. Try again.',
+    'helper.offer_expired': 'Offer expired or task already taken.',
+    'helper.accept_error': 'Could not accept task.',
+    'helper.task.arrival_otp_title': 'Arrival OTP',
+    'helper.task.arrival_otp_hint': 'Ask the citizen for the arrival OTP to start work.',
+    'helper.task.arrival_otp_label': 'Arrival OTP',
+    'helper.task.arrival_otp_placeholder': 'Enter arrival OTP',
+    'helper.task.start_work': 'Start work',
+    'helper.task.completion_title': 'Completion',
+    'helper.task.completion_hint': 'Upload completion selfie first, then enter OTP to finish.',
+    'helper.task.completion_selfie_done': 'Completion selfie uploaded',
+    'helper.task.upload_completion_selfie': 'Upload completion selfie',
+    'helper.task.completion_otp_label': 'Completion OTP',
+    'helper.task.completion_otp_placeholder': 'Enter completion OTP',
+    'helper.task.mark_completed': 'Mark completed',
+    'helper.task.processing_selfie': 'Processing selfie...',
+    'helper.task.getting_location': 'Getting location...',
+    'helper.task.resolving_address': 'Resolving address...',
+    'helper.task.queue_arrival_selfie': 'Queuing arrival selfie...',
+    'helper.task.queue_completion_selfie': 'Queuing completion selfie...',
+    'helper.task.mark': 'Mark',
+    'helper.task.rate_citizen': 'Rate citizen',
+    'helper.task.completed_body': 'Great work! Please rate the citizen.',
+    'helper.task.camera_unavailable_title': 'Camera unavailable',
+    'helper.task.camera_unavailable_body': 'Would you like to choose a selfie from your gallery?',
+    'helper.kyc.video_submitted': 'Video KYC submitted successfully.',
+    'helper.kyc.doc_type_placeholder': 'AADHAAR / DL / PASSPORT',
+
+    // Task - extras
+    'task.address': 'Address',
+    'task.scheduled_for': 'Scheduled for',
+    'task.open_maps': 'Open in Maps',
+    'task.rating': 'Rating',
+    'task.cancel_reason_required': 'Please add a cancellation reason.',
+    'task.share_cancelling': 'Share why you are cancelling',
+    'task.eta_label': 'ETA',
+
+    // Map
+    'map.you': 'You',
+
+    // SOS
+    'sos.subject': 'SOS emergency',
+    'sos.message': 'SOS triggered from mobile app. Please call the user immediately.',
   },
   hi: {
     // App
-    'app.name': 'सुपरहीरो',
+    'app.name': 'Superherooo',
     'app.tagline': 'मिनटों में मदद',
+    'app.admin_not_supported': 'मोबाइल ऐप में एडमिन रोल समर्थित नहीं है।',
+    'language.en': 'EN',
+    'language.hi': 'हिं',
+    'language.te': 'తెల',
 
     // Login
     'login.need_help': 'सुपरहीरो बुक करें',
@@ -491,8 +710,9 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'login.backend_checking': 'बैकएंड जांच रहे हैं...',
     'login.otp_whatsapp': 'व्हाट्सऐप से भेजें',
     'login.otp_call': 'कॉल पर OTP पाएं',
-    'login.diagnostics': 'डायग्नोस्टिक्स',
+    'login.diagnostics': 'డయాగ్నస్టిక్స్',
     'login.terms': 'आगे बढ़कर, आप हमारे नियम और गोपनीयता नीति को स्वीकार करते हैं।',
+    'auth.session_expired': 'आपका सत्र समाप्त हो गया है। कृपया फिर से लॉग इन करें।',
 
     // OTP
     'otp.title': 'ओटीपी सत्यापित करें',
@@ -524,14 +744,14 @@ export const strings: Record<LanguageCode, Dictionary> = {
 
     // Signup - Helper
     'signup.helper.title': 'साइन अप करें',
-    'signup.helper.subtitle': 'हेल्पर खाता बनाएं और ऑनलाइन होने के लिए KYC पूरा करें।',
+    'signup.helper.subtitle': 'Superherooo खाता बनाएं और ऑनलाइन होने के लिए KYC पूरा करें।',
     'signup.helper.kyc_notice': 'कार्य स्वीकार करने के लिए साइन अप के बाद KYC दस्तावेज़ आवश्यक हैं।',
 
     // Onboarding
     'onboard.page1_title': 'छोटे काम पोस्ट करें',
     'onboard.page1_sub': 'काम, सामान लाने या त्वरित मदद के लिए मिनटों में सहायता पाएं।',
     'onboard.page2_title': 'हीरो को लाइव ट्रैक करें',
-    'onboard.page2_sub': 'Superheroo की लाइव लोकेशन और ETA देखें।',
+    'onboard.page2_sub': 'Superherooo की लाइव लोकेशन और ETA देखें।',
     'onboard.page3_title': 'सुरक्षित एस्क्रो भुगतान',
     'onboard.page3_sub': 'भुगतान सुरक्षित रखें और पूरा होने पर ही रिलीज करें।',
     'onboard.next': 'आगे',
@@ -540,7 +760,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
 
     // Terms
     'terms.title': 'नियम और सुरक्षा',
-    'terms.line1': 'Superheroo एक हाइपरलोकल मदद प्लेटफॉर्म है। हम सुपर‑कस्टमर को सत्यापित Superheroo से जोड़ते हैं।',
+    'terms.line1': 'Superherooo एक हाइपरलोकल मदद प्लेटफॉर्म है। हम नागरिक को सत्यापित Superherooo से जोड़ते हैं।',
     'terms.line2': 'प्रतिबंधित कार्य: अवैध गतिविधि, हथियार, ड्रग्स, एडल्ट सेवाएँ, उत्पीड़न, मेडिकल प्रक्रियाएँ, वित्तीय धोखाधड़ी, जुआ या कोई भी असुरक्षित काम।',
     'terms.line3': 'सुरक्षा नियम: सार्वजनिक/निगरानी वाले स्थान पर मिलें, OTP/बैंक विवरण साझा न करें, और काम शुरू करने से पहले विवरण सत्यापित करें।',
     'terms.line4': 'भुगतान: डेमो एस्क्रो भुगतान पूरा होने और मंजूरी तक होल्ड करता है। प्लेटफॉर्म शुल्क लागू हो सकता है।',
@@ -576,6 +796,17 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'buyer.create_task_btn': 'कार्य बनाएं',
     'buyer.voice_start': 'बोलें',
     'buyer.voice_stop': 'रोकें',
+
+    // Schedule
+    'schedule.title': 'कार्य शेड्यूल करें',
+    'schedule.now': 'अभी',
+    'schedule.later': 'बाद में शेड्यूल करें',
+    'schedule.date_label': 'तारीख (YYYY-MM-DD)',
+    'schedule.date_placeholder': '2026-03-10',
+    'schedule.time_label': 'समय (HH:MM)',
+    'schedule.time_placeholder': '18:30',
+    'schedule.help': 'आपके फोन के लोकल टाइम के अनुसार।',
+    'schedule.invalid_datetime': 'भविष्य की सही तारीख और समय डालें।',
 
     // Urgency
     'urgency.low': 'कम',
@@ -620,12 +851,12 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'helper.online': 'ऑनलाइन जाएँ',
     'helper.offline': 'ऑफलाइन जाएँ',
     'helper.waiting': 'आस‑पास के कार्यों का इंतजार…',
-    'helper.kmc_notice': 'Superheroo के रूप में ऑनलाइन होने से पहले KYC पूरा करें और अनुमोदन का इंतजार करें।',
+    'helper.kmc_notice': 'Superherooo के रूप में ऑनलाइन होने से पहले KYC पूरा करें और अनुमोदन का इंतजार करें।',
     'helper.availability': 'उपलब्धता',
-    'helper.nearby_tasks': 'नज़दीकी कार्य (Superheroo)',
+    'helper.nearby_tasks': 'नज़दीकी कार्य (Superherooo)',
     'helper.complete_kyc': 'KYC पूरा करें',
     'helper.no_offers': 'अभी कोई ऑफर नहीं है।',
-    'helper.go_online_receive': 'नज़दीकी कार्य पाने के लिए ऑनलाइन जाएँ (Superheroo)।',
+    'helper.go_online_receive': 'नज़दीकी कार्य पाने के लिए ऑनलाइन जाएँ (Superherooo)।',
     'helper.accept': 'स्वीकार करें',
     'helper.km_away': 'किमी दूर',
 
@@ -641,7 +872,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
 
     // Helper - Task
     'helper.task.title': 'कार्य',
-    'helper.task.call_customer': 'सुपर‑कस्टमर को कॉल करें',
+    'helper.task.call_customer': 'नागरिक को कॉल करें',
     'helper.task.distance_eta': 'दूरी',
     'helper.task.eta_label': 'ETA',
     'helper.task.minutes': 'मिनट',
@@ -719,6 +950,13 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'helper.video_kyc.status': 'वर्तमान स्थिति',
     'helper.video_kyc.refresh': 'स्थिति रीफ़्रेश करें',
     'helper.video_kyc.video_submitted': 'वीडियो KYC सबमिट किया। प्रशासक समीक्षा करेगा।',
+    'helper.live_kyc.title': 'लाइव KYC',
+    'helper.live_kyc.subtitle': 'जब एडमिन लाइव सत्यापन शुरू करें, कॉल जॉइन करें।',
+    'helper.live_kyc.check': 'लाइव सेशन जांचें',
+    'helper.live_kyc.join': 'लाइव KYC जॉइन करें',
+    'helper.live_kyc.none': 'अभी कोई लाइव सेशन नहीं है।',
+    'helper.live_kyc.error': 'लाइव सेशन जांच नहीं सका।',
+    'helper.live_kyc.status': 'सेशन स्थिति',
 
     // Helper - Notices
     'helper.notice.offline': 'आप ऑफलाइन हैं।',
@@ -726,7 +964,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'helper.notice.location_off': 'लोकेशन बंद है। कृपया डिवाइस सेटिंग्स में लोकेशन चालू करें।',
     'helper.notice.location_permission': 'ऑनलाइन होने के लिए लोकेशन अनुमति आवश्यक है।',
     'helper.notice.permission_missing': 'लोकेशन अनुमति गायब है। डेमो फ़ॉलबैक लोकेशन का उपयोग कर रहे हैं।',
-    'helper.notice.pending_approval': 'आपका हेल्पर खाता अनुमोदन लंबित है। कृपया प्रशासक के सत्यापन की प्रतीक्षा करें।',
+    'helper.notice.pending_approval': 'आपका Superherooo खाता अनुमोदन लंबित है। कृपया प्रशासक के सत्यापन की प्रतीक्षा करें।',
     'helper.notice.offer_expired': 'ऑफर समाप्त हो गया या कार्य पहले ही ले लिया गया।',
     'helper.notice.could_not_accept': 'कार्य स्वीकार नहीं कर सका।',
     'helper.notice.could_not_go_online': 'ऑनलाइन नहीं हो सका। पुनः प्रयास करें।',
@@ -734,8 +972,8 @@ export const strings: Record<LanguageCode, Dictionary> = {
     // Menu
     'menu.profile': 'प्रोफ़ाइल',
     'menu.tasks': 'कार्य',
-    'menu.history': 'इतिहास',
-    'menu.payment': 'भुगतान',
+    'menu.history': 'Superherooo Earnings',
+    'menu.payment': 'Superherooo Wallet',
     'menu.settings': 'सेटिंग्स',
     'menu.support': 'सहायता',
     'menu.sos': 'SOS',
@@ -755,7 +993,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'profile.update_error': 'प्रोफ़ाइल अपडेट नहीं कर सका।',
     'profile.name_required': 'डिस्प्ले नाम आवश्यक है।',
     'profile.superheroo': 'सुपरहीरो',
-    'profile.super_customer': 'सुपर‑कस्टमर',
+    'profile.super_customer': 'नागरिक',
 
     // Settings
     'settings.title': 'सेटिंग्स',
@@ -770,13 +1008,13 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'settings.pin_must_be_4': 'पिन 4 अंकों का होना चाहिए।',
 
     // Payments
-    'payments.title': 'भुगतान',
+    'payments.title': 'Superherooo Wallet',
     'payments.balance': 'शेष राशि',
     'payments.load_error': 'शेष राशि लोड नहीं कर सका।',
     'payments.refresh': 'रिफ्रेश करें',
 
     // History
-    'history.title': 'इतिहास',
+    'history.title': 'Superherooo Earnings',
     'history.load_error': 'कार्य इतिहास लोड नहीं कर सका।',
     'history.no_tasks': 'अभी कोई कार्य नहीं है।',
     'history.loading': 'लोड हो रहा है…',
@@ -846,12 +1084,15 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'error.cancel_task': 'कार्य रद्द नहीं कर सका।',
     'error.update_status': 'स्थिति अपडेट नहीं कर सका।',
     'error.upload_selfie': 'सेल्फी अपलोड विफल। कृपया पुनः प्रयास करें।',
+    'error.process_selfie': 'कैप्चर की गई छवि प्रोसेस नहीं हो सकी।',
+    'error.upload_timeout': 'अपलोड में बहुत समय लग रहा है। कृपया पुनः प्रयास करें।',
     'error.arrival_otp_required': 'काम शुरू करने के लिए आगमन OTP आवश्यक है।',
     'error.completion_selfie_required': 'कृपया पहले पूर्णता सेल्फी अपलोड करें।',
     'error.completion_otp_required': 'काम समाप्त करने के लिए पूर्णता OTP आवश्यक है।',
     'error.upload_notice': 'आगमन सेल्फी अपलोड हो रही है...',
     'error.upload_notice_completion': 'पूर्णता सेल्फी अपलोड हो रही है...',
     'error.completion_uploaded': 'पूर्णता सेल्फी अपलोड हो गई। समाप्त करने के लिए OTP दर्ज करें।',
+    'error.signup': 'खाता नहीं बना सका। कृपया पुनः प्रयास करें।',
     'error.voice_unavailable': 'वॉइस इनपुट उपलब्ध नहीं है। माइक अनुमति जांचें।',
     'error.voice_failed': 'वॉइस इनपुट विफल। कृपया पुनः प्रयास करें।',
     'error.maps_api_key': 'Google Maps API कुंजी गायब है। कृपया ऐप कॉन्फ़िग में जोड़ें।',
@@ -891,15 +1132,21 @@ export const strings: Record<LanguageCode, Dictionary> = {
 
     // Additional - Helper Task Screen
     'helper.task.job': 'कार्य',
-    'helper.task.super_customer': 'सुपर-कस्टमर',
-    'helper.task.arrival_otp_hint': 'काम शुरू करने के लिए सुपर-कस्टमर से आगमन OTP लें।',
+    'helper.task.super_customer': 'नागरिक',
+    'helper.task.arrival_otp_hint': 'काम शुरू करने के लिए नागरिक से आगमन OTP लें।',
     'helper.task.completion': 'पूर्णता',
     'helper.task.completion_hint': 'पहले पूर्णता सेल्फी अपलोड करें, फिर समाप्त करने के लिए OTP दर्ज करें।',
     'helper.task.upload_selfie': 'पूर्णता सेल्फी अपलोड करें',
     'helper.task.selfie_uploaded': 'पूर्णता सेल्फी अपलोड हो गई',
+    'helper.task.processing_selfie': 'सेल्फी प्रोसेस हो रही है...',
+    'helper.task.getting_location': 'लोकेशन प्राप्त हो रही है...',
+    'helper.task.resolving_address': 'पता प्राप्त किया जा रहा है...',
+    'helper.task.queue_arrival_selfie': 'आगमन सेल्फी कतार में...',
+    'helper.task.queue_completion_selfie': 'पूर्णता सेल्फी कतार में...',
+    'helper.task.status_updated': 'स्थिति अपडेट हुई',
     'helper.task.mark_status': 'चिह्नित करें',
-    'helper.task.great_work': 'बहुत अच्छा काम! कृपया अपने सुपर-कस्टमर को रेट करें।',
-    'helper.task.rate_customer': 'सुपर-कस्टमर को रेट करें',
+    'helper.task.great_work': 'बहुत अच्छा काम! कृपया अपने नागरिक को रेट करें।',
+    'helper.task.rate_customer': 'नागरिक को रेट करें',
 
     // Additional - Helper Home Screen
     'helper.superheroo': 'सुपरहीरो',
@@ -919,7 +1166,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'menu.sign_out': 'साइन आउट',
 
     // Additional - History Screen
-    'history.history': 'इतिहास',
+    'history.history': 'Superherooo Earnings',
     'history.status': 'स्थिति',
     'history.back': 'वापस',
 
@@ -928,14 +1175,200 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'support.new': 'नया',
     'support.create_new': 'नया टिकट बनाएं',
 
+    // Additional - Active Task
+    'active_task.title': 'सक्रिय कार्य',
+    'active_task.tap': 'खोलने के लिए टैप करें',
+
     // Additional - Common
     'common.loading': 'लोड हो रहा है…',
     'common.no_results': 'कोई परिणाम नहीं',
+    'common.cancel': 'रद्द करें',
+    'common.choose_gallery': 'गैलरी से चुनें',
+    'common.back': 'वापस',
+    'common.refresh': 'रिफ्रेश करें',
+    'common.save': 'सहेजें',
+    'common.send': 'भेजें',
+    'common.offline': 'आप ऑफ़लाइन हैं।',
+    'common.call': 'कॉल करें',
+
+    // Currency
+    'currency.inr': 'INR',
+
+    // Roles
+    'role.citizen': 'नागरिक',
+    'role.superherooo': 'Superherooo',
+
+    // Status labels
+    'status.searching': 'खोज रहे हैं',
+    'status.assigned': 'सौंपा गया',
+    'status.arrived': 'पहुंच गया',
+    'status.started': 'शुरू',
+    'status.completed': 'पूर्ण',
+    'status.cancelled': 'रद्द',
+
+    // Email Login
+    'email.placeholder': 'you@example.com',
+
+    // OTP
+    'otp.label': 'ओटीपी',
+    'otp.dev_label': 'डेव ओटीपी:',
+
+    // Signup chooser
+    'signup.choose_title': 'साइन अप',
+    'signup.choose_subtitle': 'खाता प्रकार चुनें',
+
+    // Errors
+    'error.send_otp': 'ओटीपी नहीं भेज सका। कृपया नेटवर्क जांचें और पुनः प्रयास करें।',
+    'error.verify_otp': 'ओटीपी सत्यापित नहीं कर सका। कृपया नेटवर्क जांचें और पुनः प्रयास करें।',
+    'error.sign_in': 'साइन इन नहीं कर सका। कृपया नेटवर्क जांचें और पुनः प्रयास करें।',
+    'error.camera_permission': 'सेल्फी लेने के लिए कैमरा अनुमति आवश्यक है।',
+    'error.camera_unavailable': 'कैमरा उपलब्ध नहीं है। कृपया गैलरी चुनें।',
+    'error.gallery_permission': 'सेल्फी चुनने के लिए गैलरी अनुमति आवश्यक है।',
+    'error.gallery_unavailable': 'गैलरी नहीं खुल सकी।',
+    'error.location_permission_fallback': 'स्थान अनुमति नहीं मिली। डेमो फ़ॉलबैक स्थान का उपयोग कर रहे हैं।',
+    'error.location_fallback': 'वर्तमान स्थान उपलब्ध नहीं है। डेमो फ़ॉलबैक स्थान का उपयोग कर रहे हैं।',
+    'error.location_failed': 'स्थान प्राप्त नहीं कर सका',
+
+    // Diagnostics
+    'diagnostics.title': 'डायग्नोस्टिक्स',
+    'diagnostics.api_base': 'API_BASE_URL',
+    'diagnostics.socket_url': 'SOCKET_URL',
+    'diagnostics.health_url': 'हेल्थ URL',
+    'diagnostics.ping': 'Ping /actuator/health',
+    'diagnostics.empty_body': '(खाली बॉडी)',
+
+    // Menu
+    'menu.title': 'मेनू',
+    'menu.profile': 'प्रोफ़ाइल',
+    'menu.tasks': 'कार्य',
+    'menu.earnings': 'Superherooo कमाई',
+    'menu.wallet': 'Superherooo वॉलेट',
+    'menu.settings': 'सेटिंग्स',
+    'menu.support': 'सपोर्ट',
+    'menu.sos': 'SOS',
+    'menu.terms': 'नियम व सुरक्षा',
+    'menu.diagnostics': 'डायग्नोस्टिक्स',
+    'menu.default_name': 'Superherooo यूज़र',
+
+    // Payments
+    'payments.wallet_title': 'Superherooo वॉलेट',
+    'payments.earnings_title': 'Superherooo कमाई',
+    'payments.demo_balance': 'डेमो बैलेंस',
+    'payments.escrow_note': 'कार्य बनाने पर एस्क्रो कटता है और पूरा होने के 5 मिनट बाद Superherooo को रिलीज़ होता है।',
+
+    // History
+    'history.budget': 'बजट',
+
+    // Settings
+    'settings.title': 'सेटिंग्स',
+    'settings.language': 'भाषा',
+    'settings.pin_label': '4-अंकों का PIN',
+    'settings.pin_enabled': 'त्वरित लॉगिन के लिए PIN सक्षम है।',
+    'settings.pin_disabled': 'तेज़ साइन-इन के लिए PIN सेट करें।',
+    'settings.pin_input': 'PIN',
+    'settings.pin_set': 'PIN सेट करें',
+    'settings.pin_remove': 'PIN हटाएं',
+    'settings.pin_error_length': 'PIN 4 अंक का होना चाहिए।',
+
+    // PIN Lock
+    'pin.title': 'PIN दर्ज करें',
+    'pin.subtitle': 'जारी रखने के लिए Superherooo अनलॉक करें।',
+    'pin.label': '4-अंकों का PIN',
+    'pin.placeholder': '••••',
+    'pin.error_length': '4-अंकों का PIN दर्ज करें।',
+    'pin.error_incorrect': 'गलत PIN. फिर से प्रयास करें।',
+    'pin.checking': 'जांच रहे हैं…',
+    'pin.unlock': 'अनलॉक करें',
+
+    // Support
+    'support.title': 'सपोर्ट',
+    'support.new': 'नया',
+    'support.load_error': 'टिकट लोड नहीं कर सका।',
+    'support.empty': 'कोई टिकट नहीं है।',
+    'support.create_ticket': 'नया टिकट बनाएं',
+    'support.new_title': 'नया टिकट',
+    'support.ai_notice': 'पहले AI जवाब देगा। जरूरत पड़ने पर सपोर्ट एजेंट जवाब देगा।',
+    'support.category': 'श्रेणी',
+    'support.category_payment': 'भुगतान',
+    'support.category_safety': 'सुरक्षा',
+    'support.category_quality': 'गुणवत्ता',
+    'support.category_other': 'अन्य',
+    'support.details': 'विवरण',
+    'support.subject_optional': 'विषय (वैकल्पिक)',
+    'support.subject_placeholder': 'उदाहरण: \"रिफंड नहीं मिला\"',
+    'support.message_label': 'संदेश (10+ अक्षर)',
+    'support.message_placeholder': 'क्या हुआ और हमसे क्या करवाना चाहते हैं, लिखें।',
+    'support.create_error': 'टिकट नहीं बना सका।',
+    'support.ticket_load_error': 'टिकट लोड नहीं कर सका।',
+    'support.message_send_error': 'संदेश नहीं भेज सका।',
+    'support.ticket_title': 'टिकट',
+    'support.no_messages': 'कोई संदेश नहीं।',
+    'support.reply_label': 'आपका संदेश',
+    'support.reply_placeholder': 'अपना उत्तर लिखें…',
+
+    // Buyer - extras
+    'buyer.searching_suggestions': 'सुझाव खोज रहे हैं…',
+    'buyer.selected_address': 'चयनित पता',
+    'buyer.task.completion_otp': 'पूर्णता OTP',
+
+    // Helper - extras
+    'helper.offer.urgency': 'तत्कालता',
+    'helper.offer.eta': 'ETA',
+    'helper.offer.budget': 'बजट',
+    'helper.sort_tasks': 'कार्य सॉर्ट करें',
+    'helper.kyc.must_complete': 'ऑनलाइन होने से पहले KYC पूरा करें और एडमिन अनुमोदन का इंतज़ार करें।',
+    'helper.go_online_error': 'ऑनलाइन नहीं जा सके। पुनः प्रयास करें।',
+    'helper.offer_expired': 'ऑफर समाप्त हो गया या कार्य पहले ही लिया जा चुका है।',
+    'helper.accept_error': 'कार्य स्वीकार नहीं कर सका।',
+    'helper.task.arrival_otp_title': 'आगमन OTP',
+    'helper.task.arrival_otp_hint': 'काम शुरू करने के लिए नागरिक से आगमन OTP लें।',
+    'helper.task.arrival_otp_label': 'आगमन OTP',
+    'helper.task.arrival_otp_placeholder': 'आगमन OTP दर्ज करें',
+    'helper.task.start_work': 'काम शुरू करें',
+    'helper.task.completion_title': 'पूर्णता',
+    'helper.task.completion_hint': 'पहले पूर्णता सेल्फी अपलोड करें, फिर OTP दर्ज करें।',
+    'helper.task.completion_selfie_done': 'पूर्णता सेल्फी अपलोड हो गई',
+    'helper.task.upload_completion_selfie': 'पूर्णता सेल्फी अपलोड करें',
+    'helper.task.completion_otp_label': 'पूर्णता OTP',
+    'helper.task.completion_otp_placeholder': 'पूर्णता OTP दर्ज करें',
+    'helper.task.mark_completed': 'पूर्ण हुआ',
+    'helper.task.processing_selfie': 'सेल्फी प्रोसेस हो रही है...',
+    'helper.task.getting_location': 'लोकेशन प्राप्त कर रहे हैं...',
+    'helper.task.resolving_address': 'पता ढूंढ रहे हैं...',
+    'helper.task.queue_arrival_selfie': 'आगमन सेल्फी कतार में डाल रहे हैं...',
+    'helper.task.queue_completion_selfie': 'पूर्णता सेल्फी कतार में डाल रहे हैं...',
+    'helper.task.mark': 'चिह्नित करें',
+    'helper.task.rate_citizen': 'नागरिक को रेट करें',
+    'helper.task.completed_body': 'बहुत अच्छा! कृपया नागरिक को रेट करें।',
+    'helper.task.camera_unavailable_title': 'कैमरा उपलब्ध नहीं',
+    'helper.task.camera_unavailable_body': 'क्या आप गैलरी से सेल्फी चुनना चाहेंगे?',
+    'helper.kyc.video_submitted': 'वीडियो KYC सफलतापूर्वक सबमिट हो गई।',
+    'helper.kyc.doc_type_placeholder': 'आधार / DL / पासपोर्ट',
+
+    // Task - extras
+    'task.address': 'पता',
+    'task.scheduled_for': 'शेड्यूल समय',
+    'task.open_maps': 'मानचित्र में खोलें',
+    'task.rating': 'रेटिंग',
+    'task.cancel_reason_required': 'कृपया रद्द करने का कारण लिखें।',
+    'task.share_cancelling': 'रद्द करने का कारण बताएं',
+    'task.eta_label': 'ETA',
+
+    // Map
+    'map.you': 'आप',
+
+    // SOS
+    'sos.subject': 'SOS आपातकाल',
+    'sos.message': 'मोबाइल ऐप से SOS ट्रिगर हुआ है। कृपया तुरंत उपयोगकर्ता को कॉल करें।',
   },
   te: {
     // App
-    'app.name': 'సూపర్‌హీరో',
+    'app.name': 'Superherooo',
     'app.tagline': 'నిమిషాల్లో సహాయం',
+    'app.admin_not_supported': 'మొబైల్ యాప్‌లో అడ్మిన్ రోల్‌కు మద్దతు లేదు.',
+    'language.en': 'EN',
+    'language.hi': 'హిందీ',
+    'language.te': 'తెలుగు',
 
     // Login
     'login.need_help': 'సూపర్‌హీరోను బుక్ చేయండి',
@@ -943,7 +1376,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'role.title': 'మీ పాత్రను ఎంచుకోండి',
     'role.subtitle': 'త్వరిత స్థానిక సహాయం, ఎస్క్రో రక్షణతో.',
     'role.book': 'సూపర్‌హీరోను బుక్ చేయండి',
-    'role.be': 'సూ�ర్‌హీరోగా ఉండండి',
+    'role.be': 'సూపర్‌హీరోగా ఉండండి',
     'login.phone': 'మొబైల్ నంబర్',
     'login.phone_placeholder': '10 అంకెల మొబైల్ నంబర్',
     'login.send_otp': 'OTP పంపండి',
@@ -956,8 +1389,9 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'login.backend_checking': 'బ్యాకెండ్ తనిఖी జరుగుతోంది...',
     'login.otp_whatsapp': 'WhatsApp ద్వారా పంపు',
     'login.otp_call': 'కాల్‌లో OTP పొందు',
-    'login.diagnostics': 'डायग्नोस्टिक्स',
+    'login.diagnostics': 'డయాగ్నస్టిక్స్',
     'login.terms': 'కొనసాగితే, మీరు మా టerms లను అంగీకరిస్తారు మరియు గోప్యత విధానాన్ని గుర్తిస్తారు.',
+    'auth.session_expired': 'మీ సెషన్ ముగిసింది. దయచేసి మళ్లీ లాగిన్ అవ్వండి.',
     // OTP
     'otp.title': 'OTP Validation',
     'otp.subtitle': 'OTP sent to',
@@ -986,14 +1420,14 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'signup.phone_invalid': 'Phone must be 10 digits.',
     // Signup - Helper
     'signup.helper.title': 'Sign up',
-    'signup.helper.subtitle': 'Create helper account and complete KYC to go online.',
+    'signup.helper.subtitle': 'Superherooo ఖాతా సృష్టించి ఆన్‌లైన్ కావడానికి KYC పూర్తి చేయండి.',
     'signup.helper.kyc_notice': 'KYC documents required after signup to accept tasks.',
 
     // Onboarding
     'onboard.page1_title': 'Small Tasks Post',
     'onboard.page1_sub': 'Get help in minutes for errands, loading or quick fixes.',
     'onboard.page2_title': 'Track Hero Live',
-    'onboard.page2_sub': 'See the Superheroo move in real time with ETA updates.',
+    'onboard.page2_sub': 'See the Superherooo move in real time with ETA updates.',
     'onboard.page3_title': 'Secure Escrow Payment',
     'onboard.page3_sub': 'Pay safely and release only after completion.',
     'onboard.next': 'Next',
@@ -1001,7 +1435,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'onboard.skip': 'Skip',
     // Terms
     'terms.title': 'Terms & Safety',
-    'terms.line1': 'Superheroo connects customers with verified helpers.',
+    'terms.line1': 'Superherooo ఒక హైపర్‌లోకల్ సహాయ ప్లాట్‌ఫారం. త్వరిత సహాయం అవసరమైన పౌరులను ధృవీకరించిన Superherooos‌తో కలుపుతుంది.',
     'terms.line2': 'No illegal activities or unsafe tasks.',
     'terms.line3': 'Meet in public places. Verify details.',
     'terms.line4': 'Escrow holds payment until completion.',
@@ -1036,6 +1470,17 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'buyer.create_task_btn': 'Create Task',
     'buyer.voice_start': 'Speak',
     'buyer.voice_stop': 'Stop',
+
+    // Schedule
+    'schedule.title': 'Schedule Task',
+    'schedule.now': 'Now',
+    'schedule.later': 'Schedule Later',
+    'schedule.date_label': 'Date (YYYY-MM-DD)',
+    'schedule.date_placeholder': '2026-03-10',
+    'schedule.time_label': 'Time (HH:MM)',
+    'schedule.time_placeholder': '18:30',
+    'schedule.help': 'Uses your phone local time.',
+    'schedule.invalid_datetime': 'Enter a valid future date & time.',
     // Urgency
     'urgency.low': 'Low',
     'urgency.normal': 'Normal',
@@ -1095,7 +1540,8 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'helper.kyc.rejected': 'KYC rejected. Re-submit.',
     // Helper - Task
     'helper.task.title': 'Job',
-    'helper.task.call_customer': 'Call Customer',
+    'helper.task.job': 'పని',
+    'helper.task.call_customer': 'పౌరుడిని కాల్ చేయండి',
     'helper.task.distance_eta': 'Distance',
     'helper.task.eta_label': 'ETA',
     'helper.task.minutes': 'min',
@@ -1171,21 +1617,28 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'helper.video_kyc.status': 'ప్రస్తుత స్థితి',
     'helper.video_kyc.refresh': 'స్థితి రిఫ్రెష్ చేయండి',
     'helper.video_kyc.video_submitted': 'వీడియో KYC సమర్పించబడింది. అడ్మిన్ సమీక్షిస్తారు.',
+    'helper.live_kyc.title': 'లైవ్ KYC',
+    'helper.live_kyc.subtitle': 'అడ్మిన్ లైవ్ వెరిఫికేషన్ ప్రారంభించినప్పుడు కాల్‌లో చేరండి.',
+    'helper.live_kyc.check': 'లైవ్ సెషన్ తనిఖీ చేయండి',
+    'helper.live_kyc.join': 'లైవ్ KYCలో చేరండి',
+    'helper.live_kyc.none': 'ఇప్పటికీ లైవ్ సెషన్ లేదు.',
+    'helper.live_kyc.error': 'లైవ్ సెషన్‌ని తనిఖీ చేయలేకపోయాం.',
+    'helper.live_kyc.status': 'సెషన్ స్థితి',
     // Helper - Notices
     'helper.notice.offline': 'You are offline.',
     'helper.notice.gps_unavailable': 'Using demo location.',
     'helper.notice.location_off': 'Location off.',
     'helper.notice.location_permission': 'Location permission needed.',
     'helper.notice.permission_missing': 'Permission missing.',
-    'helper.notice.pending_approval': 'Pending approval.',
+    'helper.notice.pending_approval': 'Your Superherooo account is pending approval. Please wait for admin verification.',
     'helper.notice.offer_expired': 'Offer expired.',
     'helper.notice.could_not_accept': 'Could not accept.',
     'helper.notice.could_not_go_online': 'Could not go online.',
     // Menu
     'menu.profile': 'Profile',
     'menu.tasks': 'Tasks',
-    'menu.history': 'History',
-    'menu.payment': 'Payment',
+    'menu.history': 'Superherooo Earnings',
+    'menu.payment': 'Superherooo Wallet',
     'menu.settings': 'Settings',
     'menu.support': 'Support',
     'menu.sos': 'SOS',
@@ -1204,8 +1657,8 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'profile.load_error': 'Could not load profile.',
     'profile.update_error': 'Could not update profile.',
     'profile.name_required': 'Display name is required.',
-    'profile.superheroo': 'Superheroo',
-    'profile.super_customer': 'Super-customer',
+    'profile.superheroo': 'Superherooo',
+    'profile.super_customer': 'Citizen',
 
     // Settings
     'settings.title': 'Settings',
@@ -1219,13 +1672,13 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'settings.sign_out': 'Sign out',
     'settings.pin_must_be_4': 'PIN must be 4 digits.',
     // Payments
-    'payments.title': 'Payment',
+    'payments.title': 'Superherooo Wallet',
     'payments.balance': 'Balance',
     'payments.load_error': 'Could not load balance.',
     'payments.refresh': 'Refresh',
 
     // History
-    'history.title': 'History',
+    'history.title': 'Superherooo Earnings',
     'history.load_error': 'Could not load task history.',
     'history.no_tasks': 'No tasks yet.',
     'history.loading': 'Loading...',
@@ -1294,30 +1747,33 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'error.cancel_task': 'Could not cancel the task.',
     'error.update_status': 'Could not update status.',
     'error.upload_selfie': 'Selfie upload failed. Please try again.',
+    'error.process_selfie': 'పట్టుకున్న చిత్రాన్ని ప్రాసెస్ చేయలేకపోయాం.',
+    'error.upload_timeout': 'అప్‌లోడ్ ఎక్కువ సమయం తీసుకుంటోంది. దయచేసి మళ్లీ ప్రయత్నించండి.',
     'error.arrival_otp_required': 'Arrival OTP is required to start work.',
     'error.completion_selfie_required': 'Please upload the completion selfie first.',
     'error.completion_otp_required': 'Completion OTP is required to finish work.',
     'error.upload_notice': 'Uploading arrival selfie...',
     'error.upload_notice_completion': 'Uploading completion selfie...',
     'error.completion_uploaded': 'Completion selfie uploaded. Enter OTP to finish.',
+    'error.signup': 'ఖాతాను సృష్టించలేకపోయాం. దయచేసి మళ్లీ ప్రయత్నించండి.',
     'error.voice_unavailable': 'Voice input unavailable. Check mic permission.',
     'error.voice_failed': 'Voice input failed. Please try again.',
     'error.maps_api_key': 'Google Maps API key is missing. Please add it to the app config.',
 
     // Buyer App
-    'buyer.user': 'Superheroo User',
+    'buyer.user': 'Superherooo User',
 
     // Additional - Task Screen
     'task.title': 'Task',
     'task.refresh': 'Refresh',
     'task.back': 'Back',
-    'task.call_hero': 'Call Superheroo',
-    'task.hero_on_the_way': 'Superheroo on the way',
-    'task.live_location': 'Live location updates while Superheroo is en route.',
+    'task.call_hero': 'Call Superherooo',
+    'task.hero_on_the_way': 'Superherooo on the way',
+    'task.live_location': 'Live location updates while Superherooo is en route.',
     'task.distance': 'Distance',
     'task.eta': 'ETA',
     'task.updated': 'Updated',
-    'task.hero_arrived': 'Superheroo has arrived at your location.',
+    'task.hero_arrived': 'Superherooo has arrived at your location.',
     'task.urgency': 'Urgency',
     'task.budget': 'Budget',
     'task.arrival_otp': 'Arrival OTP',
@@ -1325,31 +1781,32 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'task.cancellation_reason': 'Cancellation reason',
     'task.share_cancelling': 'Share why you are cancelling',
     'task.cancel_task': 'Cancel task',
-    'task.completed_notice': 'Marked as completed by Superheroo.',
+    'task.completed_notice': 'Marked as completed by Superherooo.',
     'task.continue': 'Continue',
     'task.completed_title': 'Task completed',
-    'task.rate_experience': 'Your Superheroo finished the task. Please rate the experience.',
-    'task.rate_hero': 'Rate your Superheroo',
+    'task.rate_experience': 'Your Superherooo finished the task. Please rate the experience.',
+    'task.rate_hero': 'Rate your Superherooo',
     'task.your_rating': 'Your rating',
-    'task.helper_rating': 'Superheroo rating',
+    'task.helper_rating': 'Superherooo rating',
     'task.jobs_done': 'tasks done',
     'task.comment_optional': 'Comment (optional)',
     'task.share_feedback': 'Share feedback',
     'task.submit_rating': 'Submit rating',
 
     // Additional - Helper Task Screen
-    'helper.task.super_customer': 'Super-customer',
-    'helper.task.arrival_otp_hint': 'Ask the super-customer for the arrival OTP to start work.',
+    'helper.task.super_customer': 'Citizen',
+    'helper.task.arrival_otp_hint': 'Ask the citizen for the arrival OTP to start work.',
     'helper.task.completion': 'Completion',
     'helper.task.completion_hint': 'Upload completion selfie first, then enter OTP to finish.',
     'helper.task.upload_selfie': 'Upload completion selfie',
     'helper.task.selfie_uploaded': 'Completion selfie uploaded',
+    'helper.task.status_updated': 'స్థితి అప్డేట్ అయింది',
     'helper.task.mark_status': 'Mark',
-    'helper.task.great_work': 'Great work! Please rate your super-customer.',
-    'helper.task.rate_customer': 'Rate super-customer',
+    'helper.task.great_work': 'Great work! Please rate your citizen.',
+    'helper.task.rate_customer': 'Rate citizen',
 
     // Additional - Helper Home Screen
-    'helper.superheroo': 'Superheroo',
+    'helper.superheroo': 'Superherooo',
     'helper.sort_by': 'Sort by',
 
     // Additional - Helper KYC Screen
@@ -1362,11 +1819,11 @@ export const strings: Record<LanguageCode, Dictionary> = {
     // Additional - Menu Screen
     'menu.menu': 'Menu',
     'menu.back': 'Back',
-    'menu.superheroo_user': 'Superheroo User',
+    'menu.superheroo_user': 'Superherooo User',
     'menu.sign_out': 'Sign out',
 
     // Additional - History Screen
-    'history.history': 'History',
+    'history.history': 'Superherooo Earnings',
     'history.status': 'Status',
     'history.back': 'Back',
 
@@ -1375,8 +1832,190 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'support.new': 'New',
     'support.create_new': 'Create new ticket',
 
+    // Additional - Active Task
+    'active_task.title': 'సక్రియ పని',
+    'active_task.tap': 'తెరవడానికి ట్యాప్ చేయండి',
+
     // Additional - Common
     'common.loading': 'Loading...',
     'common.no_results': 'No results',
+    'common.cancel': 'Cancel',
+    'common.choose_gallery': 'Choose from gallery',
+    'common.back': 'వెనుక',
+    'common.refresh': 'రిఫ్రెష్',
+    'common.save': 'సేవ్ చేయండి',
+    'common.send': 'పంపండి',
+    'common.offline': 'మీరు ఆఫ్‌లైన్‌లో ఉన్నారు.',
+    'common.call': 'కాల్ చేయండి',
+
+    // Currency
+    'currency.inr': 'INR',
+
+    // Roles
+    'role.citizen': 'పౌరుడు',
+    'role.superherooo': 'Superherooo',
+
+    // Status labels
+    'status.searching': 'వెతుకుతున్నాం',
+    'status.assigned': 'కేటాయించబడింది',
+    'status.arrived': 'వచ్చింది',
+    'status.started': 'ప్రారంభమైంది',
+    'status.completed': 'పూర్తయింది',
+    'status.cancelled': 'రద్దయింది',
+
+    // Email Login
+    'email.placeholder': 'you@example.com',
+
+    // OTP
+    'otp.label': 'OTP',
+    'otp.dev_label': 'డెవ్ OTP:',
+
+    // Signup chooser
+    'signup.choose_title': 'సైన్ అప్',
+    'signup.choose_subtitle': 'ఖాతా రకం ఎంచుకోండి',
+
+    // Errors
+    'error.send_otp': 'OTP పంపడం విఫలమైంది. నెట్‌వర్క్‌ని తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.',
+    'error.verify_otp': 'OTP నిర్ధారించలేకపోయాం. నెట్‌వర్క్‌ని తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.',
+    'error.sign_in': 'సైన్ ఇన్ చేయలేకపోయాం. నెట్‌వర్క్‌ని తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.',
+    'error.camera_permission': 'సెల్ఫీ కోసం కెమెరా అనుమతి అవసరం.',
+    'error.camera_unavailable': 'కెమెరా అందుబాటులో లేదు. గ్యాలరీ నుంచి ఎంచుకోండి.',
+    'error.gallery_permission': 'సెల్ఫీ ఎంచుకోవడానికి గ్యాలరీ అనుమతి అవసరం.',
+    'error.gallery_unavailable': 'గ్యాలరీ తెరవలేకపోయాం.',
+    'error.location_permission_fallback': 'స్థాన అనుమతి ఇవ్వలేదు. డెమో ఫాల్‌బ్యాక్ స్థానాన్ని ఉపయోగిస్తున్నాం.',
+    'error.location_fallback': 'ప్రస్తుత స్థానం లభించలేదు. డెమో ఫాల్‌బ్యాక్ స్థానాన్ని ఉపయోగిస్తున్నాం.',
+    'error.location_failed': 'స్థానం పొందలేకపోయాం',
+
+    // Diagnostics
+    'diagnostics.title': 'డయాగ్నస్టిక్స్',
+    'diagnostics.api_base': 'API_BASE_URL',
+    'diagnostics.socket_url': 'SOCKET_URL',
+    'diagnostics.health_url': 'హెల్త్ URL',
+    'diagnostics.ping': 'Ping /actuator/health',
+    'diagnostics.empty_body': '(ఖాళీ బాడీ)',
+
+    // Menu
+    'menu.title': 'మెను',
+    'menu.profile': 'ప్రొఫైల్',
+    'menu.tasks': 'పనులు',
+    'menu.earnings': 'Superherooo ఆదాయం',
+    'menu.wallet': 'Superherooo వాలెట్',
+    'menu.settings': 'సెట్టింగ్స్',
+    'menu.support': 'సపోర్ట్',
+    'menu.sos': 'SOS',
+    'menu.terms': 'నియమాలు & భద్రత',
+    'menu.diagnostics': 'డయాగ్నస్టిక్స్',
+    'menu.default_name': 'Superherooo యూజర్',
+
+    // Payments
+    'payments.wallet_title': 'Superherooo వాలెట్',
+    'payments.earnings_title': 'Superherooo ఆదాయం',
+    'payments.demo_balance': 'డెమో బ్యాలెన్స్',
+    'payments.escrow_note': 'పని సృష్టించినప్పుడు ఎస్క్రో కట్ అవుతుంది మరియు పూర్తి అయిన 5 నిమిషాల తర్వాత Superherooo కి విడుదల అవుతుంది.',
+
+    // History
+    'history.budget': 'బడ్జెట్',
+
+    // Settings
+    'settings.title': 'సెట్టింగ్స్',
+    'settings.language': 'భాష',
+    'settings.pin_label': '4 అంకాల PIN',
+    'settings.pin_enabled': 'త్వరిత లాగిన్ కోసం PIN ఎనేబుల్ అయింది.',
+    'settings.pin_disabled': 'వేగవంతమైన సైన్-ఇన్ కోసం PIN సెటప్ చేయండి.',
+    'settings.pin_input': 'PIN',
+    'settings.pin_set': 'PIN సెట్ చేయండి',
+    'settings.pin_remove': 'PIN తొలగించండి',
+    'settings.pin_error_length': 'PIN 4 అంకాలు ఉండాలి.',
+
+    // PIN Lock
+    'pin.title': 'PIN నమోదు చేయండి',
+    'pin.subtitle': 'కొనసాగేందుకు Superherooo అన్‌లాక్ చేయండి.',
+    'pin.label': '4 అంకాల PIN',
+    'pin.placeholder': '••••',
+    'pin.error_length': '4 అంకాల PIN నమోదు చేయండి.',
+    'pin.error_incorrect': 'తప్పు PIN. మళ్లీ ప్రయత్నించండి.',
+    'pin.checking': 'పరిశీలిస్తున్నాం…',
+    'pin.unlock': 'అన్‌లాక్',
+
+    // Support
+    'support.title': 'సపోర్ట్',
+    'support.new': 'కొత్త',
+    'support.load_error': 'టికెట్లు లోడ్ చేయలేకపోయాం.',
+    'support.empty': 'ఇప్పటికీ టికెట్లు లేవు.',
+    'support.create_ticket': 'కొత్త టికెట్ సృష్టించండి',
+    'support.new_title': 'కొత్త టికెట్',
+    'support.ai_notice': 'ముందుగా AI స్పందిస్తుంది. అవసరమైతే సపోర్ట్ ఏజెంట్ స్పందిస్తాడు.',
+    'support.category': 'వర్గం',
+    'support.category_payment': 'చెల్లింపు',
+    'support.category_safety': 'భద్రత',
+    'support.category_quality': 'నాణ్యత',
+    'support.category_other': 'ఇతర',
+    'support.details': 'వివరాలు',
+    'support.subject_optional': 'విషయం (ఐచ్చికం)',
+    'support.subject_placeholder': 'ఉదాహరణ: \"రిఫండ్ అందలేదు\"',
+    'support.message_label': 'సందేశం (10+ అక్షరాలు)',
+    'support.message_placeholder': 'ఏం జరిగిందో, మీరు ఏమి కోరుకుంటున్నారో చెప్పండి.',
+    'support.create_error': 'టికెట్ సృష్టించలేకపోయాం.',
+    'support.ticket_load_error': 'టికెట్ లోడ్ చేయలేకపోయాం.',
+    'support.message_send_error': 'సందేశం పంపలేకపోయాం.',
+    'support.ticket_title': 'టికెట్',
+    'support.no_messages': 'సందేశాలు లేవు.',
+    'support.reply_label': 'మీ సందేశం',
+    'support.reply_placeholder': 'మీ సమాధానం టైప్ చేయండి…',
+
+    // Buyer - extras
+    'buyer.searching_suggestions': 'సూచనలు వెతుకుతున్నాం…',
+    'buyer.selected_address': 'ఎంచుకున్న చిరునామా',
+    'buyer.task.completion_otp': 'పూర్తి OTP',
+
+    // Helper - extras
+    'helper.offer.urgency': 'తక్షణత',
+    'helper.offer.eta': 'ETA',
+    'helper.offer.budget': 'బడ్జెట్',
+    'helper.sort_tasks': 'పనులు సార్ట్ చేయండి',
+    'helper.kyc.must_complete': 'ఆన్‌లైన్ అవ్వడానికి ముందు KYC పూర్తి చేసి అడ్మిన్ అప్రూవల్ కోసం వేచిచూడండి.',
+    'helper.go_online_error': 'ఆన్‌లైన్ అవ్వలేకపోయాం. మళ్లీ ప్రయత్నించండి.',
+    'helper.offer_expired': 'ఆఫర్ గడువు ముగిసింది లేదా పని ఇప్పటికే తీసుకున్నారు.',
+    'helper.accept_error': 'పని అంగీకరించలేకపోయాం.',
+    'helper.task.arrival_otp_title': 'ఆగమనం OTP',
+    'helper.task.arrival_otp_hint': 'పని ప్రారంభించడానికి పౌరుని వద్ద ఆగమనం OTP అడగండి.',
+    'helper.task.arrival_otp_label': 'ఆగమనం OTP',
+    'helper.task.arrival_otp_placeholder': 'ఆగమనం OTP నమోదు చేయండి',
+    'helper.task.start_work': 'పని ప్రారంభించండి',
+    'helper.task.completion_title': 'పూర్తి',
+    'helper.task.completion_hint': 'మొదట పూర్తి సెల్ఫీ అప్లోడ్ చేసి, తర్వాత OTP నమోదు చేయండి.',
+    'helper.task.completion_selfie_done': 'పూర్తి సెల్ఫీ అప్లోడ్ అయింది',
+    'helper.task.upload_completion_selfie': 'పూర్తి సెల్ఫీ అప్లోడ్ చేయండి',
+    'helper.task.completion_otp_label': 'పూర్తి OTP',
+    'helper.task.completion_otp_placeholder': 'పూర్తి OTP నమోదు చేయండి',
+    'helper.task.mark_completed': 'పూర్తి గా గుర్తించండి',
+    'helper.task.processing_selfie': 'సెల్ఫీ ప్రాసెస్ అవుతోంది...',
+    'helper.task.getting_location': 'లొకేషన్ పొందుతున్నాం...',
+    'helper.task.resolving_address': 'చిరునామా కనుగొంటున్నాం...',
+    'helper.task.queue_arrival_selfie': 'ఆగమనం సెల్ఫీ క్యూ చేస్తోంది...',
+    'helper.task.queue_completion_selfie': 'పూర్తి సెల్ఫీ క్యూ చేస్తోంది...',
+    'helper.task.mark': 'మార్క్',
+    'helper.task.rate_citizen': 'పౌరుణ్ని రేట్ చేయండి',
+    'helper.task.completed_body': 'చాలా బాగుంది! దయచేసి పౌరుణ్ని రేట్ చేయండి.',
+    'helper.task.camera_unavailable_title': 'కెమెరా అందుబాటులో లేదు',
+    'helper.task.camera_unavailable_body': 'గ్యాలరీ నుంచి సెల్ఫీ ఎంచుకుంటారా?',
+    'helper.kyc.video_submitted': 'వీడియో KYC విజయవంతంగా సమర్పించబడింది.',
+    'helper.kyc.doc_type_placeholder': 'ఆధార్ / DL / పాస్పోర్ట్',
+
+    // Task - extras
+    'task.address': 'చిరునామా',
+    'task.scheduled_for': 'షెడ్యూల్ చేసిన సమయం',
+    'task.open_maps': 'మ్యాప్స్‌లో తెరవండి',
+    'task.rating': 'రేటింగ్',
+    'task.cancel_reason_required': 'రద్దు కారణం నమోదు చేయండి.',
+    'task.share_cancelling': 'ఎందుకు రద్దు చేస్తున్నారో చెప్పండి',
+    'task.eta_label': 'ETA',
+
+    // Map
+    'map.you': 'మీరు',
+
+    // SOS
+    'sos.subject': 'SOS ఎమర్జెన్సీ',
+    'sos.message': 'మొబైల్ యాప్ నుంచి SOS ట్రిగ్గర్ అయ్యింది. వెంటనే యూజర్‌కు కాల్ చేయండి.',
   },
 };

@@ -6,23 +6,25 @@ import { Screen } from '../../ui/Screen';
 import { TextField } from '../../ui/TextField';
 import { PrimaryButton } from '../../ui/PrimaryButton';
 import { theme } from '../../ui/theme';
+import { useI18n } from '../../i18n/I18nProvider';
 
 export function PinLockScreen() {
   const { verifyPin, signOut } = useAuth();
+  const { t } = useI18n();
   const [pin, setPin] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const submit = async () => {
     if (pin.trim().length !== 4) {
-      setError('Enter your 4-digit PIN.');
+      setError(t('pin.error_length'));
       return;
     }
     setBusy(true);
     setError(null);
     const ok = await verifyPin(pin.trim());
     if (!ok) {
-      setError('Incorrect PIN. Try again.');
+      setError(t('pin.error_incorrect'));
     }
     setBusy(false);
   };
@@ -30,18 +32,18 @@ export function PinLockScreen() {
   return (
     <Screen>
       <View style={styles.card}>
-        <Text style={styles.title}>Enter PIN</Text>
-        <Text style={styles.subtitle}>Unlock Superheroo to continue.</Text>
+        <Text style={styles.title}>{t('pin.title')}</Text>
+        <Text style={styles.subtitle}>{t('pin.subtitle')}</Text>
         <TextField
-          label="4-digit PIN"
+          label={t('pin.label')}
           value={pin}
           onChangeText={(v) => setPin(v.replace(/\D+/g, '').slice(0, 4))}
           keyboardType="number-pad"
-          placeholder="••••"
+          placeholder={t('pin.placeholder')}
         />
         {error ? <Text style={styles.error}>{error}</Text> : null}
-        <PrimaryButton label={busy ? 'Checking…' : 'Unlock'} onPress={submit} disabled={busy} />
-        <PrimaryButton label="Sign out" variant="ghost" onPress={signOut} />
+        <PrimaryButton label={busy ? t('pin.checking') : t('pin.unlock')} onPress={submit} disabled={busy} />
+        <PrimaryButton label={t('menu.sign_out')} variant="ghost" onPress={signOut} />
       </View>
     </Screen>
   );

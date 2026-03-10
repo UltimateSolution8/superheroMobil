@@ -8,7 +8,8 @@ const googleMapsApiKey = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || '';
 const apiBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL || 'https://api.mysuperhero.xyz';
 const socketUrl = process.env.EXPO_PUBLIC_SOCKET_URL || 'https://superheroorealtime.onrender.com';
 const googleServicesFile = path.join(__dirname, 'google-services.json');
-const hasGoogleServices = fs.existsSync(googleServicesFile);
+const hasGoogleServices =
+  fs.existsSync(googleServicesFile) && fs.statSync(googleServicesFile).size > 0;
 const basePlugins = Array.isArray(expo.plugins) ? expo.plugins : [];
 const plugins = Array.from(
   new Set([
@@ -35,9 +36,9 @@ const androidPermissions = Array.from(
 );
 const iosInfoPlist = {
   ...(expo.ios && expo.ios.infoPlist ? expo.ios.infoPlist : {}),
-  NSCameraUsageDescription: 'Allow Superheroo to access the camera for selfie verification.',
-  NSPhotoLibraryUsageDescription: 'Allow Superheroo to access your photos for KYC and task selfies.',
-  NSLocationWhenInUseUsageDescription: 'Allow Superheroo to access your location for nearby tasks.',
+  NSCameraUsageDescription: 'Allow Superherooo to access the camera for selfie verification.',
+  NSPhotoLibraryUsageDescription: 'Allow Superherooo to access your photos for KYC and task selfies.',
+  NSLocationWhenInUseUsageDescription: 'Allow Superherooo to access your location for nearby tasks.',
 };
 
 function withNetworkSecurity(config) {

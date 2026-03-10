@@ -12,6 +12,7 @@ import { Notice } from '../../ui/Notice';
 import { PrimaryButton } from '../../ui/PrimaryButton';
 import { Screen } from '../../ui/Screen';
 import { theme } from '../../ui/theme';
+import { useI18n } from '../../i18n/I18nProvider';
 
 type Props = NativeStackScreenProps<any, any>;
 
@@ -30,6 +31,7 @@ function TicketRow({ item, onOpen }: { item: SupportTicket; onOpen: (id: string)
 
 export function SupportTicketsScreen({ navigation }: Props) {
   const { withAuth } = useAuth();
+  const { t } = useI18n();
   const online = useIsOnline();
 
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
@@ -44,11 +46,11 @@ export function SupportTicketsScreen({ navigation }: Props) {
       setTickets(res);
     } catch (e) {
       if (e instanceof ApiError && e.status === 401) return;
-      setError('Could not load tickets.');
+      setError(t('support.load_error'));
     } finally {
       setLoading(false);
     }
-  }, [withAuth]);
+  }, [t, withAuth]);
 
   useEffect(() => {
     load();
@@ -76,15 +78,15 @@ export function SupportTicketsScreen({ navigation }: Props) {
     <Screen style={styles.screen}>
       <View style={styles.topBar}>
         <Text onPress={() => navigation.goBack()} style={styles.link}>
-          Back
+          {t('common.back')}
         </Text>
-        <Text style={styles.h1}>Support</Text>
+        <Text style={styles.h1}>{t('support.title')}</Text>
         <Text onPress={onNew} style={styles.link}>
-          New
+          {t('support.new')}
         </Text>
       </View>
 
-      {!online ? <Notice kind="warning" text="You are offline." /> : null}
+      {!online ? <Notice kind="warning" text={t('common.offline')} /> : null}
       {error ? <Notice kind="danger" text={error} /> : null}
 
       <FlatList
@@ -93,14 +95,14 @@ export function SupportTicketsScreen({ navigation }: Props) {
         renderItem={({ item }) => <TicketRow item={item} onOpen={onOpen} />}
         contentContainerStyle={styles.list}
         ListEmptyComponent={
-          <Text style={styles.muted}>{loading ? 'Loading…' : 'No tickets yet.'}</Text>
+          <Text style={styles.muted}>{loading ? t('common.loading') : t('support.empty')}</Text>
         }
         initialNumToRender={10}
         windowSize={8}
         removeClippedSubviews
       />
 
-      <PrimaryButton label="Create new ticket" onPress={onNew} style={styles.bottomCta} />
+      <PrimaryButton label={t('support.create_ticket')} onPress={onNew} style={styles.bottomCta} />
     </Screen>
   );
 }

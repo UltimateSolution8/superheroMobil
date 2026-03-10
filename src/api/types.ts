@@ -42,6 +42,7 @@ export type CreateTaskRequest = {
   lat: number;
   lng: number;
   addressText?: string | null;
+  scheduledAt?: string | null;
 };
 
 export type CreateTaskResponse = {
@@ -98,6 +99,7 @@ export type Task = {
   cancelReason?: string | null;
   cancelledByRole?: string | null;
   cancelledAt?: string | null;
+  scheduledAt?: string | null;
   createdAt: string;
 };
 
@@ -195,4 +197,14 @@ export type VideoKycStatusResponse = {
   faceMatchScore?: number | null;
   livenessScore?: number | null;
   reviewerNotes?: string | null;
+};
+
+export type LiveKycSession = {
+  id: string;
+  helperId: string;
+  helperName?: string | null;
+  roomId: string;
+  token: string;
+  status: string;
+  expiresAt: string;
 };

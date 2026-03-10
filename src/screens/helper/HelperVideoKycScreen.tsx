@@ -4,9 +4,10 @@ import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import * as api from '../../api/client';
-import type { VideoKycStartResponse, VideoKycStatusResponse } from '../../api/types';
+import type { LiveKycSession, VideoKycStartResponse, VideoKycStatusResponse } from '../../api/types';
 import type { HelperStackParamList } from '../../navigation/types';
 import { useAuth } from '../../auth/AuthContext';
+import { ApiError } from '../../api/http';
 import { Notice } from '../../ui/Notice';
 import { PrimaryButton } from '../../ui/PrimaryButton';
 import { Screen } from '../../ui/Screen';
@@ -23,6 +24,10 @@ type PickedFile = { uri: string; name: string; type: string };
 export function HelperVideoKycScreen({ navigation }: Props) {
   const { withAuth } = useAuth();
   const { t } = useI18n();
+
+  const [liveSession, setLiveSession] = useState<LiveKycSession | null>(null);
+  const [liveBusy, setLiveBusy] = useState(false);
+  const [liveError, setLiveError] = useState<string | null>(null);
 
   const [docType, setDocType] = useState('AADHAAR');
   const [docFront, setDocFront] = useState<PickedFile | null>(null);
@@ -100,6 +105,35 @@ export function HelperVideoKycScreen({ navigation }: Props) {
     setVideoDuration(dur);
   }, [t]);
 
+  const checkLiveSession = useCallback(async () => {
+    if (liveBusy) return;
+    setLiveBusy(true);
+    setLiveError(null);
+    try {
+      const session = await withAuth((token) => api.helperLiveKycSession(token));
+      setLiveSession(session);
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 404) {
+        setLiveSession(null);
+        setLiveError(t('helper.live_kyc.none'));
+      } else {
+        setLiveError(t('helper.live_kyc.error'));
+      }
+    } finally {
+      setLiveBusy(false);
+    }
+  }, [liveBusy, t, withAuth]);
+
+  const joinLiveSession = useCallback(() => {
+    if (!liveSession) return;
+    navigation.navigate('HelperLiveKycCall', {
+      roomId: liveSession.roomId,
+      token: liveSession.token,
+      userId: liveSession.helperId,
+      userName: liveSession.helperName || t('role.superherooo'),
+    });
+  }, [liveSession, navigation, t]);
+
   const startKyc = useCallback(async () => {
     const response = await withAuth((token) => api.helperStartVideoKyc(token, docType.trim() || 'AADHAAR'));
     setStartRes(response);
@@ -165,6 +199,22 @@ export function HelperVideoKycScreen({ navigation }: Props) {
         </View>
         <Text style={styles.caption}>{t('helper.video_kyc.subtitle')}</Text>
 
+        <View style={styles.liveCard}>
+          <Text style={styles.liveTitle}>{t('helper.live_kyc.title')}</Text>
+          <Text style={styles.caption}>{t('helper.live_kyc.subtitle')}</Text>
+          {liveError ? <Notice kind="warning" text={liveError} /> : null}
+          <PrimaryButton
+            label={liveSession ? t('helper.live_kyc.join') : t('helper.live_kyc.check')}
+            onPress={liveSession ? joinLiveSession : checkLiveSession}
+            loading={liveBusy}
+          />
+          {liveSession ? (
+            <Text style={styles.liveMeta}>
+              {t('helper.live_kyc.status')}: {liveSession.status}
+            </Text>
+          ) : null}
+        </View>
+
         {error ? <Notice kind="danger" text={error} /> : null}
         {success ? <Notice kind="success" text={success} /> : null}
 
@@ -172,7 +222,7 @@ export function HelperVideoKycScreen({ navigation }: Props) {
         <TextInput
           value={docType}
           onChangeText={setDocType}
-          placeholder="AADHAAR / DL / PASSPORT"
+          placeholder={t('helper.kyc.doc_type_placeholder')}
           placeholderTextColor={theme.colors.muted}
           style={styles.input}
         />
@@ -221,6 +271,16 @@ const styles = StyleSheet.create({
   h1: { color: theme.colors.text, fontSize: 20, fontWeight: '700' },
   link: { color: theme.colors.primary, fontWeight: '700' },
   caption: { color: theme.colors.muted, marginBottom: 8 },
+  liveCard: {
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: 12,
+    padding: 12,
+    backgroundColor: theme.colors.card,
+    gap: 8,
+  },
+  liveTitle: { color: theme.colors.text, fontSize: 16, fontWeight: '700' },
+  liveMeta: { color: theme.colors.muted, fontSize: 12 },
   label: { color: theme.colors.text, fontWeight: '600', marginTop: 8 },
   input: {
     borderWidth: 1,

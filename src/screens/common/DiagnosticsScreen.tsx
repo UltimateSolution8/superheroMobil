@@ -8,10 +8,12 @@ import { Notice } from '../../ui/Notice';
 import { theme } from '../../ui/theme';
 import { API_BASE_URL, SOCKET_URL } from '../../config';
 import type { BuyerStackParamList, HelperStackParamList, AuthStackParamList } from '../../navigation/types';
+import { useI18n } from '../../i18n/I18nProvider';
 
 type Props = NativeStackScreenProps<BuyerStackParamList & HelperStackParamList & AuthStackParamList, 'Diagnostics'>;
 
 export function DiagnosticsScreen({ navigation }: Props) {
+  const { t } = useI18n();
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -27,9 +29,9 @@ export function DiagnosticsScreen({ navigation }: Props) {
       const res = await fetch(url, { method: 'GET', signal: controller.signal });
       const text = await res.text();
       if (!res.ok) {
-        setError(`HTTP ${res.status} ${res.statusText}\n${text || '(empty body)'}`);
+        setError(`HTTP ${res.status} ${res.statusText}\n${text || t('diagnostics.empty_body')}`);
       } else {
-        setResult(text || '(empty body)');
+        setResult(text || t('diagnostics.empty_body'));
       }
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
@@ -38,25 +40,25 @@ export function DiagnosticsScreen({ navigation }: Props) {
       clearTimeout(t);
       setBusy(false);
     }
-  }, []);
+  }, [t]);
 
   return (
     <Screen>
       <View style={styles.topBar}>
-        <Text style={styles.h1}>Diagnostics</Text>
-        <Text onPress={() => navigation.goBack()} style={styles.link}>Back</Text>
+        <Text style={styles.h1}>{t('diagnostics.title')}</Text>
+        <Text onPress={() => navigation.goBack()} style={styles.link}>{t('common.back')}</Text>
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.label}>API_BASE_URL</Text>
+        <Text style={styles.label}>{t('diagnostics.api_base')}</Text>
         <Text style={styles.value}>{API_BASE_URL}</Text>
-        <Text style={styles.label}>SOCKET_URL</Text>
+        <Text style={styles.label}>{t('diagnostics.socket_url')}</Text>
         <Text style={styles.value}>{SOCKET_URL}</Text>
-        <Text style={styles.label}>Health URL</Text>
+        <Text style={styles.label}>{t('diagnostics.health_url')}</Text>
         <Text style={styles.value}>{`${API_BASE_URL.replace(/\/+$/, '')}/actuator/health`}</Text>
       </View>
 
-      <PrimaryButton label="Ping /actuator/health" onPress={ping} loading={busy} />
+      <PrimaryButton label={t('diagnostics.ping')} onPress={ping} loading={busy} />
 
       {result ? <Notice kind="success" text={result} /> : null}
       {error ? <Notice kind="danger" text={error} /> : null}

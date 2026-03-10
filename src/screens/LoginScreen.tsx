@@ -47,14 +47,14 @@ export function LoginScreen({ navigation, route }: Props) {
       navigation.navigate('Otp', { phone: p, role, devOtp: res.otp ?? null });
     } catch (e) {
       if (e instanceof ApiError) {
-        setError(e.message || `Could not send OTP (${e.status}). Check your network and try again.`);
+        setError(e.message || t('error.send_otp'));
       } else {
-        setError('Could not send OTP. Check your network and try again.');
+        setError(t('error.send_otp'));
       }
     } finally {
       setBusy(false);
     }
-  }, [busy, canSend, navigation, phone, role, startOtp]);
+  }, [busy, canSend, navigation, phone, role, startOtp, t]);
 
   const onSendWithChannel = useCallback(
     async (channel: 'sms' | 'whatsapp' | 'call') => {
@@ -67,20 +67,21 @@ export function LoginScreen({ navigation, route }: Props) {
         navigation.navigate('Otp', { phone: p, role, devOtp: res.otp ?? null });
       } catch (e) {
         if (e instanceof ApiError) {
-          setError(e.message || `Could not send OTP (${e.status}). Check your network and try again.`);
+          setError(e.message || t('error.send_otp'));
         } else {
-          setError('Could not send OTP. Check your network and try again.');
+          setError(t('error.send_otp'));
         }
       } finally {
         setBusy(false);
       }
     },
-    [busy, canSend, navigation, phone, role, startOtp],
+    [busy, canSend, navigation, phone, role, startOtp, t],
   );
 
   const onSignup = useCallback(() => {
     navigation.navigate(role === 'BUYER' ? 'BuyerSignup' : 'HelperSignup');
   }, [navigation, role]);
+  const authNoticeText = authNotice ? t(authNotice) : null;
 
   return (
     <Screen>
@@ -95,9 +96,9 @@ export function LoginScreen({ navigation, route }: Props) {
                 value={lang}
                 onChange={(v) => setLang(v as 'en' | 'hi' | 'te')}
                 options={[
-                  { key: 'en', label: 'EN' },
-                  { key: 'hi', label: 'हिं' },
-                  { key: 'te', label: 'తెల' },
+                  { key: 'en', label: t('language.en') },
+                  { key: 'hi', label: t('language.hi') },
+                  { key: 'te', label: t('language.te') },
                 ]}
               />
             </View>
@@ -127,7 +128,7 @@ export function LoginScreen({ navigation, route }: Props) {
           />
 
           {error ? <Notice kind="danger" text={error} /> : null}
-          {authNotice ? <Notice kind="warning" text={authNotice} onClose={clearAuthNotice} /> : null}
+          {authNoticeText ? <Notice kind="warning" text={authNoticeText} onClose={clearAuthNotice} /> : null}
 
           <View style={styles.footer}>
             <PrimaryButton label={t('login.send_otp')} onPress={onSend} disabled={!canSend} loading={busy} />

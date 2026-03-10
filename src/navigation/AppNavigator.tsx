@@ -4,6 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { useAuth } from '../auth/AuthContext';
+import { useUploadQueueProcessor } from '../hooks/useUploadQueueProcessor';
 import { SocketProvider } from '../realtime/SocketProvider';
 import { ActiveTaskProvider } from '../state/ActiveTaskContext';
 import { HelperPresenceProvider } from '../state/HelperPresenceContext';
@@ -20,6 +21,7 @@ import { BuyerTaskScreen } from '../screens/buyer/BuyerTaskScreen';
 import { HelperHomeScreen } from '../screens/helper/HelperHomeScreen';
 import { HelperKycScreen } from '../screens/helper/HelperKycScreen';
 import { HelperVideoKycScreen } from '../screens/helper/HelperVideoKycScreen';
+import { HelperLiveKycCallScreen } from '../screens/helper/HelperLiveKycCallScreen';
 import { HelperTaskScreen } from '../screens/helper/HelperTaskScreen';
 import { SupportTicketsScreen } from '../screens/support/SupportTicketsScreen';
 import { SupportNewTicketScreen } from '../screens/support/SupportNewTicketScreen';
@@ -35,19 +37,22 @@ import { SosScreen } from '../screens/common/SosScreen';
 import { TermsScreen } from '../screens/common/TermsScreen';
 import type { AuthStackParamList, BuyerStackParamList, HelperStackParamList } from './types';
 import { theme } from '../ui/theme';
+import { useI18n } from '../i18n/I18nProvider';
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const BuyerStack = createNativeStackNavigator<BuyerStackParamList>();
 const HelperStack = createNativeStackNavigator<HelperStackParamList>();
 
 export function AppNavigator() {
-  const { status, user, pinRequired, pinVerified } = useAuth();
+  const { status, user, pinRequired, pinVerified, authNotice } = useAuth();
+  const { t } = useI18n();
+  useUploadQueueProcessor();
 
   if (status === 'loading') {
     return (
       <View style={styles.loading}>
         <ActivityIndicator color={theme.colors.primary} />
-        <Text style={styles.loadingText}>Loading…</Text>
+        <Text style={styles.loadingText}>{t('common.loading')}</Text>
       </View>
     );
   }
@@ -56,7 +61,10 @@ export function AppNavigator() {
     <ActiveTaskProvider>
       <NavigationContainer>
         {status !== 'signedIn' || !user ? (
-          <AuthStack.Navigator screenOptions={{ headerShown: false, animation: 'fade' }}>
+          <AuthStack.Navigator
+            screenOptions={{ headerShown: false, animation: 'fade' }}
+            initialRouteName={authNotice ? 'Login' : 'Splash'}
+          >
             <AuthStack.Screen name="Splash" component={SplashScreen} />
             <AuthStack.Screen name="Onboarding" component={OnboardingScreen} />
             <AuthStack.Screen name="RoleSelection" component={RoleSelectionScreen} />
@@ -93,6 +101,7 @@ export function AppNavigator() {
                   <HelperStack.Screen name="HelperHome" component={HelperHomeScreen} />
                   <HelperStack.Screen name="HelperKyc" component={HelperKycScreen} />
                   <HelperStack.Screen name="HelperVideoKyc" component={HelperVideoKycScreen} />
+                  <HelperStack.Screen name="HelperLiveKycCall" component={HelperLiveKycCallScreen} />
                   <HelperStack.Screen name="HelperTask" component={HelperTaskScreen} />
                   <HelperStack.Screen name="Menu" component={MenuScreen} />
                   <HelperStack.Screen name="Profile" component={ProfileScreen} />
@@ -108,7 +117,7 @@ export function AppNavigator() {
                 </HelperStack.Navigator>
               ) : (
                 <View style={styles.loading}>
-                  <Text style={styles.loadingText}>Admin role is not supported in mobile app.</Text>
+                  <Text style={styles.loadingText}>{t('app.admin_not_supported')}</Text>
                 </View>
               )}
             </HelperPresenceProvider>

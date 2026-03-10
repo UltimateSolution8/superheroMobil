@@ -78,7 +78,7 @@ export function HelperKycScreen({ navigation }: Props) {
       try {
         const allowed = await ensureGalleryPermissions();
         if (!allowed) {
-          setError('Gallery permission is required to select a selfie.');
+          setError(t('helper.kyc.gallery_permission'));
           return;
         }
         const pick = await launchImageLibrary({
@@ -91,25 +91,25 @@ export function HelperKycScreen({ navigation }: Props) {
         });
         if (pick.didCancel) return;
         if (pick.errorCode) {
-          setError('Could not open gallery.');
+          setError(t('helper.kyc.could_not_open_gallery'));
           return;
         }
         const a = pick.assets?.[0];
         const file = assetToPickedFile(a, `selfie-${Date.now()}.jpg`);
         if (!file) {
-          setError('Could not access selected image.');
+          setError(t('helper.kyc.could_not_access_image'));
           return;
         }
         setSelfie(file);
       } catch {
-        setError('Could not open gallery.');
+        setError(t('helper.kyc.could_not_open_gallery'));
       }
     };
 
     try {
       const allowed = await ensureCameraPermissions();
       if (!allowed) {
-        setError('Camera permission is required to capture a selfie.');
+        setError(t('helper.kyc.camera_permission'));
         return;
       }
       const res = await launchCamera({
@@ -124,31 +124,31 @@ export function HelperKycScreen({ navigation }: Props) {
       if (res.didCancel) {
         // fall back to gallery prompt
       } else if (res.errorCode) {
-        setError('Camera is unavailable. Please choose from gallery.');
+        setError(t('helper.kyc.camera_unavailable_choose'));
       } else {
         const a = res.assets?.[0];
         const file = assetToPickedFile(a, `selfie-${Date.now()}.jpg`);
         if (!file) {
-          setError('Could not access captured image.');
+          setError(t('helper.kyc.could_not_capture'));
           return;
         }
         setSelfie(file);
         return;
       }
     } catch {
-      setError('Camera is unavailable. Please choose from gallery.');
+      setError(t('helper.kyc.camera_unavailable_choose'));
     }
 
     Alert.alert(
-      'Camera unavailable',
-      'Would you like to choose a selfie from your gallery?',
+      t('helper.kyc.camera_unavailable'),
+      t('helper.kyc.gallery_choice'),
       [
-        { text: 'Choose from gallery', onPress: () => void pickGallery() },
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('helper.kyc.choose_gallery'), onPress: () => void pickGallery() },
+        { text: t('helper.kyc.cancel'), style: 'cancel' },
       ],
       { cancelable: true },
     );
-  }, []);
+  }, [t]);
 
   const submit = useCallback(async () => {
     if (busy || !canSubmit || !idFront || !idBack || !selfie) return;
@@ -163,50 +163,50 @@ export function HelperKycScreen({ navigation }: Props) {
         idBack,
         selfie,
       }));
-      setSuccess('KYC submitted. Admin will review and approve your profile.');
+      setSuccess(t('helper.kyc.success'));
       setTimeout(() => navigation.goBack(), 900);
     } catch (e) {
       if (e instanceof ApiError) {
-        setError(e.message || `Could not submit KYC (${e.status})`);
+        setError(e.message || t('helper.kyc.could_not_submit'));
       } else {
-        setError('Could not submit KYC. Please try again.');
+        setError(t('helper.kyc.could_not_submit'));
       }
     } finally {
       setBusy(false);
     }
-  }, [busy, canSubmit, fullName, idBack, idFront, idNumber, navigation, selfie, withAuth]);
+  }, [busy, canSubmit, fullName, idBack, idFront, idNumber, navigation, selfie, t, withAuth]);
 
   return (
     <Screen style={styles.screen}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.wrap}>
         <View style={styles.topBar}>
-          <Text style={styles.h1}>Complete KYC</Text>
-          <Text onPress={() => navigation.goBack()} style={styles.link}>Back</Text>
+          <Text style={styles.h1}>{t('helper.kyc.title')}</Text>
+          <Text onPress={() => navigation.goBack()} style={styles.link}>{t('helper.kyc.back')}</Text>
         </View>
 
-        <Text style={styles.caption}>Upload documents once. Admin approval enables online mode and task offers.</Text>
+        <Text style={styles.caption}>{t('helper.kyc.upload_notice')}</Text>
 
         {profile?.kycStatus === 'APPROVED' ? (
-          <Notice kind="success" text="KYC approved. You are verified and can go online." />
+          <Notice kind="success" text={t('helper.kyc.approved_notice')} />
         ) : null}
 
         {error ? <Notice kind="danger" text={error} /> : null}
         {success ? <Notice kind="success" text={success} /> : null}
 
-        <Text style={styles.label}>Full name</Text>
+        <Text style={styles.label}>{t('helper.kyc.full_name')}</Text>
         <TextInput
           value={fullName}
           onChangeText={setFullName}
-          placeholder="Name as per ID"
+          placeholder={t('helper.kyc.name_placeholder')}
           placeholderTextColor={theme.colors.muted}
           style={styles.input}
         />
 
-        <Text style={styles.label}>ID number</Text>
+        <Text style={styles.label}>{t('helper.kyc.id_number')}</Text>
         <TextInput
           value={idNumber}
           onChangeText={setIdNumber}
-          placeholder="Aadhaar / DL / Passport"
+          placeholder={t('helper.kyc.id_placeholder')}
           placeholderTextColor={theme.colors.muted}
           style={styles.input}
           autoCapitalize="characters"
@@ -214,26 +214,26 @@ export function HelperKycScreen({ navigation }: Props) {
 
         <View style={styles.uploadRow}>
           <PrimaryButton
-            label={idFront ? 'ID Front selected' : 'Upload ID Front'}
+            label={idFront ? t('helper.kyc.id_front_selected') : t('helper.kyc.upload_id_front')}
             onPress={() => pickDoc((f) => setIdFront(f))}
             variant="ghost"
             disabled={profile?.kycStatus === 'APPROVED'}
           />
           <PrimaryButton
-            label={idBack ? 'ID Back selected' : 'Upload ID Back'}
+            label={idBack ? t('helper.kyc.id_back_selected') : t('helper.kyc.upload_id_back')}
             onPress={() => pickDoc((f) => setIdBack(f))}
             variant="ghost"
             disabled={profile?.kycStatus === 'APPROVED'}
           />
           <PrimaryButton
-            label={selfie ? 'Selfie selected' : 'Capture Selfie'}
+            label={selfie ? t('helper.kyc.selfie_selected') : t('helper.kyc.capture_selfie')}
             onPress={pickSelfie}
             variant="ghost"
             disabled={profile?.kycStatus === 'APPROVED'}
           />
         </View>
 
-        <PrimaryButton label="Submit KYC" onPress={submit} disabled={!canSubmit} loading={busy} />
+        <PrimaryButton label={t('helper.kyc.submit')} onPress={submit} disabled={!canSubmit} loading={busy} />
         <PrimaryButton
           label={t('helper.video_kyc.title')}
           onPress={() => navigation.navigate('HelperVideoKyc')}
