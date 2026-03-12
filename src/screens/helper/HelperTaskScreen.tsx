@@ -1,12 +1,11 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, AppState, Linking, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Linking, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { Asset } from 'react-native-image-picker';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import * as Location from 'expo-location';
 import { useFocusEffect } from '@react-navigation/native';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import MapView from 'react-native-maps';
 
 import type { Task, TaskStatus, TaskStatusChangedEvent } from '../../api/types';
 import * as api from '../../api/client';
@@ -29,6 +28,7 @@ import type { HelperStackParamList } from '../../navigation/types';
 import { DEMO_FALLBACK_LOCATION, GOOGLE_MAPS_API_KEY } from '../../config';
 import { useActiveTask } from '../../state/ActiveTaskContext';
 import { useI18n } from '../../i18n/I18nProvider';
+import { useHelperPresence } from '../../state/HelperPresenceContext';
 
 type Props = NativeStackScreenProps<HelperStackParamList, 'HelperTask'>;
 
@@ -117,6 +117,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
   const { withAuth } = useAuth();
   const socket = useSocket();
   const { setActiveTaskId } = useActiveTask();
+  const { lastCoords } = useHelperPresence();
   const { t } = useI18n();
 
   const [task, setTask] = useState<Task | null>(null);
@@ -145,9 +146,6 @@ export function HelperTaskScreen({ route, navigation }: Props) {
     return String(raw);
   }, [task?.buyerPhone]);
 
-  const locationSub = useRef<Location.LocationSubscription | null>(null);
-  const lastEmitAt = useRef<number>(0);
-  const mapRef = useRef<MapView | null>(null);
   const advancingRef = useRef(false);
 
   const load = useCallback(async () => {
@@ -413,7 +411,8 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       if (!a || !a.uri) return false;
 
       safeSetState(() => setNotice(t('helper.task.processing_selfie')));
-      const selfie = await prepareSelfieFile(a, stage, ENABLE_PRESIGNED_SELFIES);
+      // Direct multipart upload is the most stable path on Android.
+      const selfie = await prepareSelfieFile(a, stage, false);
       if (!selfie) {
         setError(t('error.process_selfie'));
         return false;
@@ -478,66 +477,47 @@ export function HelperTaskScreen({ route, navigation }: Props) {
           setNotice(stage === 'ARRIVAL' ? t('helper.task.queue_arrival_selfie') : t('helper.task.queue_completion_selfie')),
         );
 
-        let uploadSuccess = false;
+        const directUpload = await enqueueUpload({
+          id: `selfie-${taskId}-${stage}-${Date.now()}`,
+          url: `${API_BASE_URL}/api/v1/tasks/${taskId}/selfie`,
+          file: selfie,
+          formFields: {
+            stage,
+            lat: String(lat),
+            lng: String(lng),
+            addressText: address,
+            capturedAt: new Date().toISOString(),
+          },
+          accessToken: at,
+        });
 
-        if (ENABLE_PRESIGNED_SELFIES) {
-          const res = await enqueueUpload({
-            type: 'presigned',
-            id: `selfie-${taskId}-${stage}-${Date.now()}`,
-            url: API_BASE_URL,
-            file: selfie,
-            formFields: {
-              jobId: taskId,
-              photoType: stage === 'ARRIVAL' ? 'arrival' : 'completion',
-              lat: String(lat),
-              lng: String(lng),
-              addressText: address,
-              capturedAt: new Date().toISOString()
-            },
-            accessToken: at
-          }, { enqueueOnFailure: false });
-          if (res.success) {
-            uploadSuccess = true;
-          } else {
-            // Fallback to direct multipart upload
-            const fallback = await enqueueUpload({
+        let uploadSuccess = directUpload.success;
+        if (!uploadSuccess && ENABLE_PRESIGNED_SELFIES) {
+          // Optional fallback path retained for environments that prefer presigned upload.
+          const presigned = await enqueueUpload(
+            {
+              type: 'presigned',
               id: `selfie-${taskId}-${stage}-${Date.now()}`,
-              url: `${API_BASE_URL}/api/v1/tasks/${taskId}/selfie`,
+              url: API_BASE_URL,
               file: selfie,
               formFields: {
-                stage,
+                jobId: taskId,
+                photoType: stage === 'ARRIVAL' ? 'arrival' : 'completion',
                 lat: String(lat),
                 lng: String(lng),
                 addressText: address,
-                capturedAt: new Date().toISOString()
+                capturedAt: new Date().toISOString(),
               },
-              accessToken: at
-            });
-            if (fallback.success) {
-              uploadSuccess = true;
-            } else {
-              throw new Error(fallback.error || t('error.upload_selfie'));
-            }
-          }
-        } else {
-          const res = await enqueueUpload({
-            id: `selfie-${taskId}-${stage}-${Date.now()}`,
-            url: `${API_BASE_URL}/api/v1/tasks/${taskId}/selfie`,
-            file: selfie,
-            formFields: {
-              stage,
-              lat: String(lat),
-              lng: String(lng),
-              addressText: address,
-              capturedAt: new Date().toISOString()
+              accessToken: at,
             },
-            accessToken: at
-          });
-          if (res.success) {
-            uploadSuccess = true;
-          } else {
-            throw new Error(res.error || t('error.upload_selfie'));
+            { enqueueOnFailure: false },
+          );
+          uploadSuccess = presigned.success;
+          if (!uploadSuccess) {
+            throw new Error(presigned.error || directUpload.error || t('error.upload_selfie'));
           }
+        } else if (!uploadSuccess) {
+          throw new Error(directUpload.error || t('error.upload_selfie'));
         }
 
         if (uploadSuccess && mountedRef.current) {
@@ -614,13 +594,33 @@ export function HelperTaskScreen({ route, navigation }: Props) {
         }
       }
       if (next === 'COMPLETED') {
+        // before we attempt to mark completed, make the selfie step just like ARRIVED
         if (!completionSelfieDone) {
-          if (mountedRef.current) {
-            setError(t('error.completion_selfie_required'));
-            setBusy(false);
-            advancingRef.current = false;
+          const done = await uploadCheckpointSelfie('COMPLETION');
+          if (!done) {
+            if (mountedRef.current) {
+              setBusy(false);
+              advancingRef.current = false;
+            }
+            return;
           }
-          return;
+          if (mountedRef.current) {
+            setTask((prev) =>
+              prev ? ({ ...prev, completionSelfieUrl: prev.completionSelfieUrl ?? 'uploaded' } as Task) : prev,
+            );
+            setNotice(t('error.completion_uploaded'));
+            setTimeout(() => { if (mountedRef.current) setNotice(null); }, 2000);
+          }
+          void (async () => {
+            try {
+              const refreshed = await withAuth((at) => api.getTask(at, taskId));
+              if (mountedRef.current) {
+                setTask(refreshed);
+              }
+            } catch {
+              // keep optimistic state
+            }
+          })();
         }
         if (!providedOtp || !providedOtp.trim()) {
           if (mountedRef.current) {
@@ -662,10 +662,16 @@ export function HelperTaskScreen({ route, navigation }: Props) {
     if (completionSelfieBusy || completionSelfieDone) return;
     setCompletionSelfieBusy(true);
     setError(null);
+    const timeout = setTimeout(() => {
+      if (!mountedRef.current) return;
+      setCompletionSelfieBusy(false);
+      setError(t('error.upload_timeout'));
+    }, 45_000);
     try {
       const done = await uploadCheckpointSelfie('COMPLETION');
       if (!done) {
         if (mountedRef.current) setCompletionSelfieBusy(false);
+        clearTimeout(timeout);
         return;
       }
       if (mountedRef.current) {
@@ -690,6 +696,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
         setError(t('error.upload_selfie'));
       }
     } finally {
+      clearTimeout(timeout);
       if (mountedRef.current) {
         setCompletionSelfieBusy(false);
       }
@@ -717,80 +724,18 @@ export function HelperTaskScreen({ route, navigation }: Props) {
   }, [helperLoc]);
 
   useEffect(() => {
-    if (!socket) return;
-    let cancelled = false;
-    let heartbeat: ReturnType<typeof setInterval> | null = null;
-
-    const start = async () => {
-      try {
-        const perm = await Location.requestForegroundPermissionsAsync();
-        if (perm.status !== 'granted') return;
-        locationSub.current?.remove();
-        locationSub.current = await Location.watchPositionAsync(
-          {
-            accuracy: Location.Accuracy.Balanced,
-            timeInterval: 15_000,
-            distanceInterval: 25,
-          },
-          (pos) => {
-            if (cancelled) return;
-            const now = Date.now();
-            if (now - lastEmitAt.current < 5_000) return;
-            lastEmitAt.current = now;
-            const lat = pos.coords.latitude;
-            const lng = pos.coords.longitude;
-            const nextLoc = { lat, lng, ts: now };
-            if (shouldUpdateLoc(nextLoc)) {
-              setHelperLoc(nextLoc);
-            }
-            // location updates are handled by the global presence tracker
-            // keep map stable to avoid UI flicker on some devices
-          },
-        );
-      } catch {
-        // best effort
-      }
-    };
-
-    const startHeartbeat = () => {
-      if (heartbeat) return;
-      heartbeat = setInterval(() => {
-        if (cancelled) return;
-        const now = Date.now();
-        if (now - lastEmitAt.current < 12_000) return;
-        lastEmitAt.current = now;
-        // send a heartbeat using last known location from task coords if no live GPS
-        if (task?.lat && task?.lng) {
-          // location updates are handled by the global presence tracker
-        }
-      }, 12_000);
-    };
-
-    start();
-    startHeartbeat();
-    const appSub = AppState.addEventListener('change', (state) => {
-      if (state !== 'active') {
-        locationSub.current?.remove();
-        locationSub.current = null;
-        if (heartbeat) clearInterval(heartbeat);
-        heartbeat = null;
-      } else {
-        start();
-        startHeartbeat();
-      }
-    });
-
-    return () => {
-      cancelled = true;
-      appSub.remove();
-      if (heartbeat) clearInterval(heartbeat);
-      locationSub.current?.remove();
-      locationSub.current = null;
-    };
-  }, [hasTaskCoords, shouldUpdateLoc, socket, task?.lat, task?.lng, taskId, taskLat, taskLng]);
+    if (!lastCoords) return;
+    // Keep the map stable while OTP input is visible to avoid keyboard flicker.
+    if (next === 'STARTED' || next === 'COMPLETED') return;
+    const nextLoc = { lat: lastCoords.lat, lng: lastCoords.lng, ts: Date.now() };
+    if (shouldUpdateLoc(nextLoc)) {
+      setHelperLoc(nextLoc);
+    }
+  }, [lastCoords, next, shouldUpdateLoc]);
 
   const lastRouteFetch = useRef(0);
   useEffect(() => {
+    if (next === 'STARTED' || next === 'COMPLETED') return;
     if (!task || !helperLoc || !GOOGLE_MAPS_API_KEY || !hasTaskCoords) return;
     const now = Date.now();
     if (now - lastRouteFetch.current < 12_000) return;
@@ -819,7 +764,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       }
     };
     fetchRoute();
-  }, [helperLoc, hasTaskCoords, task, taskLat, taskLng]);
+  }, [helperLoc, hasTaskCoords, next, task, taskLat, taskLng]);
 
   const mapMarkers = useMemo(() => {
     const list = [];
@@ -842,6 +787,9 @@ export function HelperTaskScreen({ route, navigation }: Props) {
   }
 
   const showStickyFooter = !!next && next !== 'STARTED' && next !== 'COMPLETED';
+  // when helper is entering an OTP we hide the map; it was causing layout
+  // thrashing/keyboard flicker and even occasional crashes on older devices.
+  const showMap = !(next === 'STARTED' || next === 'COMPLETED');
 
   return (
     <Screen style={styles.screenPaddingFix}>
@@ -851,7 +799,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="interactive"
+        keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
       >
         {buyerPhone ? (
           <CustomerContactCard
@@ -865,17 +813,19 @@ export function HelperTaskScreen({ route, navigation }: Props) {
         {notice ? <Notice kind="success" text={notice} /> : null}
         {error ? <Notice kind="danger" text={error} /> : null}
 
-        <MemoizedMapView
-          markers={mapMarkers}
-          routeCoords={routeCoords.map(c => ({ latitude: c.latitude, longitude: c.longitude }))}
-          initialRegion={{
-            latitude: hasTaskCoords ? taskLat : DEMO_FALLBACK_LOCATION?.lat ?? 12.9716,
-            longitude: hasTaskCoords ? taskLng : DEMO_FALLBACK_LOCATION?.lng ?? 77.5946,
-            latitudeDelta: 0.02,
-            longitudeDelta: 0.02,
-          }}
-          height={200}
-        />
+        {showMap ? (
+          <MemoizedMapView
+            markers={mapMarkers}
+            routeCoords={routeCoords}
+            initialRegion={{
+              latitude: hasTaskCoords ? taskLat : DEMO_FALLBACK_LOCATION?.lat ?? 12.9716,
+              longitude: hasTaskCoords ? taskLng : DEMO_FALLBACK_LOCATION?.lng ?? 77.5946,
+              latitudeDelta: 0.02,
+              longitudeDelta: 0.02,
+            }}
+            height={200}
+          />
+        ) : null}
 
         <View style={styles.card}>
           <Text style={styles.status}>{statusLabel(status)}</Text>
