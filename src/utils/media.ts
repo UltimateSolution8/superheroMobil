@@ -32,7 +32,8 @@ export async function ensureLocalFileUri(uri: string, fallbackName: string): Pro
   if (!uri) return uri;
   if (uri.startsWith('file://')) return uri;
   if (isNonFileUri(uri)) {
-    const baseDir = FileSystem.cacheDirectory || FileSystem.documentDirectory;
+    const fsAny = FileSystem as any;
+    const baseDir = fsAny.cacheDirectory || fsAny.documentDirectory;
     if (!baseDir) return uri;
     const ext = guessExt(fallbackName);
     const target = `${baseDir}selfie-${Date.now()}.${ext}`;
@@ -41,8 +42,8 @@ export async function ensureLocalFileUri(uri: string, fallbackName: string): Pro
       return target;
     } catch {
       try {
-        const data = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
-        await FileSystem.writeAsStringAsync(target, data, { encoding: FileSystem.EncodingType.Base64 });
+        const data = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' as any });
+        await FileSystem.writeAsStringAsync(target, data, { encoding: 'base64' as any });
         return target;
       } catch {
         return uri;

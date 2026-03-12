@@ -161,7 +161,7 @@ export function HelperHomeScreen({ navigation }: Props) {
     try {
       if (!isOnline) return;
       const available = await withAuth((t) => api.helperGetAvailableTasks(t));
-      if (!Array.isArray(available) || available.length === 0) return;
+      if (!Array.isArray(available)) return;
 
       const toEvent = (t: import('../../api/types').Task): TaskOfferedEvent => ({
         helperId: user?.id ?? '', // We don't dispatch direct offers here, just list them
@@ -177,19 +177,13 @@ export function HelperHomeScreen({ navigation }: Props) {
         expiresAt: null
       });
 
-      setOffers((prev) => {
-        const merged = [...available.map(toEvent)];
-        for (const p of prev) {
-          if (!merged.some((m) => m.taskId === p.taskId)) {
-            merged.push(p);
-          }
-        }
-        const next = merged.slice(0, 20);
-        persistOffers(next).catch(() => { });
-        return next;
-      });
+      // replace the entire list with fresh data – keeping old tasks around
+      // caused stale/unassigned tasks to linger and break realtime behaviour.
+      const newOffers = available.map(toEvent).slice(0, 20);
+      setOffers(newOffers);
+      persistOffers(newOffers).catch(() => {});
     } catch {
-      // ignore silently 
+      // ignore silently
     }
   }, [isOnline, persistOffers, withAuth]);
 
@@ -364,13 +358,30 @@ export function HelperHomeScreen({ navigation }: Props) {
       // When a new task is created, refresh available tasks so helper sees it
       loadValidTasks();
     };
+    const onConnected = () => {
+      if (isOnline) {
+        loadValidTasks();
+      }
+    };
     socket.on('task.offered', onOffered);
     socket.on('task_created', onTaskCreated);
+    socket.on('connect', onConnected);
+    socket.on('reconnect', onConnected);
     return () => {
       socket.off('task.offered', onOffered);
       socket.off('task_created', onTaskCreated);
+      socket.off('connect', onConnected);
+      socket.off('reconnect', onConnected);
     };
-  }, [loadValidTasks, persistOffers, socket]);
+  }, [isOnline, loadValidTasks, persistOffers, socket]);
+
+  useEffect(() => {
+    if (!isOnline) return;
+    const timer = setInterval(() => {
+      loadValidTasks();
+    }, 12_000);
+    return () => clearInterval(timer);
+  }, [isOnline, loadValidTasks]);
 
   useEffect(() => {
     const timer = setInterval(() => {

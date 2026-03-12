@@ -20,7 +20,7 @@ export const API_BASE_URL =
 
 const presignedEnv = process.env.EXPO_PUBLIC_ENABLE_PRESIGNED_SELFIES?.trim();
 export const ENABLE_PRESIGNED_SELFIES =
-  presignedEnv ? presignedEnv === 'true' : presignedFromExtra ? presignedFromExtra === 'true' : true;
+  presignedEnv ? presignedEnv === 'true' : presignedFromExtra ? presignedFromExtra === 'true' : false;
 
 export const SOCKET_URL =
   process.env.EXPO_PUBLIC_SOCKET_URL?.trim() ||
