@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Voice from '@react-native-voice/voice';
 import * as Location from 'expo-location';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
@@ -491,7 +492,13 @@ export function BuyerHomeScreen({ navigation }: Props) {
                 placeholder={t('buyer.search_location')}
               />
             </View>
-            <PrimaryButton label={t('buyer.search')} onPress={searchLocation} loading={searchBusy} style={styles.searchBtn} />
+            <PrimaryButton
+              label={t('buyer.search')}
+              onPress={searchLocation}
+              loading={searchBusy}
+              style={styles.searchBtn}
+              leftIcon={<MaterialCommunityIcons name="magnify" size={18} color={theme.colors.primaryText} />}
+            />
           </View>
           {autoSearchBusy ? <Text style={styles.muted}>{t('buyer.searching_suggestions')}</Text> : null}
           {suggestions.length > 0 ? (
@@ -557,6 +564,13 @@ export function BuyerHomeScreen({ navigation }: Props) {
                 onPress={toggleVoice}
                 variant="ghost"
                 style={styles.voiceBtn}
+                leftIcon={
+                  <MaterialCommunityIcons
+                    name={voiceActive ? 'microphone-off' : 'microphone'}
+                    size={18}
+                    color={theme.colors.primary}
+                  />
+                }
               />
             </View>
             <TextField label={t('buyer.expected_time')} value={timeMinutes} onChangeText={setTimeMinutes} keyboardType="number-pad" />

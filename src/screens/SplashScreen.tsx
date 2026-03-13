@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { AuthStackParamList } from '../navigation/types';
 import { theme } from '../ui/theme';
 import { useI18n } from '../i18n/I18nProvider';
+import { APP_DISPLAY_NAME } from '../config';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'Splash'>;
 
@@ -79,7 +80,7 @@ export function SplashScreen({ navigation }: Props) {
         <Animated.View style={{ transform: [{ scale }], opacity }}>
           <Image source={require('../../assets/superheroo-logo.png')} style={styles.logo} />
         </Animated.View>
-        <Animated.Text style={[styles.title, { opacity }]}>{t('app.name')}</Animated.Text>
+        <Animated.Text style={[styles.title, { opacity }]}>{APP_DISPLAY_NAME}</Animated.Text>
         <Animated.Text style={[styles.tagline, { opacity }]}>{t('app.tagline')}</Animated.Text>
       </View>
     </View>

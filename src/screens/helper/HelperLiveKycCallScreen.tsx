@@ -10,10 +10,11 @@ import { theme } from '../../ui/theme';
 type Props = NativeStackScreenProps<HelperStackParamList, 'HelperLiveKycCall'>;
 
 export function HelperLiveKycCallScreen({ route }: Props) {
-  const { roomId, token, userId, userName } = route.params;
+  const { appId, roomId, token, userId, userName } = route.params;
 
   const injected = useMemo(() => {
     const payload = {
+      appId,
       roomId,
       token,
       userId,
@@ -21,7 +22,7 @@ export function HelperLiveKycCallScreen({ route }: Props) {
       role: 'helper',
     };
     return `window.__LIVE_KYC__ = ${JSON.stringify(payload)}; true;`;
-  }, [roomId, token, userId, userName]);
+  }, [appId, roomId, token, userId, userName]);
 
   return (
     <Screen style={styles.screen}>

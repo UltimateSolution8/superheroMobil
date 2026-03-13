@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Linking, Platform, StyleSheet, Text, View } from 'react-native';
+import { Linking, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
@@ -296,115 +296,153 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
 
   return (
     <Screen style={styles.screen}>
-      <View style={styles.topBar}>
-        <MenuButton onPress={() => navigation.navigate('Menu')} />
-        <Text style={styles.h1}>{t('task.title')}</Text>
-        <View style={styles.topActions}>
-          <Text onPress={load} style={styles.link}>{t('common.refresh')}</Text>
-          <Text onPress={onBackHome} style={styles.link}>{t('common.back')}</Text>
+      <View style={styles.contentWrap}>
+        <View style={styles.topBar}>
+          <MenuButton onPress={() => navigation.navigate('Menu')} />
+          <Text style={styles.h1}>{t('task.title')}</Text>
+          <View style={styles.topActions}>
+            <Text onPress={load} style={styles.link}>{t('common.refresh')}</Text>
+            <Text onPress={onBackHome} style={styles.link}>{t('common.back')}</Text>
+          </View>
         </View>
-      </View>
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          {helperPhone ? (
+            <View style={styles.contactRow}>
+              <View>
+                <Text style={styles.label}>{t('buyer.task.hero_label')}</Text>
+                <Text style={styles.value}>{task?.helperName ?? helperPhone}</Text>
+                <Text style={styles.value}>{helperPhone}</Text>
+                {task?.helperAvgRating != null ? (
+                  <Text style={styles.muted}>
+                    {t('task.helper_rating')}: {task.helperAvgRating.toFixed(1)} / 5
+                    {task.helperCompletedCount != null ? ` · ${task.helperCompletedCount} ${t('task.jobs_done')}` : ''}
+                  </Text>
+                ) : null}
+              </View>
+              <PrimaryButton
+                label={t('task.call_hero')}
+                onPress={() => Linking.openURL(`tel:${helperPhone}`)}
+                variant="ghost"
+                style={styles.callButton}
+              />
+            </View>
+          ) : null}
 
-      {helperPhone ? (
-        <View style={styles.contactRow}>
-          <View>
-            <Text style={styles.label}>{t('buyer.task.hero_label')}</Text>
-            <Text style={styles.value}>{task?.helperName ?? helperPhone}</Text>
-            <Text style={styles.value}>{helperPhone}</Text>
-            {task?.helperAvgRating != null ? (
-              <Text style={styles.muted}>
-                {t('task.helper_rating')}: {task.helperAvgRating.toFixed(1)} / 5
-                {task.helperCompletedCount != null ? ` · ${task.helperCompletedCount} ${t('task.jobs_done')}` : ''}
-              </Text>
+          {error ? <Notice kind="danger" text={error} /> : null}
+
+          {canRenderMap ? (
+            <MemoizedMapView
+              provider={mapProvider}
+              mapRef={mapRef}
+              markers={mapMarkers}
+              routeCoords={routeCoords}
+              initialRegion={{
+                latitude: hasTaskCoords ? taskLat : DEMO_FALLBACK_LOCATION?.lat ?? 12.9716,
+                longitude: hasTaskCoords ? taskLng : DEMO_FALLBACK_LOCATION?.lng ?? 77.5946,
+                latitudeDelta: 0.02,
+                longitudeDelta: 0.02,
+              }}
+              height={220}
+              style={styles.mapWrap}
+            />
+          ) : (
+            <Notice kind="warning" text={t('error.maps_api_key')} />
+          )}
+
+          <View style={styles.liveCard}>
+            <Text style={styles.liveTitle}>{t('task.hero_on_the_way')}</Text>
+            <Text style={styles.liveSub}>{t('task.live_location')}</Text>
+            <View style={styles.liveRow}>
+              <View style={styles.liveStat}>
+                <Text style={styles.liveLabel}>{t('task.distance')}</Text>
+                <Text style={styles.liveValue}>
+                  {helperDistance == null ? '--' : `${(helperDistance / 1000).toFixed(2)} km`}
+                </Text>
+              </View>
+              <View style={styles.liveStat}>
+                <Text style={styles.liveLabel}>{t('task.eta_label')}</Text>
+                <Text style={styles.liveValue}>{helperEta == null ? '--' : `${helperEta} min`}</Text>
+              </View>
+              <View style={styles.liveStat}>
+                <Text style={styles.liveLabel}>{t('task.updated')}</Text>
+                <Text style={styles.liveValue}>{helperLastSeen == null ? '--' : `${helperLastSeen}s`}</Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.card}>
+            <Text style={styles.status}>{status === 'SEARCHING' ? t('buyer.task.searching') : status === 'ASSIGNED' ? t('buyer.task.assigned') : status === 'ARRIVED' ? t('buyer.task.arrived') : status === 'STARTED' ? t('buyer.task.started') : status === 'COMPLETED' ? t('buyer.task.completed') : status === 'CANCELLED' ? t('buyer.task.cancelled') : status}</Text>
+            {helperArrived ? <Notice kind="success" text={t('buyer.task.hero_arrived')} /> : null}
+            {task?.title ? <Text style={styles.title}>{task.title}</Text> : null}
+            {helperId ? (
+              <Text style={styles.muted}>{t('buyer.task.hero_label')}: {task?.helperName ?? task?.helperPhone ?? t('buyer.task.assigned')}</Text>
+            ) : null}
+            {task?.addressText ? <Text style={styles.muted}>{t('buyer.address_optional')}: {task.addressText}</Text> : null}
+            {task?.description ? <Text style={styles.desc}>{task.description}</Text> : null}
+            {scheduledAtLabel ? <Text style={styles.muted}>{t('task.scheduled_for')}: {scheduledAtLabel}</Text> : null}
+            <Text style={styles.muted}>{t('buyer.task.urgency')}: {task?.urgency ?? '-'} | {t('buyer.task.eta')}: {task?.timeMinutes ?? '-'} {t('buyer.task.minutes')}</Text>
+            <Text style={styles.muted}>{t('buyer.task.budget')}: {t('currency.inr')} {task ? (task.budgetPaise / 100).toFixed(0) : '-'}</Text>
+            {task?.arrivalOtp ? <Text style={styles.otp}>{t('buyer.task.arrival_otp')}: {task.arrivalOtp}</Text> : null}
+            {task?.completionOtp ? <Text style={styles.otp}>{t('buyer.task.completion_otp')}: {task.completionOtp}</Text> : null}
+
+            <PrimaryButton label={t('task.refresh')} onPress={load} loading={busy} variant="ghost" />
+
+            {canCancel ? (
+              <>
+                <TextField
+                  label={t('task.cancellation_reason')}
+                  value={cancelReason}
+                  onChangeText={setCancelReason}
+                  placeholder={t('task.share_cancelling')}
+                />
+                <PrimaryButton
+                  label={t('task.cancel_task')}
+                  onPress={submitCancel}
+                  loading={cancelBusy}
+                  variant="danger"
+                />
+              </>
             ) : null}
           </View>
-          <PrimaryButton
-            label={t('task.call_hero')}
-            onPress={() => Linking.openURL(`tel:${helperPhone}`)}
-            variant="ghost"
-            style={styles.callButton}
-          />
-        </View>
-      ) : null}
 
-      {error ? <Notice kind="danger" text={error} /> : null}
+          {canDone ? <Notice kind="success" text={t('buyer.task.completed_notice')} /> : null}
 
-      {canRenderMap ? (
-        <MemoizedMapView
-          provider={mapProvider}
-          mapRef={mapRef}
-          markers={mapMarkers}
-          routeCoords={routeCoords}
-          initialRegion={{
-            latitude: hasTaskCoords ? taskLat : DEMO_FALLBACK_LOCATION?.lat ?? 12.9716,
-            longitude: hasTaskCoords ? taskLng : DEMO_FALLBACK_LOCATION?.lng ?? 77.5946,
-            latitudeDelta: 0.02,
-            longitudeDelta: 0.02,
-          }}
-          height={220}
-          style={styles.mapWrap}
-        />
-      ) : (
-        <Notice kind="warning" text={t('error.maps_api_key')} />
-      )}
-
-      <View style={styles.liveCard}>
-        <Text style={styles.liveTitle}>{t('task.hero_on_the_way')}</Text>
-        <Text style={styles.liveSub}>{t('task.live_location')}</Text>
-        <View style={styles.liveRow}>
-          <View style={styles.liveStat}>
-            <Text style={styles.liveLabel}>{t('task.distance')}</Text>
-            <Text style={styles.liveValue}>
-              {helperDistance == null ? '--' : `${(helperDistance / 1000).toFixed(2)} km`}
-            </Text>
-          </View>
-          <View style={styles.liveStat}>
-            <Text style={styles.liveLabel}>{t('task.eta_label')}</Text>
-            <Text style={styles.liveValue}>{helperEta == null ? '--' : `${helperEta} min`}</Text>
-          </View>
-          <View style={styles.liveStat}>
-            <Text style={styles.liveLabel}>{t('task.updated')}</Text>
-            <Text style={styles.liveValue}>{helperLastSeen == null ? '--' : `${helperLastSeen}s`}</Text>
-          </View>
-        </View>
+          {status === 'COMPLETED' && ratingReady ? (
+            <View style={styles.ratingCard}>
+              <Text style={styles.liveTitle}>{t('task.rate_hero')}</Text>
+              {task?.buyerRating ? (
+                <Text style={styles.muted}>{t('task.your_rating')}: {task.buyerRating.toFixed(1)} / 5</Text>
+              ) : (
+                <>
+                  <View style={styles.ratingRow}>
+                    {[1, 2, 3, 4, 5].map((r) => (
+                      <Text
+                        key={`rate-${r}`}
+                        style={[styles.star, r <= rating ? styles.starOn : styles.starOff]}
+                        onPress={() => setRating(r)}
+                      >
+                        ★
+                      </Text>
+                    ))}
+                  </View>
+                  <TextField
+                    label={t('task.comment_optional')}
+                    value={ratingComment}
+                    onChangeText={setRatingComment}
+                    placeholder={t('task.share_feedback')}
+                  />
+                  <PrimaryButton label={t('task.submit_rating')} onPress={submitRating} loading={ratingBusy} />
+                </>
+              )}
+            </View>
+          ) : null}
+        </ScrollView>
       </View>
-
-      <View style={styles.card}>
-        <Text style={styles.status}>{status === 'SEARCHING' ? t('buyer.task.searching') : status === 'ASSIGNED' ? t('buyer.task.assigned') : status === 'ARRIVED' ? t('buyer.task.arrived') : status === 'STARTED' ? t('buyer.task.started') : status === 'COMPLETED' ? t('buyer.task.completed') : status === 'CANCELLED' ? t('buyer.task.cancelled') : status}</Text>
-        {helperArrived ? <Notice kind="success" text={t('buyer.task.hero_arrived')} /> : null}
-        {task?.title ? <Text style={styles.title}>{task.title}</Text> : null}
-        {helperId ? (
-          <Text style={styles.muted}>{t('buyer.task.hero_label')}: {task?.helperName ?? task?.helperPhone ?? t('buyer.task.assigned')}</Text>
-        ) : null}
-        {task?.addressText ? <Text style={styles.muted}>{t('buyer.address_optional')}: {task.addressText}</Text> : null}
-        {task?.description ? <Text style={styles.desc}>{task.description}</Text> : null}
-        {scheduledAtLabel ? <Text style={styles.muted}>{t('task.scheduled_for')}: {scheduledAtLabel}</Text> : null}
-        <Text style={styles.muted}>{t('buyer.task.urgency')}: {task?.urgency ?? '-'} | {t('buyer.task.eta')}: {task?.timeMinutes ?? '-'} {t('buyer.task.minutes')}</Text>
-        <Text style={styles.muted}>{t('buyer.task.budget')}: {t('currency.inr')} {task ? (task.budgetPaise / 100).toFixed(0) : '-'}</Text>
-        {task?.arrivalOtp ? <Text style={styles.otp}>{t('buyer.task.arrival_otp')}: {task.arrivalOtp}</Text> : null}
-        {task?.completionOtp ? <Text style={styles.otp}>{t('buyer.task.completion_otp')}: {task.completionOtp}</Text> : null}
-
-        <PrimaryButton label={t('task.refresh')} onPress={load} loading={busy} variant="ghost" />
-
-        {canCancel ? (
-          <>
-            <TextField
-              label={t('task.cancellation_reason')}
-              value={cancelReason}
-              onChangeText={setCancelReason}
-              placeholder={t('task.share_cancelling')}
-            />
-            <PrimaryButton
-              label={t('task.cancel_task')}
-              onPress={submitCancel}
-              loading={cancelBusy}
-              variant="danger"
-            />
-          </>
-        ) : null}
-      </View>
-
-      {canDone ? <Notice kind="success" text={t('buyer.task.completed_notice')} /> : null}
 
       {showCelebration ? (
         <View style={styles.celebrateWrap}>
@@ -421,42 +459,15 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
           </View>
         </View>
       ) : null}
-
-      {status === 'COMPLETED' && ratingReady ? (
-        <View style={styles.ratingCard}>
-          <Text style={styles.liveTitle}>{t('task.rate_hero')}</Text>
-          {task?.buyerRating ? (
-            <Text style={styles.muted}>{t('task.your_rating')}: {task.buyerRating.toFixed(1)} / 5</Text>
-          ) : (
-            <>
-              <View style={styles.ratingRow}>
-                {[1, 2, 3, 4, 5].map((r) => (
-                  <Text
-                    key={`rate-${r}`}
-                    style={[styles.star, r <= rating ? styles.starOn : styles.starOff]}
-                    onPress={() => setRating(r)}
-                  >
-                    ★
-                  </Text>
-                ))}
-              </View>
-              <TextField
-                label={t('task.comment_optional')}
-                value={ratingComment}
-                onChangeText={setRatingComment}
-                placeholder={t('task.share_feedback')}
-              />
-              <PrimaryButton label={t('task.submit_rating')} onPress={submitRating} loading={ratingBusy} />
-            </>
-          )}
-        </View>
-      ) : null}
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { paddingBottom: theme.space.xl, position: 'relative' },
+  contentWrap: { flex: 1 },
+  scroll: { flex: 1 },
+  scrollContent: { paddingBottom: theme.space.xl },
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   topActions: { flexDirection: 'row', gap: 12, alignItems: 'center' },
   contactRow: {

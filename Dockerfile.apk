@@ -9,6 +9,7 @@ ARG EXPO_PUBLIC_SOCKET_URL=http://localhost:8090
 ARG EXPO_PUBLIC_DEMO_FALLBACK_LOCATION=
 ARG EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=
 ARG EXPO_PUBLIC_DEV_SHOW_OTP=true
+ARG EXPO_PUBLIC_APP_VARIANT=unified
 
 ENV ANDROID_SDK_ROOT=/opt/android-sdk-linux
 ENV ANDROID_HOME=/opt/android-sdk-linux
@@ -17,6 +18,7 @@ ENV EXPO_PUBLIC_SOCKET_URL=${EXPO_PUBLIC_SOCKET_URL}
 ENV EXPO_PUBLIC_DEMO_FALLBACK_LOCATION=${EXPO_PUBLIC_DEMO_FALLBACK_LOCATION}
 ENV EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=${EXPO_PUBLIC_GOOGLE_MAPS_API_KEY}
 ENV EXPO_PUBLIC_DEV_SHOW_OTP=${EXPO_PUBLIC_DEV_SHOW_OTP}
+ENV EXPO_PUBLIC_APP_VARIANT=${EXPO_PUBLIC_APP_VARIANT}
 
 # Install Node >= 20.19.4 (React Native / Expo 54 requirement) and basic tooling.
 RUN apt-get update -qq \
@@ -76,18 +78,24 @@ RUN set -eux; \
     test -x "$SDKMANAGER"; \
     export ANDROID_SDK_ROOT="/opt/android-sdk-linux"; \
     export ANDROID_HOME="/opt/android-sdk-linux"; \
-    for i in 1 2 3; do \
+    for i in 1 2 3 4 5; do \
       yes | "$SDKMANAGER" --sdk_root="$ANDROID_SDK_ROOT" --install \
         "platform-tools" \
         "platforms;android-36" \
         "build-tools;36.0.0" \
+        "ndk;27.1.12297006" \
+        "cmake;3.22.1" \
         && break; \
       echo "sdkmanager failed (attempt $i). Clearing caches and retrying..." >&2; \
       rm -rf /root/.android/cache || true; \
       rm -rf "$ANDROID_SDK_ROOT/.android/cache" || true; \
+      rm -rf "$ANDROID_SDK_ROOT/ndk/27.1.12297006" || true; \
+      rm -rf "$ANDROID_SDK_ROOT/cmake/3.22.1" || true; \
       sleep 3; \
     done; \
     test -d "$ANDROID_SDK_ROOT/build-tools/36.0.0"; \
+    test -d "$ANDROID_SDK_ROOT/ndk/27.1.12297006"; \
+    test -d "$ANDROID_SDK_ROOT/cmake/3.22.1"; \
   fi
 
 # Keep the build within typical Docker Desktop memory limits by:
@@ -146,7 +154,18 @@ RUN set -eux; \
     # Make release installable without requiring a private keystore (dev-only).
     # This swaps the release signing config to use the standard debug keystore.
     sed -i 's/signingConfig signingConfigs\\.release/signingConfig signingConfigs.debug/g' /app/android/app/build.gradle || true; \
-    ./gradlew --no-daemon --max-workers 1 assembleRelease -x lint -x test; \
+    ok=0; \
+    for i in 1 2 3; do \
+      if ./gradlew --no-daemon --max-workers 1 assembleRelease -x lint -x test; then \
+        ok=1; \
+        break; \
+      fi; \
+      echo "assembleRelease failed (attempt $i). Retrying..." >&2; \
+      rm -rf "$GRADLE_USER_HOME/caches/modules-2" || true; \
+      rm -rf "$GRADLE_USER_HOME/caches/transforms-4" || true; \
+      sleep 5; \
+    done; \
+    [ "$ok" -eq 1 ]; \
   elif [ "$APK_VARIANT" = "standalone" ]; then \
     # Bundle JS during the build so the APK does NOT require Metro (fixes "Unable to load script" on devices).
     # React Native's Gradle tasks differ across versions/plugins; try the common task names.
@@ -161,14 +180,33 @@ RUN set -eux; \
 
 FROM build AS artifact
 ARG APK_VARIANT=debug
+ARG EXPO_PUBLIC_APP_VARIANT=unified
 RUN set -eux; \
   mkdir -p /out; \
   if [ "$APK_VARIANT" = "release" ]; then \
-    cp -f /app/android/app/build/outputs/apk/release/app-release.apk /out/Superheroo-release.apk; \
+    if [ "$EXPO_PUBLIC_APP_VARIANT" = "buyer" ]; then \
+      cp -f /app/android/app/build/outputs/apk/release/app-release.apk /out/Superheroo-Citizen-release.apk; \
+    elif [ "$EXPO_PUBLIC_APP_VARIANT" = "helper" ]; then \
+      cp -f /app/android/app/build/outputs/apk/release/app-release.apk /out/Superheroo-Partner-release.apk; \
+    else \
+      cp -f /app/android/app/build/outputs/apk/release/app-release.apk /out/Superheroo-release.apk; \
+    fi; \
   elif [ "$APK_VARIANT" = "standalone" ]; then \
-    cp -f /app/android/app/build/outputs/apk/debug/app-debug.apk /out/Superheroo-standalone.apk; \
+    if [ "$EXPO_PUBLIC_APP_VARIANT" = "buyer" ]; then \
+      cp -f /app/android/app/build/outputs/apk/debug/app-debug.apk /out/Superheroo-Citizen-standalone.apk; \
+    elif [ "$EXPO_PUBLIC_APP_VARIANT" = "helper" ]; then \
+      cp -f /app/android/app/build/outputs/apk/debug/app-debug.apk /out/Superheroo-Partner-standalone.apk; \
+    else \
+      cp -f /app/android/app/build/outputs/apk/debug/app-debug.apk /out/Superheroo-standalone.apk; \
+    fi; \
   else \
-    cp -f /app/android/app/build/outputs/apk/debug/app-debug.apk /out/Superheroo-debug.apk; \
+    if [ "$EXPO_PUBLIC_APP_VARIANT" = "buyer" ]; then \
+      cp -f /app/android/app/build/outputs/apk/debug/app-debug.apk /out/Superheroo-Citizen-debug.apk; \
+    elif [ "$EXPO_PUBLIC_APP_VARIANT" = "helper" ]; then \
+      cp -f /app/android/app/build/outputs/apk/debug/app-debug.apk /out/Superheroo-Partner-debug.apk; \
+    else \
+      cp -f /app/android/app/build/outputs/apk/debug/app-debug.apk /out/Superheroo-debug.apk; \
+    fi; \
   fi
 
 FROM scratch

@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -9,6 +9,7 @@ import { PrimaryButton } from '../ui/PrimaryButton';
 import { Segmented } from '../ui/Segmented';
 import { theme } from '../ui/theme';
 import { useI18n } from '../i18n/I18nProvider';
+import { APP_DISPLAY_NAME, LOCKED_ROLE } from '../config';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'RoleSelection'>;
 
@@ -23,6 +24,15 @@ export function RoleSelectionScreen({ navigation }: Props) {
   const goHelper = useCallback(() => {
     navigation.navigate('Login', { role: 'HELPER' });
   }, [navigation]);
+
+  useEffect(() => {
+    if (!LOCKED_ROLE) return;
+    navigation.replace('Login', { role: LOCKED_ROLE });
+  }, [navigation]);
+
+  if (LOCKED_ROLE) {
+    return null;
+  }
 
   return (
     <Screen style={styles.screen}>
@@ -40,7 +50,7 @@ export function RoleSelectionScreen({ navigation }: Props) {
 
       <View style={styles.brand}>
         <Image source={require('../../assets/superheroo-logo.png')} style={styles.logo} />
-        <Text style={styles.title}>{t('app.name')}</Text>
+        <Text style={styles.title}>{APP_DISPLAY_NAME}</Text>
         <Text style={styles.tagline}>{t('app.tagline')}</Text>
       </View>
 

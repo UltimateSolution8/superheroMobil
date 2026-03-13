@@ -14,6 +14,7 @@ const presignedFromExtra = typeof extra.enablePresignedSelfies === 'string'
   : typeof extra.enablePresignedSelfies === 'boolean'
   ? String(extra.enablePresignedSelfies)
   : '';
+const appVariantFromExtra = typeof extra.appVariant === 'string' ? extra.appVariant.trim() : '';
 
 export const API_BASE_URL =
   process.env.EXPO_PUBLIC_API_BASE_URL?.trim() || apiFromExtra || 'https://api.mysuperhero.xyz';
@@ -31,6 +32,29 @@ export const GOOGLE_MAPS_API_KEY =
   process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY?.trim() || mapsFromExtra || '';
 
 export const DEV_SHOW_OTP = process.env.EXPO_PUBLIC_DEV_SHOW_OTP === 'true';
+
+export type AppVariant = 'unified' | 'buyer' | 'helper';
+
+function normalizeAppVariant(raw?: string | null): AppVariant {
+  const value = (raw || '').trim().toLowerCase();
+  if (value === 'buyer') return 'buyer';
+  if (value === 'helper') return 'helper';
+  return 'unified';
+}
+
+export const APP_VARIANT = normalizeAppVariant(
+  process.env.EXPO_PUBLIC_APP_VARIANT || appVariantFromExtra || 'unified',
+);
+
+export const LOCKED_ROLE: 'BUYER' | 'HELPER' | null =
+  APP_VARIANT === 'buyer' ? 'BUYER' : APP_VARIANT === 'helper' ? 'HELPER' : null;
+
+export const APP_DISPLAY_NAME =
+  APP_VARIANT === 'buyer'
+    ? 'Superherooo Citizen'
+    : APP_VARIANT === 'helper'
+    ? 'Superherooo Partner'
+    : 'Superherooo';
 
 function parseLatLng(raw?: string | null): { lat: number; lng: number } | null {
   if (!raw) return null;

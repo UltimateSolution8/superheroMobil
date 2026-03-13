@@ -32,7 +32,7 @@ export type HelperStackParamList = {
   HelperHome: undefined;
   HelperKyc: undefined;
   HelperVideoKyc: undefined;
-  HelperLiveKycCall: { roomId: string; token: string; userId: string; userName: string };
+  HelperLiveKycCall: { appId: number; roomId: string; token: string; userId: string; userName: string };
   HelperTask: { taskId: string };
   Menu: undefined;
   Profile: undefined;

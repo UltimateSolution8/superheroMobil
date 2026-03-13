@@ -3,6 +3,7 @@ import { FlatList, Modal, Pressable, StyleSheet, Text, View } from 'react-native
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import * as Location from 'expo-location';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import type { HelperProfile, TaskOfferedEvent } from '../../api/types';
@@ -19,6 +20,7 @@ import { theme } from '../../ui/theme';
 import { DEMO_FALLBACK_LOCATION } from '../../config';
 import type { HelperStackParamList } from '../../navigation/types';
 import { useI18n } from '../../i18n/I18nProvider';
+import { APP_DISPLAY_NAME } from '../../config';
 import { useHelperPresence } from '../../state/HelperPresenceContext';
 import { useActiveTask } from '../../state/ActiveTaskContext';
 
@@ -86,7 +88,11 @@ const OfferRow = React.memo(function OfferRow({ offer, onAccept }: OfferRowProps
         {t('helper.offer.urgency')}: {urgencyLabel} | {t('helper.offer.eta')}: {offer.timeMinutes} {t('buyer.task.minutes')} | {t('helper.offer.budget')}: {t('currency.inr')} {budget}
       </Text>
       <Text style={styles.offerMeta}>{km} {t('helper.km_away')}</Text>
-      <PrimaryButton label={t('helper.accept')} onPress={onPress} />
+      <PrimaryButton
+        label={t('helper.accept')}
+        onPress={onPress}
+        leftIcon={<MaterialCommunityIcons name="handshake" size={18} color={theme.colors.primaryText} />}
+      />
     </View>
   );
 });
@@ -417,7 +423,7 @@ export function HelperHomeScreen({ navigation }: Props) {
     <Screen style={styles.screen}>
       <View style={styles.topBar}>
         <MenuButton onPress={() => navigation.navigate('Menu')} />
-        <Text style={styles.h1}>{t('app.name')}</Text>
+        <Text style={styles.h1}>{APP_DISPLAY_NAME}</Text>
         <View style={styles.topLinks} />
       </View>
 
@@ -442,12 +448,20 @@ export function HelperHomeScreen({ navigation }: Props) {
             onPress={() => navigation.navigate('HelperKyc')}
             variant="ghost"
             style={styles.half}
+            leftIcon={<MaterialCommunityIcons name="shield-check" size={18} color={theme.colors.primary} />}
           />
           <PrimaryButton
             label={isOnline ? t('helper.offline') : t('helper.online')}
             onPress={toggleOnline}
             variant={isOnline ? 'danger' : 'primary'}
             style={styles.half}
+            leftIcon={
+              <MaterialCommunityIcons
+                name={isOnline ? 'toggle-switch-off-outline' : 'toggle-switch-outline'}
+                size={18}
+                color={theme.colors.primaryText}
+              />
+            }
           />
         </View>
       </View>

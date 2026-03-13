@@ -127,10 +127,11 @@ export function HelperVideoKycScreen({ navigation }: Props) {
   const joinLiveSession = useCallback(() => {
     if (!liveSession) return;
     navigation.navigate('HelperLiveKycCall', {
+      appId: liveSession.appId,
       roomId: liveSession.roomId,
       token: liveSession.token,
-      userId: liveSession.helperId,
-      userName: liveSession.helperName || t('role.superherooo'),
+      userId: liveSession.userId,
+      userName: liveSession.userName || t('role.superherooo'),
     });
   }, [liveSession, navigation, t]);
 
