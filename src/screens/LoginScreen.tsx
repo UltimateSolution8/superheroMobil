@@ -13,6 +13,7 @@ import { theme } from '../ui/theme';
 import type { AuthStackParamList } from '../navigation/types';
 import { ApiError } from '../api/http';
 import { useI18n } from '../i18n/I18nProvider';
+import { APP_DISPLAY_NAME, LOCKED_ROLE } from '../config';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'Login'>;
 
@@ -23,7 +24,7 @@ function normalizePhone(raw: string) {
 export function LoginScreen({ navigation, route }: Props) {
   const { startOtp, authNotice, clearAuthNotice } = useAuth();
   const { t, lang, setLang } = useI18n();
-  const [role, setRole] = useState<'BUYER' | 'HELPER'>(route.params?.role ?? 'BUYER');
+  const [role, setRole] = useState<'BUYER' | 'HELPER'>(LOCKED_ROLE ?? route.params?.role ?? 'BUYER');
   const [phone, setPhone] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,6 +33,10 @@ export function LoginScreen({ navigation, route }: Props) {
   const canSend = useMemo(() => normalizePhone(phone).length === 10, [phone]);
 
   React.useEffect(() => {
+    if (LOCKED_ROLE) {
+      if (role !== LOCKED_ROLE) setRole(LOCKED_ROLE);
+      return;
+    }
     if (route.params?.role && route.params.role !== role) {
       setRole(route.params.role);
     }
@@ -79,7 +84,8 @@ export function LoginScreen({ navigation, route }: Props) {
   );
 
   const onSignup = useCallback(() => {
-    navigation.navigate(role === 'BUYER' ? 'BuyerSignup' : 'HelperSignup');
+    const targetRole = LOCKED_ROLE ?? role;
+    navigation.navigate(targetRole === 'BUYER' ? 'BuyerSignup' : 'HelperSignup');
   }, [navigation, role]);
   const authNoticeText = authNotice ? t(authNotice) : null;
 
@@ -104,19 +110,21 @@ export function LoginScreen({ navigation, route }: Props) {
             </View>
             <View style={styles.brandBlock}>
               <Image source={require('../../assets/superheroo-logo.png')} style={styles.logo} />
-              <Text style={styles.h1}>{t('app.name')}</Text>
+              <Text style={styles.h1}>{APP_DISPLAY_NAME}</Text>
               <Text style={styles.sub}>{t('app.tagline')}</Text>
             </View>
           </View>
 
-          <Segmented
-            value={role}
-            onChange={(v) => setRole(v as 'BUYER' | 'HELPER')}
-            options={[
-              { key: 'BUYER', label: t('login.need_help') },
-              { key: 'HELPER', label: t('login.can_help') },
-            ]}
-          />
+          {!LOCKED_ROLE ? (
+            <Segmented
+              value={role}
+              onChange={(v) => setRole(v as 'BUYER' | 'HELPER')}
+              options={[
+                { key: 'BUYER', label: t('login.need_help') },
+                { key: 'HELPER', label: t('login.can_help') },
+              ]}
+            />
+          ) : null}
 
           <TextField
             label={t('login.phone')}

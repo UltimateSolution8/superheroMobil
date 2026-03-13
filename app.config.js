@@ -7,6 +7,29 @@ const expo = appJson.expo || {};
 const googleMapsApiKey = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || '';
 const apiBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL || 'https://api.mysuperhero.xyz';
 const socketUrl = process.env.EXPO_PUBLIC_SOCKET_URL || 'https://api.mysuperhero.xyz';
+const appVariantRaw = (process.env.EXPO_PUBLIC_APP_VARIANT || process.env.APP_VARIANT || 'unified').trim().toLowerCase();
+const appVariant = appVariantRaw === 'buyer' || appVariantRaw === 'helper' ? appVariantRaw : 'unified';
+const variantMeta =
+  appVariant === 'buyer'
+    ? {
+        name: 'Superherooo Citizen',
+        slug: 'superheroo-citizen',
+        androidPackage: 'com.helpinminutes.citizen',
+        iosBundleIdentifier: 'com.helpinminutes.citizen',
+      }
+    : appVariant === 'helper'
+    ? {
+        name: 'Superherooo Partner',
+        slug: 'superheroo-partner',
+        androidPackage: 'com.helpinminutes.partner',
+        iosBundleIdentifier: 'com.helpinminutes.partner',
+      }
+    : {
+        name: expo.name,
+        slug: expo.slug,
+        androidPackage: expo.android && expo.android.package ? expo.android.package : undefined,
+        iosBundleIdentifier: expo.ios && expo.ios.bundleIdentifier ? expo.ios.bundleIdentifier : undefined,
+      };
 const googleServicesFile = path.join(__dirname, 'google-services.json');
 const hasGoogleServices =
   fs.existsSync(googleServicesFile) && fs.statSync(googleServicesFile).size > 0;
@@ -77,6 +100,8 @@ function withManifestNetworkSecurity(config) {
 module.exports = {
   expo: {
     ...expo,
+    name: variantMeta.name || expo.name,
+    slug: variantMeta.slug || expo.slug,
     plugins: [
       ...plugins,
       withNetworkSecurity,
@@ -87,9 +112,11 @@ module.exports = {
       apiBaseUrl,
       socketUrl,
       googleMapsApiKey,
+      appVariant,
     },
     android: {
       ...(expo.android || {}),
+      package: variantMeta.androidPackage || (expo.android && expo.android.package ? expo.android.package : undefined),
       googleServicesFile: hasGoogleServices ? googleServicesFile : undefined,
       usesCleartextTraffic: true,
       permissions: androidPermissions,
@@ -102,6 +129,8 @@ module.exports = {
     },
     ios: {
       ...(expo.ios || {}),
+      bundleIdentifier:
+        variantMeta.iosBundleIdentifier || (expo.ios && expo.ios.bundleIdentifier ? expo.ios.bundleIdentifier : undefined),
       infoPlist: iosInfoPlist,
       config: {
         ...(expo.ios && expo.ios.config ? expo.ios.config : {}),

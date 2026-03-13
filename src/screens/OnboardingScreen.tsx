@@ -8,6 +8,8 @@ import { PrimaryButton } from '../ui/PrimaryButton';
 import { theme } from '../ui/theme';
 import { Segmented } from '../ui/Segmented';
 import { useI18n } from '../i18n/I18nProvider';
+import { APP_DISPLAY_NAME } from '../config';
+import { LOCKED_ROLE } from '../config';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'Onboarding'>;
 
@@ -52,7 +54,11 @@ export function OnboardingScreen({ navigation }: Props) {
       setPage(next);
       scrollRef.current?.scrollTo({ x: next * pageWidth, animated: true });
     } else {
-      navigation.replace('RoleSelection');
+      if (LOCKED_ROLE) {
+        navigation.replace('Login', { role: LOCKED_ROLE });
+      } else {
+        navigation.replace('RoleSelection');
+      }
     }
   };
 
@@ -73,11 +79,14 @@ export function OnboardingScreen({ navigation }: Props) {
         <View style={styles.brandRow}>
           <Image source={require('../../assets/superheroo-logo.png')} style={styles.logo} />
           <View>
-            <Text style={styles.brand}>{t('app.name')}</Text>
+            <Text style={styles.brand}>{APP_DISPLAY_NAME}</Text>
             <Text style={styles.tagline}>{t('app.tagline')}</Text>
           </View>
         </View>
-        <Text style={styles.skip} onPress={() => navigation.replace('RoleSelection')}>
+        <Text
+          style={styles.skip}
+          onPress={() => (LOCKED_ROLE ? navigation.replace('Login', { role: LOCKED_ROLE }) : navigation.replace('RoleSelection'))}
+        >
           {t('onboard.skip')}
         </Text>
       </View>

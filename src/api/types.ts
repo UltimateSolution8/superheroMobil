@@ -203,7 +203,10 @@ export type LiveKycSession = {
   id: string;
   helperId: string;
   helperName?: string | null;
+  appId: number;
   roomId: string;
+  userId: string;
+  userName: string;
   token: string;
   status: string;
   expiresAt: string;

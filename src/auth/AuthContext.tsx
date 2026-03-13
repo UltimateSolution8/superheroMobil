@@ -6,6 +6,7 @@ import { ApiError } from '../api/http';
 import type { AuthResponse, AuthUser, UserRole } from '../api/types';
 import { clearAuth, loadAuth, saveAuth } from './storage';
 import { registerForPushNotifications } from '../notifications/push';
+import { LOCKED_ROLE } from '../config';
 
 type AuthStatus = 'loading' | 'signedOut' | 'signedIn';
 
@@ -41,6 +42,16 @@ type AuthContextValue = AuthState & {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 const PIN_KEY = 'superheroo.pin';
+
+function ensureRoleAllowed(user: AuthUser) {
+  if (!LOCKED_ROLE) return;
+  if (user.role === LOCKED_ROLE) return;
+  const msg =
+    LOCKED_ROLE === 'BUYER'
+      ? 'This app supports citizen accounts only. Please use Superherooo Partner app for helper login.'
+      : 'This app supports Superherooo accounts only. Please use Superherooo Citizen app for citizen login.';
+  throw new ApiError(msg, { status: 403 });
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AuthState>({
@@ -98,6 +109,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const verifyOtp = useCallback(async (phone: string, otp: string, role: UserRole) => {
     const auth = await api.otpVerify(phone, otp, role);
+    ensureRoleAllowed(auth.user);
     await saveAuth(auth);
     accessRef.current = auth.accessToken;
     refreshRef.current = auth.refreshToken;
@@ -110,6 +122,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (auth.user.role === 'ADMIN') {
       throw new ApiError('Admin role is not supported in mobile app.', { status: 400 });
     }
+    ensureRoleAllowed(auth.user);
     await saveAuth(auth);
     accessRef.current = auth.accessToken;
     refreshRef.current = auth.refreshToken;
@@ -122,7 +135,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (role === 'ADMIN') {
         throw new ApiError('Admin role is not supported in mobile app.', { status: 400 });
       }
+      if (LOCKED_ROLE && role !== LOCKED_ROLE) {
+        const msg =
+          LOCKED_ROLE === 'BUYER'
+            ? 'This app supports citizen sign up only.'
+            : 'This app supports Superherooo sign up only.';
+        throw new ApiError(msg, { status: 400 });
+      }
       const auth = await api.passwordSignup({ email, password, phone: phone || null, displayName: displayName || null, role });
+      ensureRoleAllowed(auth.user);
       await saveAuth(auth);
       accessRef.current = auth.accessToken;
       refreshRef.current = auth.refreshToken;

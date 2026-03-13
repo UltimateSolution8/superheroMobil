@@ -11,6 +11,7 @@ import { theme } from '../ui/theme';
 import type { AuthStackParamList } from '../navigation/types';
 import { ApiError } from '../api/http';
 import { useI18n } from '../i18n/I18nProvider';
+import { LOCKED_ROLE } from '../config';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'EmailLogin'>;
 
@@ -43,6 +44,14 @@ export function EmailLoginScreen({ navigation }: Props) {
   }, [busy, canLogin, email, loginWithPassword, password, t]);
 
   const onSignup = useCallback(() => {
+    if (LOCKED_ROLE === 'BUYER') {
+      navigation.navigate('BuyerSignup');
+      return;
+    }
+    if (LOCKED_ROLE === 'HELPER') {
+      navigation.navigate('HelperSignup');
+      return;
+    }
     Alert.alert(t('signup.choose_title'), t('signup.choose_subtitle'), [
       { text: t('role.citizen'), onPress: () => navigation.navigate('BuyerSignup') },
       { text: t('role.superherooo'), onPress: () => navigation.navigate('HelperSignup') },

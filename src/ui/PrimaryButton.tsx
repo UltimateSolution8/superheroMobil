@@ -1,5 +1,5 @@
 import React, { memo, useMemo } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, type ViewStyle } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
 import { theme } from './theme';
 
@@ -10,6 +10,7 @@ type Props = {
   loading?: boolean;
   variant?: 'primary' | 'accent' | 'danger' | 'ghost';
   style?: ViewStyle;
+  leftIcon?: React.ReactNode;
 };
 
 export const PrimaryButton = memo(function PrimaryButton({
@@ -19,6 +20,7 @@ export const PrimaryButton = memo(function PrimaryButton({
   loading,
   variant = 'primary',
   style,
+  leftIcon,
 }: Props) {
   const colors = useMemo(() => {
     if (variant === 'accent') return { bg: theme.colors.accent, text: theme.colors.primary };
@@ -45,7 +47,10 @@ export const PrimaryButton = memo(function PrimaryButton({
       {loading ? (
         <ActivityIndicator color={colors.text} />
       ) : (
-        <Text style={[styles.label, { color: colors.text }]}>{label}</Text>
+        <View style={styles.content} pointerEvents="none">
+          {leftIcon ? <View style={styles.iconWrap}>{leftIcon}</View> : null}
+          <Text style={[styles.label, { color: colors.text }]}>{label}</Text>
+        </View>
       )}
     </Pressable>
   );
@@ -73,5 +78,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     letterSpacing: 0.2,
+  },
+  content: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconWrap: {
+    marginRight: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

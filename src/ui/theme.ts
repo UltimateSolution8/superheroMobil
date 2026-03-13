@@ -1,3 +1,8 @@
+import { APP_VARIANT } from '../config';
+
+const primaryColor = APP_VARIANT === 'helper' ? '#9A3412' : '#1E3A8A';
+const accentColor = APP_VARIANT === 'helper' ? '#FB923C' : '#FACC15';
+
 export const theme = {
   colors: {
     bg: '#F8FAFC',
@@ -5,9 +10,9 @@ export const theme = {
     text: '#0F172A',
     muted: '#475569',
     border: '#E2E8F0',
-    primary: '#1E3A8A',
+    primary: primaryColor,
     primaryText: '#FFFFFF',
-    accent: '#FACC15',
+    accent: accentColor,
     danger: '#EF4444',
     success: '#10B981',
     warning: '#F59E0B',

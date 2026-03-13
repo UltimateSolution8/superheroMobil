@@ -38,6 +38,7 @@ import { TermsScreen } from '../screens/common/TermsScreen';
 import type { AuthStackParamList, BuyerStackParamList, HelperStackParamList } from './types';
 import { theme } from '../ui/theme';
 import { useI18n } from '../i18n/I18nProvider';
+import { LOCKED_ROLE } from '../config';
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const BuyerStack = createNativeStackNavigator<BuyerStackParamList>();
@@ -67,11 +68,11 @@ export function AppNavigator() {
           >
             <AuthStack.Screen name="Splash" component={SplashScreen} />
             <AuthStack.Screen name="Onboarding" component={OnboardingScreen} />
-            <AuthStack.Screen name="RoleSelection" component={RoleSelectionScreen} />
+            {!LOCKED_ROLE ? <AuthStack.Screen name="RoleSelection" component={RoleSelectionScreen} /> : null}
             <AuthStack.Screen name="Login" component={LoginScreen} />
             <AuthStack.Screen name="EmailLogin" component={EmailLoginScreen} />
-            <AuthStack.Screen name="BuyerSignup" component={BuyerSignupScreen} />
-            <AuthStack.Screen name="HelperSignup" component={HelperSignupScreen} />
+            {LOCKED_ROLE !== 'HELPER' ? <AuthStack.Screen name="BuyerSignup" component={BuyerSignupScreen} /> : null}
+            {LOCKED_ROLE !== 'BUYER' ? <AuthStack.Screen name="HelperSignup" component={HelperSignupScreen} /> : null}
             <AuthStack.Screen name="Otp" component={OtpScreen} />
             <AuthStack.Screen name="Diagnostics" component={DiagnosticsScreen} />
           </AuthStack.Navigator>
