@@ -17,8 +17,8 @@ const variantMeta =
         slug: 'superheroo-citizen',
         androidPackage: 'com.helpinminutes.citizen',
         iosBundleIdentifier: 'com.helpinminutes.citizen',
-        icon: './assets/icon-citizen.png',
-        adaptiveIcon: './assets/adaptive-icon-citizen.png',
+        icon: './assets/icon.png',
+        adaptiveIcon: './assets/adaptive-icon.png',
         adaptiveBackgroundColor: '#1D4ED8',
       }
     : appVariant === 'helper'
@@ -27,8 +27,8 @@ const variantMeta =
         slug: 'superheroo-partner',
         androidPackage: 'com.helpinminutes.partner',
         iosBundleIdentifier: 'com.helpinminutes.partner',
-        icon: './assets/icon-partner.png',
-        adaptiveIcon: './assets/adaptive-icon-partner.png',
+        icon: './assets/icon.png',
+        adaptiveIcon: './assets/adaptive-icon.png',
         adaptiveBackgroundColor: '#0F766E',
       }
     : {
