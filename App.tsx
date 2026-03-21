@@ -4,8 +4,9 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from './src/auth/AuthContext';
 import { I18nProvider } from './src/i18n/I18nProvider';
 import { AppNavigator } from './src/navigation/AppNavigator';
+import { Sentry } from './src/monitoring/sentry';
 
-export default function App() {
+function App() {
   return (
     <SafeAreaProvider>
       <I18nProvider>
@@ -17,3 +18,5 @@ export default function App() {
     </SafeAreaProvider>
   );
 }
+
+export default Sentry.wrap(App);
