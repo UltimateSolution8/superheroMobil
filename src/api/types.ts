@@ -149,7 +149,7 @@ export type SupportTicket = {
 
 export type SupportMessage = {
   id: string;
-  authorType: 'USER' | 'ADMIN' | 'AI';
+  authorType: 'USER' | 'ADMIN' | 'AI' | 'SYSTEM';
   authorUserId?: string | null;
   message: string;
   createdAt: string;

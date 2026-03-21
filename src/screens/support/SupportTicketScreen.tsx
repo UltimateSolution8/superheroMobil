@@ -41,6 +41,7 @@ export function SupportTicketScreen({ navigation, route }: Props) {
 
   const [reply, setReply] = useState('');
   const [sending, setSending] = useState(false);
+  const [handoffBusy, setHandoffBusy] = useState(false);
 
   const load = useCallback(async () => {
     if (!ticketId) return;
@@ -88,6 +89,26 @@ export function SupportTicketScreen({ navigation, route }: Props) {
     }
   }, [canSend, load, reply, t, ticketId, withAuth]);
 
+  const canHandoff = useMemo(
+    () => online && !!ticket && ticket.status === 'OPEN' && !handoffBusy,
+    [handoffBusy, online, ticket],
+  );
+
+  const onHandoff = useCallback(async () => {
+    if (!ticketId || !canHandoff) return;
+    setHandoffBusy(true);
+    setError(null);
+    try {
+      const updated = await withAuth((at) => api.handoffSupportTicket(at, ticketId, 'User requested admin support'));
+      setTicket(updated);
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 401) return;
+      setError(t('support.handoff_error'));
+    } finally {
+      setHandoffBusy(false);
+    }
+  }, [canHandoff, t, ticketId, withAuth]);
+
   return (
     <Screen style={styles.screen}>
       <View style={styles.topBar}>
@@ -122,6 +143,14 @@ export function SupportTicketScreen({ navigation, route }: Props) {
       />
 
       <View style={styles.replyCard}>
+        <PrimaryButton
+          label={t('support.transfer_to_admin')}
+          onPress={onHandoff}
+          disabled={!canHandoff}
+          loading={handoffBusy}
+          variant="ghost"
+        />
+        {ticket?.status === 'IN_PROGRESS' ? <Text style={styles.handoffNote}>{t('support.handoff_active')}</Text> : null}
         <TextField label={t('support.reply_label')} value={reply} onChangeText={setReply} placeholder={t('support.reply_placeholder')} multiline />
         <PrimaryButton label={t('common.send')} onPress={onSend} disabled={!canSend} loading={sending} />
       </View>
@@ -159,6 +188,7 @@ const styles = StyleSheet.create({
   msgAuthor: { color: theme.colors.text, fontWeight: '900', fontSize: 12 },
   msgTime: { color: theme.colors.muted, fontSize: 11 },
   msgBody: { color: theme.colors.text, lineHeight: 20 },
+  handoffNote: { color: theme.colors.muted, fontSize: 12 },
   replyCard: {
     borderWidth: 1,
     borderColor: theme.colors.border,

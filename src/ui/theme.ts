@@ -1,7 +1,7 @@
 import { APP_VARIANT } from '../config';
 
-const primaryColor = APP_VARIANT === 'helper' ? '#9A3412' : '#1E3A8A';
-const accentColor = APP_VARIANT === 'helper' ? '#FB923C' : '#FACC15';
+const primaryColor = APP_VARIANT === 'helper' ? '#0F766E' : '#1E3A8A';
+const accentColor = APP_VARIANT === 'helper' ? '#34D399' : '#93C5FD';
 
 export const theme = {
   colors: {

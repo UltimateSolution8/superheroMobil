@@ -23,6 +23,14 @@ import { useActiveTask } from '../../state/ActiveTaskContext';
 import { useI18n } from '../../i18n/I18nProvider';
 
 type Props = NativeStackScreenProps<BuyerStackParamList, 'BuyerTask'>;
+const VALID_STATUSES: ReadonlySet<TaskStatus> = new Set([
+  'SEARCHING',
+  'ASSIGNED',
+  'ARRIVED',
+  'STARTED',
+  'COMPLETED',
+  'CANCELLED',
+]);
 
 export function BuyerTaskScreen({ route, navigation }: Props) {
   const { taskId } = route.params;
@@ -61,10 +69,10 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
   const mapProvider = canRenderMap ? PROVIDER_GOOGLE : undefined;
 
   const lastRouteFetch = useRef(0);
-  const helperMarkerRef = useRef<any>(null);
   const mapRef = useRef<MapView | null>(null);
   const lastFitAt = useRef(0);
   const previousStatus = useRef<TaskStatus | null>(null);
+  const silentReloadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const taskLat = Number(task?.lat);
   const taskLng = Number(task?.lng);
@@ -79,7 +87,6 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
         key: 'helper',
         coordinate: { latitude: helperLoc.lat, longitude: helperLoc.lng },
         title: t('role.superherooo'),
-        ref: helperMarkerRef,
       });
     }
     return list;
@@ -99,6 +106,33 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
     }
   }, [taskId, t, withAuth]);
 
+  const loadSilently = useCallback(async () => {
+    try {
+      const fresh = await withAuth((at) => api.getTask(at, taskId));
+      setTask(fresh);
+    } catch {
+      // best-effort refresh only
+    }
+  }, [taskId, withAuth]);
+
+  const scheduleSilentReload = useCallback(() => {
+    if (silentReloadTimer.current) return;
+    silentReloadTimer.current = setTimeout(() => {
+      silentReloadTimer.current = null;
+      void loadSilently();
+    }, 250);
+  }, [loadSilently]);
+
+  useEffect(
+    () => () => {
+      if (silentReloadTimer.current) {
+        clearTimeout(silentReloadTimer.current);
+        silentReloadTimer.current = null;
+      }
+    },
+    [],
+  );
+
   // Only useFocusEffect — fires on both mount + re-focus (fixes double load)
   useFocusEffect(
     useCallback(() => {
@@ -113,37 +147,42 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
 
     const onAssigned = (evt: TaskAssignedEvent) => {
       if (!evt || evt.taskId !== taskId) return;
+      if (typeof evt.helperId !== 'string' || !VALID_STATUSES.has(evt.status)) return;
       setTask((prev) =>
         prev ? { ...prev, status: evt.status, assignedHelperId: evt.helperId } : prev,
       );
+      scheduleSilentReload();
     };
 
     const onStatus = (evt: TaskStatusChangedEvent) => {
       if (!evt || evt.taskId !== taskId) return;
+      if (!VALID_STATUSES.has(evt.status)) return;
       setTask((prev) => (prev ? { ...prev, status: evt.status } : prev));
+      scheduleSilentReload();
     };
 
     const onHelperLoc = (evt: { taskId: string; helperId: string; lat: number; lng: number; ts: number }) => {
       if (!evt || evt.taskId !== taskId) return;
       const nextLat = Number(evt.lat);
       const nextLng = Number(evt.lng);
+      const nextTs = Number(evt.ts);
       if (!Number.isFinite(nextLat) || !Number.isFinite(nextLng)) return;
-      setHelperLoc({ lat: nextLat, lng: nextLng, ts: evt.ts || Date.now() });
-      const marker = helperMarkerRef.current;
-      if (marker && typeof marker.animateMarkerToCoordinate === 'function' && Platform.OS === 'android') {
-        marker.animateMarkerToCoordinate({ latitude: nextLat, longitude: nextLng }, 900);
-      }
+      setHelperLoc({ lat: nextLat, lng: nextLng, ts: Number.isFinite(nextTs) ? nextTs : Date.now() });
       if (hasTaskCoords && mapRef.current) {
         const now = Date.now();
         if (now - lastFitAt.current > 6_000) {
           lastFitAt.current = now;
-          mapRef.current.fitToCoordinates(
-            [
-              { latitude: taskLat, longitude: taskLng },
-              { latitude: nextLat, longitude: nextLng },
-            ],
-            { edgePadding: { top: 80, right: 60, bottom: 100, left: 60 }, animated: true },
-          );
+          try {
+            mapRef.current.fitToCoordinates(
+              [
+                { latitude: taskLat, longitude: taskLng },
+                { latitude: nextLat, longitude: nextLng },
+              ],
+              { edgePadding: { top: 80, right: 60, bottom: 100, left: 60 }, animated: true },
+            );
+          } catch {
+            // best-effort map camera movement
+          }
         }
       }
     };
@@ -156,7 +195,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
       socket.off('task_status_changed', onStatus);
       socket.off('helper.location', onHelperLoc);
     };
-  }, [socket, taskId, hasTaskCoords, taskLat, taskLng]);
+  }, [scheduleSilentReload, socket, taskId, hasTaskCoords, taskLat, taskLng]);
 
   useEffect(() => {
     if (!task || !helperLoc || !GOOGLE_MAPS_API_KEY || !hasTaskCoords) return;
