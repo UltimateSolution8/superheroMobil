@@ -7,7 +7,7 @@ const expo = appJson.expo || {};
 const googleMapsApiKey = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || '';
 const sentryDsn = process.env.EXPO_PUBLIC_SENTRY_DSN || '';
 const apiBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL || 'https://api.mysuperhero.xyz';
-const socketUrl = process.env.EXPO_PUBLIC_SOCKET_URL || 'https://api.mysuperhero.xyz';
+const socketUrl = process.env.EXPO_PUBLIC_SOCKET_URL || 'https://superheroorealtime.onrender.com';
 const appVariantRaw = (process.env.EXPO_PUBLIC_APP_VARIANT || process.env.APP_VARIANT || 'unified').trim().toLowerCase();
 const appVariant = appVariantRaw === 'buyer' || appVariantRaw === 'helper' ? appVariantRaw : 'unified';
 const variantMeta =
@@ -17,8 +17,8 @@ const variantMeta =
         slug: 'superheroo-citizen',
         androidPackage: 'com.helpinminutes.citizen',
         iosBundleIdentifier: 'com.helpinminutes.citizen',
-        icon: './assets/icon.png',
-        adaptiveIcon: './assets/adaptive-icon.png',
+        icon: './assets/icon-citizen.png',
+        adaptiveIcon: './assets/adaptive-icon-citizen.png',
         adaptiveBackgroundColor: '#1D4ED8',
       }
     : appVariant === 'helper'
@@ -27,8 +27,8 @@ const variantMeta =
         slug: 'superheroo-partner',
         androidPackage: 'com.helpinminutes.partner',
         iosBundleIdentifier: 'com.helpinminutes.partner',
-        icon: './assets/icon.png',
-        adaptiveIcon: './assets/adaptive-icon.png',
+        icon: './assets/icon-partner.png',
+        adaptiveIcon: './assets/adaptive-icon-partner.png',
         adaptiveBackgroundColor: '#0F766E',
       }
     : {

@@ -6,6 +6,7 @@ OUT_DIR="${ROOT_DIR}/apk-out"
 MAPS_KEY="${EXPO_PUBLIC_GOOGLE_MAPS_API_KEY:-}"
 SOCKET_URL="${EXPO_PUBLIC_SOCKET_URL:-https://superheroorealtime.onrender.com}"
 API_BASE="${EXPO_PUBLIC_API_BASE_URL:-https://api.mysuperhero.xyz}"
+SENTRY_DSN="${EXPO_PUBLIC_SENTRY_DSN:-}"
 DOCKER_PLATFORM="${DOCKER_PLATFORM:-}"
 
 if [[ -z "${MAPS_KEY}" ]]; then
@@ -30,6 +31,7 @@ build_one() {
       --build-arg EXPO_PUBLIC_API_BASE_URL="${API_BASE}" \
       --build-arg EXPO_PUBLIC_SOCKET_URL="${SOCKET_URL}" \
       --build-arg EXPO_PUBLIC_GOOGLE_MAPS_API_KEY="${MAPS_KEY}" \
+      --build-arg EXPO_PUBLIC_SENTRY_DSN="${SENTRY_DSN}" \
       --build-arg EXPO_PUBLIC_DEV_SHOW_OTP=true \
       --build-arg EXPO_PUBLIC_APP_VARIANT="${app_variant}" \
       .
@@ -41,6 +43,7 @@ build_one() {
       --build-arg EXPO_PUBLIC_API_BASE_URL="${API_BASE}" \
       --build-arg EXPO_PUBLIC_SOCKET_URL="${SOCKET_URL}" \
       --build-arg EXPO_PUBLIC_GOOGLE_MAPS_API_KEY="${MAPS_KEY}" \
+      --build-arg EXPO_PUBLIC_SENTRY_DSN="${SENTRY_DSN}" \
       --build-arg EXPO_PUBLIC_DEV_SHOW_OTP=true \
       --build-arg EXPO_PUBLIC_APP_VARIANT="${app_variant}" \
       .
