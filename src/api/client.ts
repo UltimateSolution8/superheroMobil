@@ -459,3 +459,15 @@ export async function addSupportMessage(
     body: JSON.stringify({ message }),
   });
 }
+
+export async function handoffSupportTicket(
+  accessToken: string,
+  ticketId: string,
+  reason?: string | null,
+): Promise<SupportTicketDetail> {
+  return fetchJson(url(`/api/v1/support/tickets/${encodeURIComponent(ticketId)}/handoff`), {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+    body: JSON.stringify({ reason: reason ?? null }),
+  });
+}

@@ -16,6 +16,9 @@ const variantMeta =
         slug: 'superheroo-citizen',
         androidPackage: 'com.helpinminutes.citizen',
         iosBundleIdentifier: 'com.helpinminutes.citizen',
+        icon: './assets/icon-citizen.png',
+        adaptiveIcon: './assets/adaptive-icon-citizen.png',
+        adaptiveBackgroundColor: '#1D4ED8',
       }
     : appVariant === 'helper'
     ? {
@@ -23,12 +26,20 @@ const variantMeta =
         slug: 'superheroo-partner',
         androidPackage: 'com.helpinminutes.partner',
         iosBundleIdentifier: 'com.helpinminutes.partner',
+        icon: './assets/icon-partner.png',
+        adaptiveIcon: './assets/adaptive-icon-partner.png',
+        adaptiveBackgroundColor: '#0F766E',
       }
     : {
         name: expo.name,
         slug: expo.slug,
         androidPackage: expo.android && expo.android.package ? expo.android.package : undefined,
         iosBundleIdentifier: expo.ios && expo.ios.bundleIdentifier ? expo.ios.bundleIdentifier : undefined,
+        icon: expo.icon,
+        adaptiveIcon:
+          expo.android && expo.android.adaptiveIcon ? expo.android.adaptiveIcon.foregroundImage : undefined,
+        adaptiveBackgroundColor:
+          expo.android && expo.android.adaptiveIcon ? expo.android.adaptiveIcon.backgroundColor : undefined,
       };
 const googleServicesFile = path.join(__dirname, 'google-services.json');
 const hasGoogleServices =
@@ -97,15 +108,71 @@ function withManifestNetworkSecurity(config) {
   });
 }
 
+function withAndroidBuildGradleCompat(config) {
+  return withDangerousMod(config, [
+    'android',
+    async (config) => {
+      const appBuildGradle = path.join(
+        config.modRequest.platformProjectRoot,
+        'app',
+        'build.gradle'
+      );
+      let source = await fs.promises.readFile(appBuildGradle, 'utf8');
+
+      if (!source.includes('exclude group: "com.android.support", module: "support-compat"')) {
+        source += `
+
+configurations.all {
+    exclude group: "com.android.support", module: "support-compat"
+    exclude group: "com.android.support", module: "support-v4"
+    exclude group: "com.android.support", module: "versionedparcelable"
+    exclude group: "com.android.support", module: "localbroadcastmanager"
+    exclude group: "com.android.support", module: "customview"
+}
+`;
+      }
+
+      const legacyResourceExcludes = `resources {
+            excludes += [
+                "META-INF/*.version",
+                "META-INF/androidx.legacy_legacy-support-core-ui.version",
+                "META-INF/androidx.legacy_legacy-support-core-utils.version",
+                "META-INF/androidx.versionedparcelable_versionedparcelable.version",
+                "META-INF/androidx.localbroadcastmanager_localbroadcastmanager.version",
+                "META-INF/androidx.customview_customview.version",
+                "META-INF/androidx.drawerlayout_drawerlayout.version"
+            ]
+        }`;
+
+      if (!source.includes('META-INF/androidx.customview_customview.version')) {
+        source = source.replace(
+          /packagingOptions\s*\{\s*jniLibs\s*\{[\s\S]*?useLegacyPackaging enableLegacyPackaging\.toBoolean\(\)\s*\}\s*\}/m,
+          (match) => {
+            if (match.includes('resources {')) {
+              return match;
+            }
+            return match.replace(/\}\s*$/, `\n        ${legacyResourceExcludes}\n    }`);
+          }
+        );
+      }
+
+      await fs.promises.writeFile(appBuildGradle, source, 'utf8');
+      return config;
+    },
+  ]);
+}
+
 module.exports = {
   expo: {
     ...expo,
     name: variantMeta.name || expo.name,
     slug: variantMeta.slug || expo.slug,
+    icon: variantMeta.icon || expo.icon,
     plugins: [
       ...plugins,
       withNetworkSecurity,
       withManifestNetworkSecurity,
+      withAndroidBuildGradleCompat,
     ],
     extra: {
       ...(expo.extra || {}),
@@ -125,6 +192,16 @@ module.exports = {
         googleMaps: {
           apiKey: googleMapsApiKey,
         },
+      },
+      adaptiveIcon: {
+        foregroundImage:
+          variantMeta.adaptiveIcon ||
+          (expo.android && expo.android.adaptiveIcon && expo.android.adaptiveIcon.foregroundImage) ||
+          './assets/adaptive-icon.png',
+        backgroundColor:
+          variantMeta.adaptiveBackgroundColor ||
+          (expo.android && expo.android.adaptiveIcon && expo.android.adaptiveIcon.backgroundColor) ||
+          '#1E3A8A',
       },
     },
     ios: {

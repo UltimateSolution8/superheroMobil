@@ -608,6 +608,9 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'support.no_messages': 'No messages.',
     'support.reply_label': 'Your message',
     'support.reply_placeholder': 'Type your reply…',
+    'support.transfer_to_admin': 'Transfer to admin',
+    'support.handoff_active': 'Admin support is now handling this ticket.',
+    'support.handoff_error': 'Could not transfer this ticket right now.',
 
     // Buyer - extras
     'buyer.searching_suggestions': 'Searching suggestions…',
@@ -1258,6 +1261,9 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'support.no_messages': 'कोई संदेश नहीं।',
     'support.reply_label': 'आपका संदेश',
     'support.reply_placeholder': 'अपना उत्तर लिखें…',
+    'support.transfer_to_admin': 'एडमिन को ट्रांसफर करें',
+    'support.handoff_active': 'अब यह टिकट एडमिन सपोर्ट देख रहा है।',
+    'support.handoff_error': 'अभी टिकट ट्रांसफर नहीं हो सका।',
 
     // Buyer - extras
     'buyer.searching_suggestions': 'सुझाव खोज रहे हैं…',
@@ -1886,6 +1892,9 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'support.no_messages': 'సందేశాలు లేవు.',
     'support.reply_label': 'మీ సందేశం',
     'support.reply_placeholder': 'మీ సమాధానం టైప్ చేయండి…',
+    'support.transfer_to_admin': 'అడ్మిన్‌కు ట్రాన్స్‌ఫర్ చేయండి',
+    'support.handoff_active': 'ఈ టికెట్‌ను ఇప్పుడు అడ్మిన్ సపోర్ట్ చూస్తోంది.',
+    'support.handoff_error': 'ఇప్పుడే టికెట్ ట్రాన్స్‌ఫర్ చేయలేకపోయాం.',
 
     // Buyer - extras
     'buyer.searching_suggestions': 'సూచనలు వెతుకుతున్నాం…',
