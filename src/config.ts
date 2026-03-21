@@ -1,4 +1,5 @@
 import Constants from 'expo-constants';
+import * as Application from 'expo-application';
 
 const expoConfig =
   (Constants.expoConfig as { extra?: Record<string, unknown> } | null) ||
@@ -15,6 +16,7 @@ const presignedFromExtra = typeof extra.enablePresignedSelfies === 'string'
   ? String(extra.enablePresignedSelfies)
   : '';
 const appVariantFromExtra = typeof extra.appVariant === 'string' ? extra.appVariant.trim() : '';
+const applicationId = Application.applicationId || '';
 
 export const API_BASE_URL =
   process.env.EXPO_PUBLIC_API_BASE_URL?.trim() || apiFromExtra || 'https://api.mysuperhero.xyz';
@@ -42,8 +44,18 @@ function normalizeAppVariant(raw?: string | null): AppVariant {
   return 'unified';
 }
 
+function inferVariantFromAppId(raw?: string | null): AppVariant {
+  const value = (raw || '').trim().toLowerCase();
+  if (value === 'com.helpinminutes.citizen') return 'buyer';
+  if (value === 'com.helpinminutes.partner') return 'helper';
+  return 'unified';
+}
+
 export const APP_VARIANT = normalizeAppVariant(
-  process.env.EXPO_PUBLIC_APP_VARIANT || appVariantFromExtra || 'unified',
+  process.env.EXPO_PUBLIC_APP_VARIANT ||
+    appVariantFromExtra ||
+    inferVariantFromAppId(applicationId) ||
+    'unified',
 );
 
 export const LOCKED_ROLE: 'BUYER' | 'HELPER' | null =
