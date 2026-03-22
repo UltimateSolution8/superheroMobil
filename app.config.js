@@ -13,7 +13,7 @@ const appVariant = appVariantRaw === 'buyer' || appVariantRaw === 'helper' ? app
 const variantMeta =
   appVariant === 'buyer'
     ? {
-        name: 'Superherooo Citizen',
+        name: 'Superherooo',
         slug: 'superheroo-citizen',
         androidPackage: 'com.helpinminutes.citizen',
         iosBundleIdentifier: 'com.helpinminutes.citizen',
@@ -23,7 +23,7 @@ const variantMeta =
       }
     : appVariant === 'helper'
     ? {
-        name: 'Superherooo Partner',
+        name: 'Partner',
         slug: 'superheroo-partner',
         androidPackage: 'com.helpinminutes.partner',
         iosBundleIdentifier: 'com.helpinminutes.partner',

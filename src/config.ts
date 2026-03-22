@@ -37,6 +37,7 @@ const presignedFromExtra = typeof extra.enablePresignedSelfies === 'string'
   ? String(extra.enablePresignedSelfies)
   : '';
 const appVariantFromExtra = typeof extra.appVariant === 'string' ? extra.appVariant.trim() : '';
+const appVariantFromEnv = process.env.EXPO_PUBLIC_APP_VARIANT?.trim() || '';
 const applicationId = Application.applicationId || '';
 const packageFromExpoConfig =
   expoConfig && expoConfig.android && typeof expoConfig.android.package === 'string'
@@ -89,15 +90,15 @@ function inferVariantFromName(raw?: string | null): AppVariant {
 }
 
 export const APP_VARIANT = normalizeAppVariant(
-  process.env.EXPO_PUBLIC_APP_VARIANT ||
-    // In split APKs, bundled app.config can occasionally carry "unified".
-    // Prefer package/name inference over that fallback so role selection never appears.
-    (appVariantFromExtra && appVariantFromExtra.toLowerCase() !== 'unified'
-      ? appVariantFromExtra
-      : inferVariantFromAppId(applicationId) ||
-        inferVariantFromAppId(packageFromExpoConfig) ||
-        inferVariantFromName(appNameFromExpoConfig) ||
-        inferVariantFromName(appSlugFromExpoConfig)) ||
+  // In release APKs, rely on app.config extra + package inference first.
+  // This avoids accidental cross-build env leakage (buyer/helper) from JS bundling.
+  (appVariantFromExtra && appVariantFromExtra.toLowerCase() !== 'unified'
+    ? appVariantFromExtra
+    : inferVariantFromAppId(applicationId) ||
+      inferVariantFromAppId(packageFromExpoConfig) ||
+      inferVariantFromName(appNameFromExpoConfig) ||
+      inferVariantFromName(appSlugFromExpoConfig) ||
+      (appVariantFromEnv && appVariantFromEnv.toLowerCase() !== 'unified' ? appVariantFromEnv : '')) ||
     'unified',
 );
 
@@ -106,9 +107,9 @@ export const LOCKED_ROLE: 'BUYER' | 'HELPER' | null =
 
 export const APP_DISPLAY_NAME =
   APP_VARIANT === 'buyer'
-    ? 'Superherooo Citizen'
+    ? 'Superherooo'
     : APP_VARIANT === 'helper'
-    ? 'Superherooo Partner'
+    ? 'Partner'
     : 'Superherooo';
 
 function parseLatLng(raw?: string | null): { lat: number; lng: number } | null {
