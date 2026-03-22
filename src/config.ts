@@ -2,9 +2,30 @@ import Constants from 'expo-constants';
 import * as Application from 'expo-application';
 
 const expoConfig =
-  (Constants.expoConfig as { extra?: Record<string, unknown> } | null) ||
-  ((Constants as unknown as { manifest?: { extra?: Record<string, unknown> } }).manifest ?? null) ||
-  ((Constants as unknown as { manifest2?: { extra?: Record<string, unknown> } }).manifest2 ?? null);
+  (Constants.expoConfig as
+    | {
+        name?: string;
+        slug?: string;
+        android?: { package?: string };
+        extra?: Record<string, unknown>;
+      }
+    | null) ||
+  ((Constants as unknown as {
+    manifest?: {
+      name?: string;
+      slug?: string;
+      android?: { package?: string };
+      extra?: Record<string, unknown>;
+    };
+  }).manifest ?? null) ||
+  ((Constants as unknown as {
+    manifest2?: {
+      name?: string;
+      slug?: string;
+      android?: { package?: string };
+      extra?: Record<string, unknown>;
+    };
+  }).manifest2 ?? null);
 
 const extra = (expoConfig && expoConfig.extra) || {};
 const apiFromExtra = typeof extra.apiBaseUrl === 'string' ? extra.apiBaseUrl.trim() : '';
@@ -17,6 +38,12 @@ const presignedFromExtra = typeof extra.enablePresignedSelfies === 'string'
   : '';
 const appVariantFromExtra = typeof extra.appVariant === 'string' ? extra.appVariant.trim() : '';
 const applicationId = Application.applicationId || '';
+const packageFromExpoConfig =
+  expoConfig && expoConfig.android && typeof expoConfig.android.package === 'string'
+    ? expoConfig.android.package.trim()
+    : '';
+const appNameFromExpoConfig = expoConfig && typeof expoConfig.name === 'string' ? expoConfig.name.trim() : '';
+const appSlugFromExpoConfig = expoConfig && typeof expoConfig.slug === 'string' ? expoConfig.slug.trim() : '';
 
 export const API_BASE_URL =
   process.env.EXPO_PUBLIC_API_BASE_URL?.trim() || apiFromExtra || 'https://api.mysuperhero.xyz';
@@ -48,13 +75,29 @@ function inferVariantFromAppId(raw?: string | null): AppVariant {
   const value = (raw || '').trim().toLowerCase();
   if (value === 'com.helpinminutes.citizen') return 'buyer';
   if (value === 'com.helpinminutes.partner') return 'helper';
+  if (value.includes('citizen') || value.includes('buyer')) return 'buyer';
+  if (value.includes('partner') || value.includes('helper') || value.includes('superheroo.partner')) return 'helper';
+  return 'unified';
+}
+
+function inferVariantFromName(raw?: string | null): AppVariant {
+  const value = (raw || '').trim().toLowerCase();
+  if (!value) return 'unified';
+  if (value.includes('citizen') || value.includes('buyer')) return 'buyer';
+  if (value.includes('partner') || value.includes('helper')) return 'helper';
   return 'unified';
 }
 
 export const APP_VARIANT = normalizeAppVariant(
   process.env.EXPO_PUBLIC_APP_VARIANT ||
-    appVariantFromExtra ||
-    inferVariantFromAppId(applicationId) ||
+    // In split APKs, bundled app.config can occasionally carry "unified".
+    // Prefer package/name inference over that fallback so role selection never appears.
+    (appVariantFromExtra && appVariantFromExtra.toLowerCase() !== 'unified'
+      ? appVariantFromExtra
+      : inferVariantFromAppId(applicationId) ||
+        inferVariantFromAppId(packageFromExpoConfig) ||
+        inferVariantFromName(appNameFromExpoConfig) ||
+        inferVariantFromName(appSlugFromExpoConfig)) ||
     'unified',
 );
 
