@@ -29,7 +29,7 @@ const variantMeta =
         iosBundleIdentifier: 'com.helpinminutes.partner',
         icon: './assets/icon-partner.png',
         adaptiveIcon: './assets/adaptive-icon-partner.png',
-        adaptiveBackgroundColor: '#0F766E',
+        adaptiveBackgroundColor: '#0B1220',
       }
     : {
         name: expo.name,

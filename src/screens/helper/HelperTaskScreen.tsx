@@ -29,6 +29,7 @@ import { DEMO_FALLBACK_LOCATION, GOOGLE_MAPS_API_KEY } from '../../config';
 import { useActiveTask } from '../../state/ActiveTaskContext';
 import { useI18n } from '../../i18n/I18nProvider';
 import { useHelperPresence } from '../../state/HelperPresenceContext';
+import { useScrollToFocusedInput } from '../../hooks/useScrollToFocusedInput';
 
 type Props = NativeStackScreenProps<HelperStackParamList, 'HelperTask'>;
 
@@ -39,7 +40,17 @@ function nextStatus(s: TaskStatus): TaskStatus | null {
   return null;
 }
 
-const ArrivalOtpForm = React.memo(function ArrivalOtpForm({ onSubmit, busy, load }: { onSubmit: (otp: string) => void; busy: boolean; load: () => void }) {
+const ArrivalOtpForm = React.memo(function ArrivalOtpForm({
+  onSubmit,
+  busy,
+  load,
+  onInputFocus,
+}: {
+  onSubmit: (otp: string) => void;
+  busy: boolean;
+  load: () => void;
+  onInputFocus: (event: any) => void;
+}) {
   const { t } = useI18n();
   const [otp, setOtp] = useState('');
   return (
@@ -52,6 +63,7 @@ const ArrivalOtpForm = React.memo(function ArrivalOtpForm({ onSubmit, busy, load
         onChangeText={setOtp}
         placeholder={t('helper.task.arrival_otp_placeholder')}
         keyboardType="number-pad"
+        onFocus={onInputFocus}
       />
       <View style={styles.actions}>
         <PrimaryButton label={t('common.refresh')} onPress={load} variant="ghost" style={styles.half} />
@@ -68,6 +80,7 @@ const CompletionOtpForm = React.memo(function CompletionOtpForm({
   completionSelfieDone,
   uploadCompletionSelfie,
   completionSelfieBusy,
+  onInputFocus,
 }: {
   onSubmit: (otp: string) => void;
   busy: boolean;
@@ -75,6 +88,7 @@ const CompletionOtpForm = React.memo(function CompletionOtpForm({
   completionSelfieDone: boolean;
   uploadCompletionSelfie: () => void;
   completionSelfieBusy: boolean;
+  onInputFocus: (event: any) => void;
 }) {
   const { t } = useI18n();
   const [otp, setOtp] = useState('');
@@ -97,6 +111,7 @@ const CompletionOtpForm = React.memo(function CompletionOtpForm({
         onChangeText={setOtp}
         placeholder={t('helper.task.completion_otp_placeholder')}
         keyboardType="number-pad"
+        onFocus={onInputFocus}
       />
       <View style={styles.actions}>
         <PrimaryButton label={t('common.refresh')} onPress={load} variant="ghost" style={styles.half} />
@@ -119,6 +134,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
   const { setActiveTaskId } = useActiveTask();
   const { lastCoords } = useHelperPresence();
   const { t } = useI18n();
+  const { scrollRef, onInputFocus } = useScrollToFocusedInput();
 
   const [task, setTask] = useState<Task | null>(null);
   const [busy, setBusy] = useState(false);
@@ -796,6 +812,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
       <TaskHeader onMenu={() => navigation.navigate('Menu')} onRefresh={load} onBack={backHome} />
 
       <ScrollView
+        ref={scrollRef}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
@@ -839,7 +856,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
           <PrimaryButton label={t('task.open_maps')} onPress={openMaps} variant="ghost" />
 
           {next === 'STARTED' ? (
-            <ArrivalOtpForm onSubmit={(o) => advance(o)} busy={busy} load={load} />
+            <ArrivalOtpForm onSubmit={(o) => advance(o)} busy={busy} load={load} onInputFocus={onInputFocus} />
           ) : null}
 
           {next === 'COMPLETED' ? (
@@ -850,6 +867,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
               completionSelfieDone={completionSelfieDone}
               uploadCompletionSelfie={uploadCompletionSelfie}
               completionSelfieBusy={completionSelfieBusy}
+              onInputFocus={onInputFocus}
             />
           ) : null}
 
@@ -860,6 +878,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
                 value={cancelReason}
                 onChangeText={setCancelReason}
                 placeholder={t('task.share_cancelling')}
+                onFocus={onInputFocus}
               />
               <PrimaryButton
                 label={t('task.cancel_task')}
@@ -879,6 +898,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
               setRatingComment={setRatingComment}
               submitRating={submitRating}
               ratingBusy={ratingBusy}
+              onInputFocus={onInputFocus}
             />
           ) : null}
         </View>
@@ -949,7 +969,7 @@ const CustomerContactCard = memo(({ buyerPhone, name, avgRating, completedCount 
   );
 });
 
-const RatingCard = memo(({ helperRating, rating, setRating, ratingComment, setRatingComment, submitRating, ratingBusy }: any) => {
+const RatingCard = memo(({ helperRating, rating, setRating, ratingComment, setRatingComment, submitRating, ratingBusy, onInputFocus }: any) => {
   const { t } = useI18n();
   return (
     <View style={styles.ratingCard}>
@@ -974,6 +994,7 @@ const RatingCard = memo(({ helperRating, rating, setRating, ratingComment, setRa
             value={ratingComment}
             onChangeText={setRatingComment}
             placeholder={t('task.share_feedback')}
+            onFocus={onInputFocus}
           />
           <PrimaryButton label={t('task.submit_rating')} onPress={submitRating} loading={ratingBusy} />
         </>

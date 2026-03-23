@@ -1,5 +1,11 @@
 import React, { memo } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  type TextInputProps,
+} from 'react-native';
 
 import { theme } from './theme';
 
@@ -12,6 +18,9 @@ type Props = {
   secureTextEntry?: boolean;
   autoFocus?: boolean;
   multiline?: boolean;
+  onFocus?: TextInputProps['onFocus'];
+  returnKeyType?: TextInputProps['returnKeyType'];
+  blurOnSubmit?: boolean;
 };
 
 export const TextField = memo(function TextField({
@@ -23,6 +32,9 @@ export const TextField = memo(function TextField({
   secureTextEntry,
   autoFocus,
   multiline,
+  onFocus,
+  returnKeyType,
+  blurOnSubmit,
 }: Props) {
   return (
     <View style={styles.wrap}>
@@ -38,6 +50,9 @@ export const TextField = memo(function TextField({
         autoCapitalize="none"
         autoCorrect={false}
         multiline={multiline}
+        onFocus={onFocus}
+        returnKeyType={returnKeyType}
+        blurOnSubmit={blurOnSubmit}
         style={[styles.input, multiline ? styles.inputMultiline : null]}
       />
     </View>
@@ -58,7 +73,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     color: theme.colors.text,
-    backgroundColor: '#F9FBFF',
+    backgroundColor: theme.colors.inputBg,
     fontSize: 16,
   },
   inputMultiline: {

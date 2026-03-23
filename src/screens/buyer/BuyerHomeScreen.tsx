@@ -13,6 +13,7 @@ import * as api from '../../api/client';
 import { ApiError } from '../../api/http';
 import { useAuth } from '../../auth/AuthContext';
 import { useIsOnline } from '../../hooks/useIsOnline';
+import { useScrollToFocusedInput } from '../../hooks/useScrollToFocusedInput';
 import { Screen } from '../../ui/Screen';
 import { PrimaryButton } from '../../ui/PrimaryButton';
 import { TextField } from '../../ui/TextField';
@@ -68,6 +69,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { scrollRef, onInputFocus } = useScrollToFocusedInput();
   const canRenderMap = Boolean(GOOGLE_MAPS_API_KEY);
   const mapProvider = canRenderMap ? PROVIDER_GOOGLE : undefined;
   const urgencyOptions = useMemo(
@@ -83,6 +85,47 @@ export function BuyerHomeScreen({ navigation }: Props) {
   const descOk = useMemo(() => description.trim().length >= 10, [description]);
   const timeOk = useMemo(() => Number.isFinite(Number(timeMinutes)) && Number(timeMinutes) >= 1, [timeMinutes]);
   const budgetOk = useMemo(() => Number.isFinite(Number(budgetRupees)) && Number(budgetRupees) >= 0, [budgetRupees]);
+  const budgetValue = useMemo(() => {
+    const n = Number(budgetRupees);
+    return Number.isFinite(n) ? n : 0;
+  }, [budgetRupees]);
+  const suggestedBudget = useMemo(() => {
+    const minsRaw = Number(timeMinutes);
+    const mins = Number.isFinite(minsRaw) ? Math.max(5, minsRaw) : 30;
+    const urgencyFactor = urgency === 'LOW' ? 0.95 : urgency === 'HIGH' ? 1.15 : urgency === 'CRITICAL' ? 1.3 : 1;
+    const raw = (35 + mins * 5.5) * urgencyFactor;
+    return Math.max(99, Math.ceil(raw / 10) * 10);
+  }, [timeMinutes, urgency]);
+  const priceSuggestion = useMemo(() => {
+    if (!budgetRupees.trim()) {
+      return {
+        kind: 'info' as const,
+        message: t('buyer.price_hint.enter_budget'),
+      };
+    }
+    if (!Number.isFinite(budgetValue)) {
+      return {
+        kind: 'warning' as const,
+        message: t('buyer.price_hint.enter_budget'),
+      };
+    }
+    if (budgetValue < suggestedBudget * 0.9) {
+      return {
+        kind: 'warning' as const,
+        message: t('buyer.price_hint.low').replace('{suggested}', String(suggestedBudget)),
+      };
+    }
+    if (budgetValue <= suggestedBudget * 1.25) {
+      return {
+        kind: 'success' as const,
+        message: t('buyer.price_hint.good').replace('{suggested}', String(suggestedBudget)),
+      };
+    }
+    return {
+      kind: 'success' as const,
+      message: t('buyer.price_hint.great').replace('{suggested}', String(suggestedBudget)),
+    };
+  }, [budgetRupees, budgetValue, suggestedBudget, t]);
   const scheduledAt = useMemo(() => {
     if (scheduleMode !== 'later') return null;
     const dateMatch = scheduleDate.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
@@ -464,6 +507,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
     <Screen style={styles.screen}>
       <KeyboardAvoidingView behavior={Platform.select({ ios: 'padding', android: undefined })} style={styles.kav}>
         <ScrollView
+          ref={scrollRef}
           contentContainerStyle={[
             styles.scrollContent,
             { paddingBottom: theme.space.xl * 3 + Math.max(insets.bottom, theme.space.lg) },
@@ -490,6 +534,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 placeholder={t('buyer.search_location')}
+                onFocus={onInputFocus}
               />
             </View>
             <PrimaryButton
@@ -550,7 +595,13 @@ export function BuyerHomeScreen({ navigation }: Props) {
             )}
 
             <Text style={styles.section}>{t('buyer.task_details')}</Text>
-            <TextField label={t('buyer.task_name')} value={title} onChangeText={setTitle} placeholder={t('buyer.task_name_placeholder')} />
+            <TextField
+              label={t('buyer.task_name')}
+              value={title}
+              onChangeText={setTitle}
+              placeholder={t('buyer.task_name_placeholder')}
+              onFocus={onInputFocus}
+            />
             <View style={styles.voiceRow}>
               <TextField
                 label={t('buyer.description')}
@@ -558,6 +609,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
                 onChangeText={setDescription}
                 placeholder={t('buyer.description_placeholder')}
                 multiline
+                onFocus={onInputFocus}
               />
               <PrimaryButton
                 label={voiceActive ? t('buyer.voice_stop') : t('buyer.voice_start')}
@@ -573,8 +625,43 @@ export function BuyerHomeScreen({ navigation }: Props) {
                 }
               />
             </View>
-            <TextField label={t('buyer.expected_time')} value={timeMinutes} onChangeText={setTimeMinutes} keyboardType="number-pad" />
-            <TextField label={t('buyer.budget')} value={budgetRupees} onChangeText={setBudgetRupees} keyboardType="number-pad" />
+            <TextField
+              label={t('buyer.expected_time')}
+              value={timeMinutes}
+              onChangeText={setTimeMinutes}
+              keyboardType="number-pad"
+              onFocus={onInputFocus}
+            />
+            <TextField
+              label={t('buyer.budget')}
+              value={budgetRupees}
+              onChangeText={setBudgetRupees}
+              keyboardType="number-pad"
+              onFocus={onInputFocus}
+            />
+            <View
+              style={[
+                styles.priceCard,
+                priceSuggestion.kind === 'warning'
+                  ? styles.priceCardWarning
+                  : priceSuggestion.kind === 'success'
+                  ? styles.priceCardSuccess
+                  : null,
+              ]}
+            >
+              <View style={styles.priceTitleRow}>
+                <MaterialCommunityIcons
+                  name={priceSuggestion.kind === 'warning' ? 'cash-remove' : 'cash-check'}
+                  size={18}
+                  color={priceSuggestion.kind === 'warning' ? theme.colors.warning : theme.colors.success}
+                />
+                <Text style={styles.priceTitle}>{t('buyer.price_hint.title')}</Text>
+              </View>
+              <Text style={styles.priceMeta}>
+                {t('buyer.price_hint.recommended').replace('{suggested}', String(suggestedBudget))}
+              </Text>
+              <Text style={styles.priceMessage}>{priceSuggestion.message}</Text>
+            </View>
             <Text style={styles.section}>{t('schedule.title')}</Text>
             <Segmented options={scheduleOptions} value={scheduleMode} onChange={(v) => setScheduleMode(v as 'now' | 'later')} />
             {scheduleMode === 'later' ? (
@@ -587,6 +674,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
                       onChangeText={setScheduleDate}
                       placeholder={t('schedule.date_placeholder')}
                       keyboardType="number-pad"
+                      onFocus={onInputFocus}
                     />
                   </View>
                   <View style={styles.scheduleField}>
@@ -596,6 +684,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
                       onChangeText={setScheduleTime}
                       placeholder={t('schedule.time_placeholder')}
                       keyboardType="number-pad"
+                      onFocus={onInputFocus}
                     />
                   </View>
                 </View>
@@ -612,6 +701,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
               onChangeText={setAddressText}
               placeholder={t('buyer.address_placeholder')}
               multiline
+              onFocus={onInputFocus}
             />
 
             <View
@@ -650,6 +740,26 @@ const styles = StyleSheet.create({
   },
   voiceRow: { gap: theme.space.xs },
   voiceBtn: { alignSelf: 'flex-start' },
+  priceCard: {
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radius.sm,
+    backgroundColor: theme.colors.card,
+    padding: theme.space.sm,
+    gap: 6,
+  },
+  priceCardWarning: {
+    borderColor: '#FBBF24',
+    backgroundColor: '#FFFBEB',
+  },
+  priceCardSuccess: {
+    borderColor: '#86EFAC',
+    backgroundColor: '#ECFDF5',
+  },
+  priceTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  priceTitle: { color: theme.colors.text, fontSize: 13, fontWeight: '800' },
+  priceMeta: { color: theme.colors.muted, fontSize: 12 },
+  priceMessage: { color: theme.colors.text, fontSize: 12, lineHeight: 18 },
   searchRow: { flexDirection: 'row', alignItems: 'flex-end', gap: theme.space.sm },
   searchField: { flex: 1 },
   searchBtn: { alignSelf: 'flex-end' },

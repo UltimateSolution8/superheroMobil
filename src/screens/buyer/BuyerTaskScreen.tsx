@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Linking, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Linking, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
@@ -21,6 +21,7 @@ import { DEMO_FALLBACK_LOCATION, GOOGLE_MAPS_API_KEY } from '../../config';
 import type { BuyerStackParamList } from '../../navigation/types';
 import { useActiveTask } from '../../state/ActiveTaskContext';
 import { useI18n } from '../../i18n/I18nProvider';
+import { useScrollToFocusedInput } from '../../hooks/useScrollToFocusedInput';
 
 type Props = NativeStackScreenProps<BuyerStackParamList, 'BuyerTask'>;
 const VALID_STATUSES: ReadonlySet<TaskStatus> = new Set([
@@ -38,6 +39,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
   const socket = useSocket();
   const { setActiveTaskId } = useActiveTask();
   const { t } = useI18n();
+  const { scrollRef, onInputFocus } = useScrollToFocusedInput();
 
   const [task, setTask] = useState<Task | null>(null);
   const [busy, setBusy] = useState(false);
@@ -335,7 +337,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
 
   return (
     <Screen style={styles.screen}>
-      <View style={styles.contentWrap}>
+      <KeyboardAvoidingView behavior={Platform.select({ ios: 'padding', android: undefined })} style={styles.contentWrap}>
         <View style={styles.topBar}>
           <MenuButton onPress={() => navigation.navigate('Menu')} />
           <Text style={styles.h1}>{t('task.title')}</Text>
@@ -345,6 +347,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
           </View>
         </View>
         <ScrollView
+          ref={scrollRef}
           style={styles.scroll}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
@@ -438,6 +441,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
                   value={cancelReason}
                   onChangeText={setCancelReason}
                   placeholder={t('task.share_cancelling')}
+                  onFocus={onInputFocus}
                 />
                 <PrimaryButton
                   label={t('task.cancel_task')}
@@ -474,6 +478,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
                     value={ratingComment}
                     onChangeText={setRatingComment}
                     placeholder={t('task.share_feedback')}
+                    onFocus={onInputFocus}
                   />
                   <PrimaryButton label={t('task.submit_rating')} onPress={submitRating} loading={ratingBusy} />
                 </>
@@ -481,7 +486,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
             </View>
           ) : null}
         </ScrollView>
-      </View>
+      </KeyboardAvoidingView>
 
       {showCelebration ? (
         <View style={styles.celebrateWrap}>

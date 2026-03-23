@@ -616,6 +616,21 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'buyer.searching_suggestions': 'Searching suggestions…',
     'buyer.selected_address': 'Selected address',
     'buyer.task.completion_otp': 'Completion OTP',
+    'buyer.price_hint.title': 'Smart price suggestion',
+    'buyer.price_hint.recommended': 'Suggested budget: ₹{suggested}',
+    'buyer.price_hint.enter_budget': 'Enter budget to get a smart recommendation.',
+    'buyer.price_hint.low': 'This may be low for quick acceptance. Try around ₹{suggested}.',
+    'buyer.price_hint.good': 'Good pricing. Around ₹{suggested} usually matches faster.',
+    'buyer.price_hint.great': 'Great pricing. You should get faster responses.',
+
+    // Settings - extras
+    'settings.theme': 'Appearance',
+    'settings.theme_system': 'System',
+    'settings.theme_light': 'Light',
+    'settings.theme_dark': 'Dark',
+    'settings.theme_help': 'Theme updates after quick app reload.',
+    'settings.theme_saved_title': 'Theme updated',
+    'settings.theme_saved_body': 'Theme set to {mode}.',
 
     // Helper - extras
     'helper.offer.urgency': 'Urgency',
@@ -654,6 +669,9 @@ export const strings: Record<LanguageCode, Dictionary> = {
     // SOS
     'sos.subject': 'SOS emergency',
     'sos.message': 'SOS triggered from mobile app. Please call the user immediately.',
+
+    // Common - extras
+    'common.ok': 'OK',
   },
   hi: {
     // App
@@ -1269,6 +1287,21 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'buyer.searching_suggestions': 'सुझाव खोज रहे हैं…',
     'buyer.selected_address': 'चयनित पता',
     'buyer.task.completion_otp': 'पूर्णता OTP',
+    'buyer.price_hint.title': 'स्मार्ट कीमत सुझाव',
+    'buyer.price_hint.recommended': 'सुझाया बजट: ₹{suggested}',
+    'buyer.price_hint.enter_budget': 'स्मार्ट सुझाव पाने के लिए बजट दर्ज करें।',
+    'buyer.price_hint.low': 'जल्दी स्वीकार होने के लिए यह कम हो सकता है। ₹{suggested} के आसपास रखें।',
+    'buyer.price_hint.good': 'कीमत अच्छी है। ₹{suggested} के आसपास तेज़ मैच मिलता है।',
+    'buyer.price_hint.great': 'बहुत बढ़िया कीमत। आपको जल्दी प्रतिक्रिया मिलेगी।',
+
+    // Settings - extras
+    'settings.theme': 'थीम',
+    'settings.theme_system': 'सिस्टम',
+    'settings.theme_light': 'लाइट',
+    'settings.theme_dark': 'डार्क',
+    'settings.theme_help': 'थीम बदलने के लिए ऐप तुरंत रीफ्रेश होगी।',
+    'settings.theme_saved_title': 'थीम अपडेट हुई',
+    'settings.theme_saved_body': 'थीम {mode} पर सेट की गई।',
 
     // Helper - extras
     'helper.offer.urgency': 'तत्कालता',
@@ -1307,6 +1340,9 @@ export const strings: Record<LanguageCode, Dictionary> = {
     // SOS
     'sos.subject': 'SOS आपातकाल',
     'sos.message': 'मोबाइल ऐप से SOS ट्रिगर हुआ है। कृपया तुरंत उपयोगकर्ता को कॉल करें।',
+
+    // Common - extras
+    'common.ok': 'ठीक है',
   },
   te: {
     // App
@@ -1900,6 +1936,21 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'buyer.searching_suggestions': 'సూచనలు వెతుకుతున్నాం…',
     'buyer.selected_address': 'ఎంచుకున్న చిరునామా',
     'buyer.task.completion_otp': 'పూర్తి OTP',
+    'buyer.price_hint.title': 'స్మార్ట్ ధర సూచన',
+    'buyer.price_hint.recommended': 'సూచించిన బడ్జెట్: ₹{suggested}',
+    'buyer.price_hint.enter_budget': 'స్మార్ట్ సూచన కోసం బడ్జెట్ నమోదు చేయండి.',
+    'buyer.price_hint.low': 'త్వరగా అంగీకరించేందుకు ఇది తక్కువ కావచ్చు. ₹{suggested} వద్ద ప్రయత్నించండి.',
+    'buyer.price_hint.good': 'ధర బాగుంది. ₹{suggested} వద్ద త్వరగా మ్యాచ్ అవుతుంది.',
+    'buyer.price_hint.great': 'చాలా మంచి ధర. త్వరగా స్పందనలు వచ్చే అవకాశం ఉంది.',
+
+    // Settings - extras
+    'settings.theme': 'థీమ్',
+    'settings.theme_system': 'సిస్టమ్',
+    'settings.theme_light': 'లైట్',
+    'settings.theme_dark': 'డార్క్',
+    'settings.theme_help': 'థీమ్ మార్చిన తర్వాత యాప్ త్వరగా రీలోడ్ అవుతుంది.',
+    'settings.theme_saved_title': 'థీమ్ నవీకరించబడింది',
+    'settings.theme_saved_body': 'థీమ్ {mode} గా మార్చబడింది.',
 
     // Helper - extras
     'helper.offer.urgency': 'తక్షణత',
@@ -1943,5 +1994,8 @@ export const strings: Record<LanguageCode, Dictionary> = {
     // SOS
     'sos.subject': 'SOS ఎమర్జెన్సీ',
     'sos.message': 'మొబైల్ యాప్ నుంచి SOS ట్రిగ్గర్ అయ్యింది. వెంటనే యూజర్‌కు కాల్ చేయండి.',
+
+    // Common - extras
+    'common.ok': 'సరే',
   },
 };
