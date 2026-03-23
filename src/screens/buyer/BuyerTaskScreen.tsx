@@ -563,7 +563,7 @@ const styles = StyleSheet.create({
   liveTitle: { color: theme.colors.text, fontSize: 16, fontWeight: '900' },
   liveSub: { color: theme.colors.muted, fontSize: 12 },
   liveRow: { flexDirection: 'row', gap: theme.space.sm, marginTop: theme.space.sm },
-  liveStat: { flex: 1, padding: theme.space.sm, borderRadius: theme.radius.md, backgroundColor: '#EEF2FF' },
+  liveStat: { flex: 1, padding: theme.space.sm, borderRadius: theme.radius.md, backgroundColor: theme.colors.surfaceSoft },
   liveLabel: { color: theme.colors.muted, fontSize: 11 },
   liveValue: { color: theme.colors.text, fontSize: 15, fontWeight: '800' },
   ratingCard: {

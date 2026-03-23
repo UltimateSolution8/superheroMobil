@@ -39,6 +39,28 @@ const SCHEDULE_OPTIONS = [
   { key: 'later', labelKey: 'schedule.later' },
 ];
 
+function estimateSuggestedPriceInr(
+  title: string,
+  description: string,
+  timeMinutes: number,
+  urgency: TaskUrgency,
+): number {
+  const t = `${title} ${description}`.toLowerCase();
+  let score = 0;
+  if (/(repair|plumb|electric|wiring|ac|fridge|washing|leak|fix)/.test(t)) score += 3;
+  if (/(lift|heavy|move|shift|furniture|loading|unloading)/.test(t)) score += 2;
+  if (/(clean|deep clean|sanitize|bathroom|kitchen)/.test(t)) score += 2;
+  if (/(urgent|asap|immediately|now)/.test(t)) score += 1;
+
+  const minutes = Math.max(1, Math.min(480, timeMinutes || 1));
+  const base = minutes * 6;
+  const complexity = score * 35;
+  const urgencyFactor =
+    urgency === 'CRITICAL' ? 1.35 : urgency === 'HIGH' ? 1.2 : urgency === 'LOW' ? 0.9 : 1.0;
+  const suggested = Math.max(80, Math.round((base + complexity) * urgencyFactor));
+  return suggested;
+}
+
 export function BuyerHomeScreen({ navigation }: Props) {
   const { withAuth } = useAuth();
   const { t } = useI18n();
@@ -118,6 +140,16 @@ export function BuyerHomeScreen({ navigation }: Props) {
     () => Boolean(online && titleOk && descOk && timeOk && budgetOk && scheduleOk && lat != null && lng != null),
     [budgetOk, descOk, lat, lng, online, scheduleOk, timeOk, titleOk],
   );
+  const pricing = useMemo(() => {
+    const minutes = Number(timeMinutes);
+    const entered = Number(budgetRupees);
+    if (!Number.isFinite(minutes) || minutes <= 0) return null;
+    if (!Number.isFinite(entered) || entered < 0) return null;
+    const suggested = estimateSuggestedPriceInr(title.trim(), description.trim(), minutes, urgency);
+    const ratio = suggested > 0 ? entered / suggested : 1;
+    const verdict = ratio < 0.85 ? 'low' : ratio > 1.2 ? 'high' : 'fair';
+    return { suggested, verdict };
+  }, [budgetRupees, description, timeMinutes, title, urgency]);
 
   const lastLocationTs = useRef<number>(0);
   const voiceActiveRef = useRef(false);
@@ -575,6 +607,30 @@ export function BuyerHomeScreen({ navigation }: Props) {
             </View>
             <TextField label={t('buyer.expected_time')} value={timeMinutes} onChangeText={setTimeMinutes} keyboardType="number-pad" />
             <TextField label={t('buyer.budget')} value={budgetRupees} onChangeText={setBudgetRupees} keyboardType="number-pad" />
+            {pricing ? (
+              <View style={styles.smartPriceBox}>
+                <Text style={styles.smartPriceTitle}>{t('buyer.smart_price_title')}</Text>
+                <Text style={styles.smartPriceText}>
+                  {t('buyer.smart_price_suggested').replace('{amount}', String(pricing.suggested))}
+                </Text>
+                <Text
+                  style={[
+                    styles.smartPriceVerdict,
+                    pricing.verdict === 'low'
+                      ? styles.smartPriceLow
+                      : pricing.verdict === 'high'
+                        ? styles.smartPriceHigh
+                        : styles.smartPriceFair,
+                  ]}
+                >
+                  {pricing.verdict === 'low'
+                    ? t('buyer.smart_price_low')
+                    : pricing.verdict === 'high'
+                      ? t('buyer.smart_price_high')
+                      : t('buyer.smart_price_fair')}
+                </Text>
+              </View>
+            ) : null}
             <Text style={styles.section}>{t('schedule.title')}</Text>
             <Segmented options={scheduleOptions} value={scheduleMode} onChange={(v) => setScheduleMode(v as 'now' | 'later')} />
             {scheduleMode === 'later' ? (
@@ -675,11 +731,25 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.border,
     borderRadius: theme.radius.sm,
     padding: theme.space.sm,
-    backgroundColor: '#F8FAFF',
+    backgroundColor: theme.colors.inputBg,
     gap: 6,
   },
   addressLabel: { color: theme.colors.muted, fontSize: 12, fontWeight: '800' },
   addressValue: { color: theme.colors.text, fontSize: 13, lineHeight: 18 },
+  smartPriceBox: {
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radius.sm,
+    backgroundColor: theme.colors.surfaceSoft,
+    padding: theme.space.sm,
+    gap: 4,
+  },
+  smartPriceTitle: { color: theme.colors.text, fontSize: 12, fontWeight: '800' },
+  smartPriceText: { color: theme.colors.muted, fontSize: 12 },
+  smartPriceVerdict: { fontSize: 12, fontWeight: '700' },
+  smartPriceLow: { color: theme.colors.warning },
+  smartPriceFair: { color: theme.colors.success },
+  smartPriceHigh: { color: theme.colors.primary },
   scheduleWrap: { gap: theme.space.xs },
   scheduleRow: { flexDirection: 'row', gap: theme.space.sm },
   scheduleField: { flex: 1 },

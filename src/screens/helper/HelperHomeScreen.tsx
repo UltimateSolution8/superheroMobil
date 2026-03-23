@@ -558,7 +558,7 @@ const styles = StyleSheet.create({
   muted: { color: theme.colors.muted },
   modalBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.35)',
+    backgroundColor: theme.colors.overlay,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
@@ -581,11 +581,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.card,
   },
   modalOptionActive: {
     borderColor: theme.colors.primary,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: theme.colors.surfaceSoft,
   },
   modalOptionText: { color: theme.colors.text, fontSize: 13, fontWeight: '700' },
 });

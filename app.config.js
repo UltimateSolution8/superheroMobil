@@ -55,18 +55,36 @@ const plugins = Array.from(
     'expo-notifications',
   ])
 );
+const sharedAndroidPermissions = [
+  'INTERNET',
+  'CAMERA',
+  'READ_MEDIA_IMAGES',
+  'READ_EXTERNAL_STORAGE',
+  'WRITE_EXTERNAL_STORAGE',
+  'ACCESS_COARSE_LOCATION',
+  'ACCESS_FINE_LOCATION',
+];
+const buyerOnlyPermissions = [
+  // buyer app uses voice input on task description.
+  'RECORD_AUDIO',
+];
+const helperOnlyPermissions = [
+  // helper app keeps online presence and may run foreground location flows.
+  'ACCESS_BACKGROUND_LOCATION',
+  'FOREGROUND_SERVICE',
+  'RECORD_AUDIO',
+];
+const variantPermissions =
+  appVariant === 'buyer'
+    ? buyerOnlyPermissions
+    : appVariant === 'helper'
+      ? helperOnlyPermissions
+      : [...buyerOnlyPermissions, ...helperOnlyPermissions];
 const androidPermissions = Array.from(
   new Set([
     ...(expo.android && Array.isArray(expo.android.permissions) ? expo.android.permissions : []),
-    'ACCESS_COARSE_LOCATION',
-    'ACCESS_FINE_LOCATION',
-    'ACCESS_BACKGROUND_LOCATION',
-    'FOREGROUND_SERVICE',
-    'CAMERA',
-    'READ_MEDIA_IMAGES',
-    'READ_EXTERNAL_STORAGE',
-    'WRITE_EXTERNAL_STORAGE',
-    'INTERNET',
+    ...sharedAndroidPermissions,
+    ...variantPermissions,
   ]),
 );
 const iosInfoPlist = {

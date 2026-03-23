@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     color: theme.colors.text,
-    backgroundColor: '#F9FBFF',
+    backgroundColor: theme.colors.inputBg,
     fontSize: 16,
   },
   inputMultiline: {

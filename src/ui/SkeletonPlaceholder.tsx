@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, type ViewStyle } from 'react-native';
+import { theme } from './theme';
 
 type Props = {
     width?: number | `${number}%`;
@@ -53,6 +54,6 @@ export const SkeletonPlaceholder = React.memo(function SkeletonPlaceholder({
 
 const styles = StyleSheet.create({
     base: {
-        backgroundColor: '#E2E8F0',
+        backgroundColor: theme.colors.skeleton,
     },
 });

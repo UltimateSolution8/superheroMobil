@@ -576,6 +576,13 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'settings.pin_set': 'Set PIN',
     'settings.pin_remove': 'Remove PIN',
     'settings.pin_error_length': 'PIN must be 4 digits.',
+    'settings.theme': 'Theme',
+    'settings.theme_light': 'Light',
+    'settings.theme_dark': 'Dark',
+    'settings.theme_system': 'System',
+    'settings.theme_help': 'Choose how the app looks. Light is the default.',
+    'settings.theme_saved_title': 'Theme updated',
+    'settings.theme_saved_body': 'Theme switched to {mode}.',
 
     // PIN Lock
     'pin.title': 'Enter PIN',
@@ -616,6 +623,11 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'buyer.searching_suggestions': 'Searching suggestions…',
     'buyer.selected_address': 'Selected address',
     'buyer.task.completion_otp': 'Completion OTP',
+    'buyer.smart_price_title': 'Smart pricing',
+    'buyer.smart_price_suggested': 'Suggested budget: ₹{amount}',
+    'buyer.smart_price_low': 'Budget looks low for this task. Consider increasing it for faster acceptance.',
+    'buyer.smart_price_fair': 'Budget looks good for this task.',
+    'buyer.smart_price_high': 'Great budget. This should get faster responses.',
 
     // Helper - extras
     'helper.offer.urgency': 'Urgency',
@@ -1229,6 +1241,13 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'settings.pin_set': 'PIN सेट करें',
     'settings.pin_remove': 'PIN हटाएं',
     'settings.pin_error_length': 'PIN 4 अंक का होना चाहिए।',
+    'settings.theme': 'थीम',
+    'settings.theme_light': 'लाइट',
+    'settings.theme_dark': 'डार्क',
+    'settings.theme_system': 'सिस्टम',
+    'settings.theme_help': 'ऐप का रूप चुनें। डिफ़ॉल्ट थीम लाइट है।',
+    'settings.theme_saved_title': 'थीम अपडेट हुई',
+    'settings.theme_saved_body': 'थीम {mode} पर सेट हो गई है।',
 
     // PIN Lock
     'pin.title': 'PIN दर्ज करें',
@@ -1269,6 +1288,11 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'buyer.searching_suggestions': 'सुझाव खोज रहे हैं…',
     'buyer.selected_address': 'चयनित पता',
     'buyer.task.completion_otp': 'पूर्णता OTP',
+    'buyer.smart_price_title': 'स्मार्ट प्राइसिंग',
+    'buyer.smart_price_suggested': 'सुझावित बजट: ₹{amount}',
+    'buyer.smart_price_low': 'इस कार्य के लिए बजट कम लग रहा है। जल्दी स्वीकार होने के लिए बढ़ाएं।',
+    'buyer.smart_price_fair': 'इस कार्य के लिए बजट अच्छा है।',
+    'buyer.smart_price_high': 'बहुत अच्छा बजट। जल्दी प्रतिक्रिया मिलने की संभावना अधिक है।',
 
     // Helper - extras
     'helper.offer.urgency': 'तत्कालता',
@@ -1860,6 +1884,13 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'settings.pin_set': 'PIN సెట్ చేయండి',
     'settings.pin_remove': 'PIN తొలగించండి',
     'settings.pin_error_length': 'PIN 4 అంకాలు ఉండాలి.',
+    'settings.theme': 'థీమ్',
+    'settings.theme_light': 'లైట్',
+    'settings.theme_dark': 'డార్క్',
+    'settings.theme_system': 'సిస్టమ్',
+    'settings.theme_help': 'యాప్ రూపాన్ని ఎంచుకోండి. డిఫాల్ట్ థీమ్ లైట్.',
+    'settings.theme_saved_title': 'థీమ్ అప్డేట్ అయింది',
+    'settings.theme_saved_body': 'థీమ్ {mode}కి మారింది.',
 
     // PIN Lock
     'pin.title': 'PIN నమోదు చేయండి',
@@ -1900,6 +1931,11 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'buyer.searching_suggestions': 'సూచనలు వెతుకుతున్నాం…',
     'buyer.selected_address': 'ఎంచుకున్న చిరునామా',
     'buyer.task.completion_otp': 'పూర్తి OTP',
+    'buyer.smart_price_title': 'స్మార్ట్ ప్రైసింగ్',
+    'buyer.smart_price_suggested': 'సూచించిన బడ్జెట్: ₹{amount}',
+    'buyer.smart_price_low': 'ఈ పనికి బడ్జెట్ తక్కువగా ఉంది. త్వరగా అంగీకరించేందుకు పెంచండి.',
+    'buyer.smart_price_fair': 'ఈ పనికి బడ్జెట్ బాగుంది.',
+    'buyer.smart_price_high': 'అద్భుతమైన బడ్జెట్. త్వరగా స్పందనలు వచ్చే అవకాశం ఉంది.',
 
     // Helper - extras
     'helper.offer.urgency': 'తక్షణత',
