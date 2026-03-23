@@ -108,9 +108,9 @@ const styles = StyleSheet.create({
   rowText: { color: theme.colors.text, fontWeight: '700' },
   rowArrow: { color: theme.colors.muted, fontSize: 18, fontWeight: '700' },
   signOut: {
-    backgroundColor: '#FEE2E2',
+    backgroundColor: theme.colors.dangerSoft,
     borderWidth: 1,
-    borderColor: '#FECACA',
+    borderColor: theme.colors.dangerBorder,
   },
   signOutText: { color: theme.colors.danger, fontWeight: '800', textAlign: 'center' },
 });

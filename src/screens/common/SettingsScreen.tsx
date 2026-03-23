@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { useAuth } from '../../auth/AuthContext';
@@ -8,8 +8,14 @@ import { Screen } from '../../ui/Screen';
 import { Segmented } from '../../ui/Segmented';
 import { PrimaryButton } from '../../ui/PrimaryButton';
 import { TextField } from '../../ui/TextField';
-import { theme } from '../../ui/theme';
+import { setRuntimeThemeMode, theme } from '../../ui/theme';
 import type { BuyerStackParamList, HelperStackParamList } from '../../navigation/types';
+import {
+  getStoredThemePreference,
+  resolveThemePreference,
+  setStoredThemePreference,
+  type ThemePreference,
+} from '../../ui/themePreference';
 
 type Props = NativeStackScreenProps<BuyerStackParamList & HelperStackParamList, 'Settings'>;
 
@@ -18,6 +24,19 @@ export function SettingsScreen({ navigation }: Props) {
   const { signOut, pinRequired, setPin, clearPin } = useAuth();
   const [pin, setPinValue] = useState('');
   const [pinError, setPinError] = useState<string | null>(null);
+  const [themePref, setThemePref] = useState<ThemePreference>('light');
+  const [themeBusy, setThemeBusy] = useState(false);
+
+  React.useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const saved = await getStoredThemePreference();
+      if (mounted) setThemePref(saved);
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const handleSetPin = async () => {
     if (pin.trim().length !== 4) {
@@ -27,6 +46,20 @@ export function SettingsScreen({ navigation }: Props) {
     setPinError(null);
     await setPin(pin.trim());
     setPinValue('');
+  };
+
+  const applyTheme = async (next: ThemePreference) => {
+    if (themeBusy || next === themePref) return;
+    setThemeBusy(true);
+    setThemePref(next);
+    await setStoredThemePreference(next);
+    setRuntimeThemeMode(resolveThemePreference(next));
+    Alert.alert(
+      t('settings.theme_saved_title'),
+      t('settings.theme_saved_body').replace('{mode}', t(`settings.theme_${resolveThemePreference(next)}`)),
+      [{ text: t('common.ok') }],
+    );
+    setThemeBusy(false);
   };
 
   return (
@@ -49,6 +82,20 @@ export function SettingsScreen({ navigation }: Props) {
             { key: 'te', label: t('language.te') },
           ]}
         />
+        <View style={styles.divider} />
+        <Text style={styles.label}>{t('settings.theme')}</Text>
+        <Segmented
+          value={themePref}
+          onChange={(v) => {
+            void applyTheme(v as ThemePreference);
+          }}
+          options={[
+            { key: 'light', label: t('settings.theme_light') },
+            { key: 'dark', label: t('settings.theme_dark') },
+            { key: 'system', label: t('settings.theme_system') },
+          ]}
+        />
+        <Text style={styles.helperText}>{t('settings.theme_help')}</Text>
         <View style={styles.divider} />
         <Text style={styles.label}>{t('settings.pin_label')}</Text>
         <Text style={styles.helperText}>

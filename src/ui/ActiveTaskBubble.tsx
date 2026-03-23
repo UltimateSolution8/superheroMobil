@@ -54,6 +54,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     elevation: 4,
   },
-  title: { color: '#0b0f14', fontWeight: '900', fontSize: 12 },
-  sub: { color: '#0b0f14', fontSize: 10, fontWeight: '700' },
+  title: { color: theme.colors.primaryText, fontWeight: '900', fontSize: 12 },
+  sub: { color: theme.colors.primaryText, fontSize: 10, fontWeight: '700' },
 });

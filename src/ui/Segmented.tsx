@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.border,
     borderRadius: theme.radius.lg,
     overflow: 'hidden',
-    backgroundColor: '#EEF2FF',
+    backgroundColor: theme.colors.surfaceSoft,
   },
   item: {
     flex: 1,

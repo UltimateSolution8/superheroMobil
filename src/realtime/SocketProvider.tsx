@@ -9,7 +9,7 @@ type SocketContextValue = Socket | null;
 const SocketContext = createContext<SocketContextValue>(null);
 
 export function SocketProvider({ children }: { children: React.ReactNode }) {
-  const { status, accessToken } = useAuth();
+  const { status, accessToken, signOut } = useAuth();
   const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
@@ -26,12 +26,21 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       reconnectionDelayMax: 3000,
     });
 
+    const onConnectError = (err: Error & { message?: string }) => {
+      const message = (err?.message || '').toLowerCase();
+      if (message.includes('unauthorized') || message.includes('authentication')) {
+        void signOut('auth.session_expired');
+      }
+    };
+    s.on('connect_error', onConnectError);
+
     setSocket(s);
     return () => {
+      s.off('connect_error', onConnectError);
       s.disconnect();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, accessToken]);
+  }, [status, accessToken, signOut]);
 
   const value = useMemo(() => socket, [socket]);
   return <SocketContext.Provider value={value}>{children}</SocketContext.Provider>;
