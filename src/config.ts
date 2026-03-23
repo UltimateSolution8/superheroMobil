@@ -60,7 +60,8 @@ export const SOCKET_URL =
 export const GOOGLE_MAPS_API_KEY =
   process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY?.trim() || mapsFromExtra || '';
 
-export const DEV_SHOW_OTP = process.env.EXPO_PUBLIC_DEV_SHOW_OTP === 'true';
+const devShowOtpRaw = process.env.EXPO_PUBLIC_DEV_SHOW_OTP?.trim().toLowerCase();
+export const DEV_SHOW_OTP = devShowOtpRaw ? devShowOtpRaw !== 'false' : true;
 
 export type AppVariant = 'unified' | 'buyer' | 'helper';
 
