@@ -7,7 +7,7 @@ ARG APK_VARIANT=debug
 ARG EXPO_PUBLIC_API_BASE_URL=https://api.mysuperhero.xyz
 ARG EXPO_PUBLIC_SOCKET_URL=http://localhost:8090
 ARG EXPO_PUBLIC_DEMO_FALLBACK_LOCATION=
-ARG EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=
+ARG EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=AIzaSyB1d7VbSo7JYjiUt_8q0hDIsq9cFxwuSGY
 ARG EXPO_PUBLIC_DEV_SHOW_OTP=true
 ARG EXPO_PUBLIC_APP_VARIANT=unified
 ARG EXPO_PUBLIC_SENTRY_DSN=
@@ -187,25 +187,25 @@ RUN set -eux; \
   mkdir -p /out; \
   if [ "$APK_VARIANT" = "release" ]; then \
     if [ "$EXPO_PUBLIC_APP_VARIANT" = "buyer" ]; then \
-      cp -f /app/android/app/build/outputs/apk/release/app-release.apk /out/Superheroo-Citizen-release.apk; \
+      cp -f /app/android/app/build/outputs/apk/release/app-release.apk /out/Superheroo-release.apk; \
     elif [ "$EXPO_PUBLIC_APP_VARIANT" = "helper" ]; then \
-      cp -f /app/android/app/build/outputs/apk/release/app-release.apk /out/Superheroo-Partner-release.apk; \
+      cp -f /app/android/app/build/outputs/apk/release/app-release.apk /out/Partner-release.apk; \
     else \
       cp -f /app/android/app/build/outputs/apk/release/app-release.apk /out/Superheroo-release.apk; \
     fi; \
   elif [ "$APK_VARIANT" = "standalone" ]; then \
     if [ "$EXPO_PUBLIC_APP_VARIANT" = "buyer" ]; then \
-      cp -f /app/android/app/build/outputs/apk/debug/app-debug.apk /out/Superheroo-Citizen-standalone.apk; \
+      cp -f /app/android/app/build/outputs/apk/debug/app-debug.apk /out/Superheroo-standalone.apk; \
     elif [ "$EXPO_PUBLIC_APP_VARIANT" = "helper" ]; then \
-      cp -f /app/android/app/build/outputs/apk/debug/app-debug.apk /out/Superheroo-Partner-standalone.apk; \
+      cp -f /app/android/app/build/outputs/apk/debug/app-debug.apk /out/Partner-standalone.apk; \
     else \
       cp -f /app/android/app/build/outputs/apk/debug/app-debug.apk /out/Superheroo-standalone.apk; \
     fi; \
   else \
     if [ "$EXPO_PUBLIC_APP_VARIANT" = "buyer" ]; then \
-      cp -f /app/android/app/build/outputs/apk/debug/app-debug.apk /out/Superheroo-Citizen-debug.apk; \
+      cp -f /app/android/app/build/outputs/apk/debug/app-debug.apk /out/Superheroo-debug.apk; \
     elif [ "$EXPO_PUBLIC_APP_VARIANT" = "helper" ]; then \
-      cp -f /app/android/app/build/outputs/apk/debug/app-debug.apk /out/Superheroo-Partner-debug.apk; \
+      cp -f /app/android/app/build/outputs/apk/debug/app-debug.apk /out/Partner-debug.apk; \
     else \
       cp -f /app/android/app/build/outputs/apk/debug/app-debug.apk /out/Superheroo-debug.apk; \
     fi; \

@@ -29,6 +29,7 @@ import { DEMO_FALLBACK_LOCATION, GOOGLE_MAPS_API_KEY } from '../../config';
 import { useActiveTask } from '../../state/ActiveTaskContext';
 import { useI18n } from '../../i18n/I18nProvider';
 import { useHelperPresence } from '../../state/HelperPresenceContext';
+import { downloadTaskInvoice } from '../../utils/invoice';
 
 type Props = NativeStackScreenProps<HelperStackParamList, 'HelperTask'>;
 
@@ -837,6 +838,13 @@ export function HelperTaskScreen({ route, navigation }: Props) {
             {helperEta == null ? '--' : `${helperEta} ${t('helper.task.minutes')}`}
           </Text>
           <PrimaryButton label={t('task.open_maps')} onPress={openMaps} variant="ghost" />
+          {task ? (
+            <PrimaryButton
+              label={t('task.download_invoice')}
+              onPress={() => downloadTaskInvoice(task, 'helper')}
+              variant="ghost"
+            />
+          ) : null}
 
           {next === 'STARTED' ? (
             <ArrivalOtpForm onSubmit={(o) => advance(o)} busy={busy} load={load} />
