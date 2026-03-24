@@ -28,6 +28,7 @@ const expoConfig =
   }).manifest2 ?? null);
 
 const extra = (expoConfig && expoConfig.extra) || {};
+const DEFAULT_GOOGLE_MAPS_API_KEY = 'AIzaSyB1d7VbSo7JYjiUt_8q0hDIsq9cFxwuSGY';
 const apiFromExtra = typeof extra.apiBaseUrl === 'string' ? extra.apiBaseUrl.trim() : '';
 const socketFromExtra = typeof extra.socketUrl === 'string' ? extra.socketUrl.trim() : '';
 const mapsFromExtra = typeof extra.googleMapsApiKey === 'string' ? extra.googleMapsApiKey.trim() : '';
@@ -58,7 +59,7 @@ export const SOCKET_URL =
   'https://superheroorealtime.onrender.com';
 
 export const GOOGLE_MAPS_API_KEY =
-  process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY?.trim() || mapsFromExtra || '';
+  process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY?.trim() || mapsFromExtra || DEFAULT_GOOGLE_MAPS_API_KEY;
 
 const devShowOtpRaw = process.env.EXPO_PUBLIC_DEV_SHOW_OTP?.trim().toLowerCase();
 export const DEV_SHOW_OTP = devShowOtpRaw ? devShowOtpRaw !== 'false' : true;
@@ -107,9 +108,9 @@ export const LOCKED_ROLE: 'BUYER' | 'HELPER' | null =
 
 export const APP_DISPLAY_NAME =
   APP_VARIANT === 'buyer'
-    ? 'Superherooo Citizen'
+    ? 'Superherooo'
     : APP_VARIANT === 'helper'
-    ? 'Superherooo Partner'
+    ? 'Partner'
     : 'Superherooo';
 
 function parseLatLng(raw?: string | null): { lat: number; lng: number } | null {

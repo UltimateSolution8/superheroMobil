@@ -4,7 +4,9 @@ const { withAndroidManifest, withDangerousMod } = require('@expo/config-plugins'
 const appJson = require('./app.json');
 
 const expo = appJson.expo || {};
-const googleMapsApiKey = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || '';
+// Keep a hard fallback so release APKs never lose map support when env is missed.
+const DEFAULT_GOOGLE_MAPS_API_KEY = 'AIzaSyB1d7VbSo7JYjiUt_8q0hDIsq9cFxwuSGY';
+const googleMapsApiKey = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || DEFAULT_GOOGLE_MAPS_API_KEY;
 const sentryDsn = process.env.EXPO_PUBLIC_SENTRY_DSN || '';
 const apiBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL || 'https://api.mysuperhero.xyz';
 const socketUrl = process.env.EXPO_PUBLIC_SOCKET_URL || 'https://superheroorealtime.onrender.com';
@@ -13,7 +15,7 @@ const appVariant = appVariantRaw === 'buyer' || appVariantRaw === 'helper' ? app
 const variantMeta =
   appVariant === 'buyer'
     ? {
-        name: 'Superherooo Citizen',
+        name: 'Superherooo',
         slug: 'superheroo-citizen',
         androidPackage: 'com.helpinminutes.citizen',
         iosBundleIdentifier: 'com.helpinminutes.citizen',
@@ -23,7 +25,7 @@ const variantMeta =
       }
     : appVariant === 'helper'
     ? {
-        name: 'Superherooo Partner',
+        name: 'Partner',
         slug: 'superheroo-partner',
         androidPackage: 'com.helpinminutes.partner',
         iosBundleIdentifier: 'com.helpinminutes.partner',

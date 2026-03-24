@@ -3,16 +3,12 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 OUT_DIR="${ROOT_DIR}/apk-out"
-MAPS_KEY="${EXPO_PUBLIC_GOOGLE_MAPS_API_KEY:-}"
+DEFAULT_MAPS_KEY="AIzaSyB1d7VbSo7JYjiUt_8q0hDIsq9cFxwuSGY"
+MAPS_KEY="${EXPO_PUBLIC_GOOGLE_MAPS_API_KEY:-$DEFAULT_MAPS_KEY}"
 SOCKET_URL="${EXPO_PUBLIC_SOCKET_URL:-https://superheroorealtime.onrender.com}"
 API_BASE="${EXPO_PUBLIC_API_BASE_URL:-https://api.mysuperhero.xyz}"
 SENTRY_DSN="${EXPO_PUBLIC_SENTRY_DSN:-}"
 DOCKER_PLATFORM="${DOCKER_PLATFORM:-}"
-
-if [[ -z "${MAPS_KEY}" ]]; then
-  echo "ERROR: EXPO_PUBLIC_GOOGLE_MAPS_API_KEY is required"
-  exit 1
-fi
 
 mkdir -p "${OUT_DIR}"
 cd "${ROOT_DIR}"
@@ -55,9 +51,9 @@ build_one() {
   docker rm "${container_name}" >/dev/null
 }
 
-build_one buyer superheroo-citizen-apk-release Superheroo-Citizen-release.apk
-build_one helper superheroo-partner-apk-release Superheroo-Partner-release.apk
+build_one buyer superheroo-apk-release Superheroo-release.apk
+build_one helper partner-apk-release Partner-release.apk
 
 echo "==> Done"
-echo "Citizen APK: ${OUT_DIR}/Superheroo-Citizen-release.apk"
-echo "Partner APK: ${OUT_DIR}/Superheroo-Partner-release.apk"
+echo "Superheroo APK: ${OUT_DIR}/Superheroo-release.apk"
+echo "Partner APK: ${OUT_DIR}/Partner-release.apk"

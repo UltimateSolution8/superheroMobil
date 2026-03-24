@@ -21,6 +21,7 @@ import { DEMO_FALLBACK_LOCATION, GOOGLE_MAPS_API_KEY } from '../../config';
 import type { BuyerStackParamList } from '../../navigation/types';
 import { useActiveTask } from '../../state/ActiveTaskContext';
 import { useI18n } from '../../i18n/I18nProvider';
+import { downloadTaskInvoice } from '../../utils/invoice';
 
 type Props = NativeStackScreenProps<BuyerStackParamList, 'BuyerTask'>;
 const VALID_STATUSES: ReadonlySet<TaskStatus> = new Set([
@@ -430,6 +431,13 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
             {task?.completionOtp ? <Text style={styles.otp}>{t('buyer.task.completion_otp')}: {task.completionOtp}</Text> : null}
 
             <PrimaryButton label={t('task.refresh')} onPress={load} loading={busy} variant="ghost" />
+            {task ? (
+              <PrimaryButton
+                label={t('task.download_invoice')}
+                onPress={() => downloadTaskInvoice(task, 'buyer')}
+                variant="ghost"
+              />
+            ) : null}
 
             {canCancel ? (
               <>
