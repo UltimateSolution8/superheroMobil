@@ -47,15 +47,18 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.lg,
     overflow: 'hidden',
     backgroundColor: theme.colors.surfaceSoft,
+    padding: 4,
   },
   item: {
     flex: 1,
-    height: 42,
+    height: 40,
+    borderRadius: theme.radius.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
   itemActive: {
     backgroundColor: theme.colors.primary,
+    ...theme.shadow.card,
   },
   label: {
     fontWeight: '700',

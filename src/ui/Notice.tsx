@@ -44,15 +44,16 @@ export const Notice = memo(function Notice({
 const styles = StyleSheet.create({
   wrap: {
     borderWidth: 1,
-    borderRadius: theme.radius.md,
+    borderRadius: theme.radius.lg,
     paddingHorizontal: theme.space.md,
     paddingVertical: theme.space.sm,
     flexDirection: 'row',
     alignItems: 'center',
+    ...theme.shadow.card,
   },
   text: {
     color: theme.colors.text,
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: 13.5,
+    lineHeight: 19,
   },
 });
