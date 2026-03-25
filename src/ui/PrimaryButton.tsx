@@ -40,7 +40,11 @@ export const PrimaryButton = memo(function PrimaryButton({
         styles.base,
         variant === 'ghost' ? styles.ghost : null,
         variant === 'primary' || variant === 'accent' ? styles.primaryShadow : null,
-        { backgroundColor: colors.bg, opacity: isDisabled ? 0.55 : pressed ? 0.85 : 1 },
+        {
+          backgroundColor: colors.bg,
+          opacity: isDisabled ? 0.55 : pressed ? 0.92 : 1,
+          transform: [{ scale: pressed ? 0.985 : 1 }],
+        },
         style,
       ]}
     >
@@ -58,7 +62,8 @@ export const PrimaryButton = memo(function PrimaryButton({
 
 const styles = StyleSheet.create({
   base: {
-    height: 50,
+    minHeight: 52,
+    paddingHorizontal: 14,
     borderRadius: theme.radius.lg,
     alignItems: 'center',
     justifyContent: 'center',
@@ -75,9 +80,9 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   label: {
-    fontSize: 16,
-    fontWeight: '700',
-    letterSpacing: 0.2,
+    fontSize: 15,
+    fontWeight: '800',
+    letterSpacing: 0.3,
   },
   content: {
     flexDirection: 'row',

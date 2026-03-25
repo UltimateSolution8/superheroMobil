@@ -47,19 +47,22 @@ export const TextField = memo(function TextField({
 const styles = StyleSheet.create({
   wrap: { gap: 8 },
   label: {
-    fontSize: 12,
+    fontSize: 11,
     color: theme.colors.muted,
-    letterSpacing: 0.2,
+    letterSpacing: 0.35,
+    fontWeight: '700',
+    textTransform: 'uppercase',
   },
   input: {
     borderWidth: 1,
     borderColor: theme.colors.border,
     borderRadius: theme.radius.sm,
     paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingVertical: 13,
     color: theme.colors.text,
     backgroundColor: theme.colors.inputBg,
-    fontSize: 16,
+    fontSize: 15,
+    lineHeight: 20,
   },
   inputMultiline: {
     minHeight: 96,
