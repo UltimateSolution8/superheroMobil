@@ -15,6 +15,10 @@ export function Screen({
   const insets = useSafeAreaInsets();
   return (
     <SafeAreaView style={styles.safe}>
+      <View pointerEvents="none" style={styles.bgLayer}>
+        <View style={styles.bgOrbTop} />
+        <View style={styles.bgOrbBottom} />
+      </View>
       <View style={[styles.inner, style, { paddingBottom: theme.space.lg + insets.bottom }]}>
         {children}
         <ActiveTaskBubble />
@@ -27,6 +31,28 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: theme.colors.bg,
+  },
+  bgLayer: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  bgOrbTop: {
+    position: 'absolute',
+    right: -80,
+    top: -70,
+    width: 220,
+    height: 220,
+    borderRadius: 999,
+    backgroundColor: theme.colors.glow,
+  },
+  bgOrbBottom: {
+    position: 'absolute',
+    left: -100,
+    bottom: -100,
+    width: 240,
+    height: 240,
+    borderRadius: 999,
+    backgroundColor: theme.colors.glow,
+    opacity: 0.6,
   },
   inner: {
     flex: 1,

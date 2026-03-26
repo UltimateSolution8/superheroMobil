@@ -19,17 +19,18 @@ export function MenuButton({ onPress }: { onPress: () => void }) {
 
 const styles = StyleSheet.create({
   button: {
-    width: 40,
-    height: 40,
-    borderRadius: 14,
+    width: 42,
+    height: 42,
+    borderRadius: 16,
     backgroundColor: theme.colors.card,
     borderWidth: 1,
     borderColor: theme.colors.border,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
+    ...theme.shadow.card,
   },
-  pressed: { opacity: 0.7 },
+  pressed: { opacity: 0.8, transform: [{ scale: 0.97 }] },
   line: {
     width: 18,
     height: 2,

@@ -25,7 +25,7 @@ export const PrimaryButton = memo(function PrimaryButton({
   const colors = useMemo(() => {
     if (variant === 'accent') return { bg: theme.colors.accent, text: theme.colors.primary };
     if (variant === 'danger') return { bg: theme.colors.danger, text: theme.colors.primaryText };
-    if (variant === 'ghost') return { bg: 'transparent', text: theme.colors.primary };
+    if (variant === 'ghost') return { bg: theme.colors.card, text: theme.colors.primary };
     return { bg: theme.colors.primary, text: theme.colors.primaryText };
   }, [variant]);
 
@@ -39,8 +39,12 @@ export const PrimaryButton = memo(function PrimaryButton({
       style={({ pressed }) => [
         styles.base,
         variant === 'ghost' ? styles.ghost : null,
-        variant === 'primary' || variant === 'accent' ? styles.primaryShadow : null,
-        { backgroundColor: colors.bg, opacity: isDisabled ? 0.55 : pressed ? 0.85 : 1 },
+        variant === 'primary' || variant === 'accent' ? styles.primaryShadow : styles.ghostShadow,
+        {
+          backgroundColor: colors.bg,
+          opacity: isDisabled ? 0.55 : pressed ? 0.92 : 1,
+          transform: [{ scale: pressed ? 0.982 : 1 }],
+        },
         style,
       ]}
     >
@@ -58,7 +62,8 @@ export const PrimaryButton = memo(function PrimaryButton({
 
 const styles = StyleSheet.create({
   base: {
-    height: 50,
+    minHeight: 54,
+    paddingHorizontal: 16,
     borderRadius: theme.radius.lg,
     alignItems: 'center',
     justifyContent: 'center',
@@ -67,16 +72,19 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
+  ghostShadow: {
+    ...theme.shadow.card,
+  },
   primaryShadow: {
     shadowColor: theme.colors.primary,
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 3,
+    shadowOpacity: 0.24,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 5,
   },
   label: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 15.5,
+    fontWeight: '800',
     letterSpacing: 0.2,
   },
   content: {
