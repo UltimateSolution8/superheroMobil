@@ -17,11 +17,12 @@ export function MenuScreen({ navigation }: Props) {
   const items = useMemo(() => {
     if (!user) return [];
     const home = user.role === 'HELPER' ? 'HelperHome' : 'BuyerHome';
+    const isHelper = user.role === 'HELPER';
     return [
       { key: 'profile', label: t('menu.profile'), screen: 'Profile' },
-      { key: 'tasks', label: t('menu.tasks'), screen: home },
-      { key: 'history', label: t('menu.earnings'), screen: 'History' },
-      { key: 'payment', label: t('menu.wallet'), screen: 'Payments' },
+      { key: 'tasks', label: isHelper ? t('menu.tasks_partner') : t('menu.tasks_citizen'), screen: home },
+      { key: 'history', label: isHelper ? t('menu.history_partner') : t('menu.history_citizen'), screen: 'History' },
+      { key: 'payment', label: isHelper ? t('menu.wallet_partner') : t('menu.wallet_citizen'), screen: 'Payments' },
       { key: 'settings', label: t('menu.settings'), screen: 'Settings' },
       { key: 'support', label: t('menu.support'), screen: 'SupportTickets' },
       { key: 'sos', label: t('menu.sos'), screen: 'SOS' },
@@ -42,7 +43,7 @@ export function MenuScreen({ navigation }: Props) {
       <ScrollView contentContainerStyle={styles.scroll}>
         {user ? (
           <View style={styles.profileCard}>
-            <Text style={styles.profileName}>{user.displayName || t('menu.default_name')}</Text>
+            <Text style={styles.profileName}>{user.displayName || (user.role === 'HELPER' ? t('menu.default_name_partner') : t('menu.default_name_citizen'))}</Text>
             <Text style={styles.profileMeta}>
               {user.role === 'HELPER' ? t('role.superherooo') : t('role.citizen')} • {user.phone}
             </Text>
