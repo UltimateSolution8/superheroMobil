@@ -22,6 +22,7 @@ const variantMeta =
         icon: './assets/icon-citizen.png',
         adaptiveIcon: './assets/adaptive-icon-citizen.png',
         adaptiveBackgroundColor: '#1D4ED8',
+        splashBackgroundColor: '#1D4ED8',
       }
     : appVariant === 'helper'
     ? {
@@ -32,6 +33,7 @@ const variantMeta =
         icon: './assets/icon-partner.png',
         adaptiveIcon: './assets/adaptive-icon-partner.png',
         adaptiveBackgroundColor: '#0F766E',
+        splashBackgroundColor: '#0F766E',
       }
     : {
         name: expo.name,
@@ -43,6 +45,7 @@ const variantMeta =
           expo.android && expo.android.adaptiveIcon ? expo.android.adaptiveIcon.foregroundImage : undefined,
         adaptiveBackgroundColor:
           expo.android && expo.android.adaptiveIcon ? expo.android.adaptiveIcon.backgroundColor : undefined,
+        splashBackgroundColor: expo.splash && expo.splash.backgroundColor ? expo.splash.backgroundColor : '#1E3A8A',
       };
 const googleServicesFile = path.join(__dirname, 'google-services.json');
 const hasGoogleServices =
@@ -189,6 +192,12 @@ module.exports = {
     name: variantMeta.name || expo.name,
     slug: variantMeta.slug || expo.slug,
     icon: variantMeta.icon || expo.icon,
+    splash: {
+      ...(expo.splash || {}),
+      backgroundColor: variantMeta.splashBackgroundColor,
+      image: (expo.splash && expo.splash.image) || './assets/superheroo-logo.png',
+      resizeMode: (expo.splash && expo.splash.resizeMode) || 'contain',
+    },
     plugins: [
       ...plugins,
       withNetworkSecurity,

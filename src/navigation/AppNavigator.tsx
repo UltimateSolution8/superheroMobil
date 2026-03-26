@@ -82,7 +82,9 @@ export function AppNavigator() {
           <SocketProvider>
             <HelperPresenceProvider>
               {user.role === 'BUYER' ? (
-                <BuyerStack.Navigator screenOptions={{ headerShown: false }}>
+                <BuyerStack.Navigator
+                  screenOptions={{ headerShown: false, animation: 'slide_from_right', contentStyle: { backgroundColor: theme.colors.bg } }}
+                >
                   <BuyerStack.Screen name="BuyerHome" component={BuyerHomeScreen} />
                   <BuyerStack.Screen name="BuyerTask" component={BuyerTaskScreen} />
                   <BuyerStack.Screen name="Menu" component={MenuScreen} />
@@ -98,7 +100,9 @@ export function AppNavigator() {
                   <BuyerStack.Screen name="SupportTicket" component={SupportTicketScreen} />
                 </BuyerStack.Navigator>
               ) : user.role === 'HELPER' ? (
-                <HelperStack.Navigator screenOptions={{ headerShown: false }}>
+                <HelperStack.Navigator
+                  screenOptions={{ headerShown: false, animation: 'slide_from_right', contentStyle: { backgroundColor: theme.colors.bg } }}
+                >
                   <HelperStack.Screen name="HelperHome" component={HelperHomeScreen} />
                   <HelperStack.Screen name="HelperKyc" component={HelperKycScreen} />
                   <HelperStack.Screen name="HelperVideoKyc" component={HelperVideoKycScreen} />

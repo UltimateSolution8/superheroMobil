@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import * as SecureStore from 'expo-secure-store';
+import { AppState } from 'react-native';
 
 import * as api from '../api/client';
 import { ApiError } from '../api/http';
@@ -69,6 +70,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const accessRef = useRef<string | null>(null);
   const refreshRef = useRef<string | null>(null);
   const refreshInFlight = useRef<Promise<AuthResponse> | null>(null);
+  const statusRef = useRef<AuthStatus>('loading');
+
+  useEffect(() => {
+    statusRef.current = state.status;
+  }, [state.status]);
+
+  const applyAuth = useCallback(async (auth: AuthResponse) => {
+    await saveAuth(auth);
+    accessRef.current = auth.accessToken;
+    refreshRef.current = auth.refreshToken;
+    setState({ status: 'signedIn', ...auth });
+  }, []);
+
+  const refreshTokens = useCallback(async (): Promise<AuthResponse> => {
+    const rt = refreshRef.current;
+    if (!rt) throw new Error('Missing refresh token');
+
+    if (!refreshInFlight.current) {
+      refreshInFlight.current = api.refresh(rt).finally(() => {
+        refreshInFlight.current = null;
+      });
+    }
+
+    const auth = await refreshInFlight.current;
+    await applyAuth(auth);
+    return auth;
+  }, [applyAuth]);
 
   useEffect(() => {
     let cancelled = false;
@@ -87,14 +115,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setState({ status: 'signedOut', accessToken: null, refreshToken: null, user: null });
         return;
       }
-      accessRef.current = auth.accessToken;
-      refreshRef.current = auth.refreshToken;
-      setState({ status: 'signedIn', ...auth });
+      try {
+        // Always bootstrap with a fresh access token so idle-resume and PIN unlock stay stable.
+        refreshRef.current = auth.refreshToken;
+        const refreshed = await api.refresh(auth.refreshToken);
+        if (cancelled) return;
+        await applyAuth(refreshed);
+      } catch {
+        if (cancelled) return;
+        await clearAuth();
+        accessRef.current = null;
+        refreshRef.current = null;
+        setState({ status: 'signedOut', accessToken: null, refreshToken: null, user: null });
+      }
     })();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [applyAuth]);
 
   useEffect(() => {
     if (state.status !== 'signedIn') return;
@@ -110,12 +148,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const verifyOtp = useCallback(async (phone: string, otp: string, role: UserRole) => {
     const auth = await api.otpVerify(phone, otp, role);
     ensureRoleAllowed(auth.user);
-    await saveAuth(auth);
-    accessRef.current = auth.accessToken;
-    refreshRef.current = auth.refreshToken;
-    setState({ status: 'signedIn', ...auth });
+    await applyAuth(auth);
     setPinVerified(false);
-  }, []);
+  }, [applyAuth]);
 
   const loginWithPassword = useCallback(async (email: string, password: string) => {
     const auth = await api.passwordLogin(email, password);
@@ -123,12 +158,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw new ApiError('Admin role is not supported in mobile app.', { status: 400 });
     }
     ensureRoleAllowed(auth.user);
-    await saveAuth(auth);
-    accessRef.current = auth.accessToken;
-    refreshRef.current = auth.refreshToken;
-    setState({ status: 'signedIn', ...auth });
+    await applyAuth(auth);
     setPinVerified(false);
-  }, []);
+  }, [applyAuth]);
 
   const signupWithPassword = useCallback(
     async (email: string, password: string, role: UserRole, phone?: string | null, displayName?: string | null) => {
@@ -144,13 +176,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       const auth = await api.passwordSignup({ email, password, phone: phone || null, displayName: displayName || null, role });
       ensureRoleAllowed(auth.user);
-      await saveAuth(auth);
-      accessRef.current = auth.accessToken;
-      refreshRef.current = auth.refreshToken;
-      setState({ status: 'signedIn', ...auth });
+      await applyAuth(auth);
       setPinVerified(false);
     },
-    [],
+    [applyAuth],
   );
 
   const signOut = useCallback(async (reason?: string) => {
@@ -183,8 +212,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!pinRef.current) return true;
     const ok = pinRef.current === pin;
     setPinVerified(ok);
+    if (ok && statusRef.current === 'signedIn') {
+      try {
+        await refreshTokens();
+      } catch {
+        await signOut('auth.session_expired');
+        return false;
+      }
+    }
     return ok;
-  }, []);
+  }, [refreshTokens, signOut]);
 
   const resetPinVerification = useCallback(() => {
     if (pinRef.current) {
@@ -192,23 +229,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const refreshTokens = useCallback(async (): Promise<AuthResponse> => {
-    const rt = refreshRef.current;
-    if (!rt) throw new Error('Missing refresh token');
-
-    if (!refreshInFlight.current) {
-      refreshInFlight.current = api.refresh(rt).finally(() => {
-        refreshInFlight.current = null;
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (nextState) => {
+      if (nextState !== 'active') return;
+      if (statusRef.current !== 'signedIn') return;
+      void refreshTokens().catch(() => {
+        // Keep current behavior: user is redirected to login when refresh fails.
+        void signOut('auth.session_expired');
       });
-    }
-
-    const auth = await refreshInFlight.current;
-    await saveAuth(auth);
-    accessRef.current = auth.accessToken;
-    refreshRef.current = auth.refreshToken;
-    setState({ status: 'signedIn', ...auth });
-    return auth;
-  }, []);
+    });
+    return () => sub.remove();
+  }, [refreshTokens, signOut]);
 
   const withAuth = useCallback(
     async <T,>(fn: (accessToken: string) => Promise<T>): Promise<T> => {
@@ -217,7 +248,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         return await fn(at);
       } catch (e) {
-        if (e instanceof ApiError && e.status === 401) {
+        if (e instanceof ApiError && (e.status === 401 || e.status === 403)) {
           try {
             const refreshed = await refreshTokens();
             return await fn(refreshed.accessToken);
