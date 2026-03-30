@@ -21,6 +21,7 @@ export function MenuScreen({ navigation }: Props) {
     return [
       { key: 'profile', label: t('menu.profile'), screen: 'Profile' },
       { key: 'tasks', label: isHelper ? t('menu.tasks_partner') : t('menu.tasks_citizen'), screen: home },
+      ...(isHelper ? [] : [{ key: 'bulk', label: t('menu.bulk_tasks'), screen: 'BuyerBulkTasks' } as const]),
       { key: 'history', label: isHelper ? t('menu.history_partner') : t('menu.history_citizen'), screen: 'History' },
       { key: 'payment', label: isHelper ? t('menu.wallet_partner') : t('menu.wallet_citizen'), screen: 'Payments' },
       { key: 'settings', label: t('menu.settings'), screen: 'Settings' },

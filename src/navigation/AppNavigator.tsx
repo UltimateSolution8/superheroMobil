@@ -17,6 +17,7 @@ import { SplashScreen } from '../screens/SplashScreen';
 import { OnboardingScreen } from '../screens/OnboardingScreen';
 import { RoleSelectionScreen } from '../screens/RoleSelectionScreen';
 import { BuyerHomeScreen } from '../screens/buyer/BuyerHomeScreen';
+import { BuyerBulkTasksScreen } from '../screens/buyer/BuyerBulkTasksScreen';
 import { BuyerTaskScreen } from '../screens/buyer/BuyerTaskScreen';
 import { HelperHomeScreen } from '../screens/helper/HelperHomeScreen';
 import { HelperKycScreen } from '../screens/helper/HelperKycScreen';
@@ -86,6 +87,7 @@ export function AppNavigator() {
                   screenOptions={{ headerShown: false, animation: 'slide_from_right', contentStyle: { backgroundColor: theme.colors.bg } }}
                 >
                   <BuyerStack.Screen name="BuyerHome" component={BuyerHomeScreen} />
+                  <BuyerStack.Screen name="BuyerBulkTasks" component={BuyerBulkTasksScreen} />
                   <BuyerStack.Screen name="BuyerTask" component={BuyerTaskScreen} />
                   <BuyerStack.Screen name="Menu" component={MenuScreen} />
                   <BuyerStack.Screen name="Profile" component={ProfileScreen} />
