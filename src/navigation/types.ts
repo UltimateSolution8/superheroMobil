@@ -14,6 +14,7 @@ export type AuthStackParamList = {
 
 export type BuyerStackParamList = {
   BuyerHome: undefined;
+  BuyerBulkTasks: undefined;
   BuyerTask: { taskId: string };
   Menu: undefined;
   Profile: undefined;

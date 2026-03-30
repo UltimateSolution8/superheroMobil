@@ -50,6 +50,42 @@ export type CreateTaskResponse = {
   offeredTo: string[];
 };
 
+export type BatchCreateItem = {
+  title: string;
+  description: string;
+  urgency: TaskUrgency;
+  timeMinutes: number;
+  budgetPaise: number;
+  lat: number;
+  lng: number;
+  addressText?: string | null;
+  scheduledAt?: string | null;
+  externalRef?: string | null;
+  priority?: number | null;
+};
+
+export type BatchPreviewItemResult = {
+  lineNo: number;
+  recommendedBudgetPaise: number;
+  confidence: string;
+  errors: string[];
+};
+
+export type BatchPreviewResponse = {
+  total: number;
+  valid: number;
+  invalid: number;
+  items: BatchPreviewItemResult[];
+};
+
+export type BatchCreateResponse = {
+  batchId: string;
+  requestedCount: number;
+  createdCount: number;
+  failedCount: number;
+  status: string;
+};
+
 export type PushTokenRequest = {
   token: string;
   platform: string;

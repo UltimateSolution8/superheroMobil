@@ -4,6 +4,9 @@ import type {
   AuthResponse,
   CreateTaskRequest,
   CreateTaskResponse,
+  BatchCreateItem,
+  BatchCreateResponse,
+  BatchPreviewResponse,
   HelperProfile,
   LiveKycSession,
   VideoKycStartResponse,
@@ -245,6 +248,33 @@ export async function createTask(accessToken: string, req: CreateTaskRequest): P
     method: 'POST',
     headers: authHeaders(accessToken),
     body: JSON.stringify(req),
+  });
+}
+
+export async function previewBatch(
+  accessToken: string,
+  items: BatchCreateItem[],
+): Promise<BatchPreviewResponse> {
+  return fetchJson(url('/api/v1/batches/preview'), {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+    body: JSON.stringify({ items }),
+  });
+}
+
+export async function createBatch(
+  accessToken: string,
+  payload: {
+    title: string;
+    notes?: string | null;
+    idempotencyKey?: string | null;
+    items: BatchCreateItem[];
+  },
+): Promise<BatchCreateResponse> {
+  return fetchJson(url('/api/v1/batches'), {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+    body: JSON.stringify(payload),
   });
 }
 
