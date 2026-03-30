@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import * as api from '../../api/client';
@@ -53,55 +53,61 @@ export function SupportNewTicketScreen({ navigation }: Props) {
 
   return (
     <Screen style={styles.screen}>
-      <View style={styles.topBar}>
-        <Text onPress={() => navigation.goBack()} style={styles.link}>
-          {t('common.back')}
-        </Text>
-        <Text style={styles.h1}>{t('support.new_title')}</Text>
-        <Text style={styles.spacer}> </Text>
-      </View>
+      <KeyboardAvoidingView style={styles.flex1} behavior={Platform.select({ ios: 'padding', android: undefined })}>
+        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+          <View style={styles.topBar}>
+            <Text onPress={() => navigation.goBack()} style={styles.link}>
+              {t('common.back')}
+            </Text>
+            <Text style={styles.h1}>{t('support.new_title')}</Text>
+            <Text style={styles.spacer}> </Text>
+          </View>
 
-      {!online ? <Notice kind="warning" text={t('common.offline')} /> : null}
-      <Notice kind="info" text={t('support.ai_notice')} />
-      {error ? <Notice kind="danger" text={error} /> : null}
+          {!online ? <Notice kind="warning" text={t('common.offline')} /> : null}
+          <Notice kind="info" text={t('support.ai_notice')} />
+          {error ? <Notice kind="danger" text={error} /> : null}
 
-      <View style={styles.card}>
-        <Text style={styles.section}>{t('support.category')}</Text>
-        <Segmented
-          value={category}
-          options={[
-            { key: 'PAYMENT', label: t('support.category_payment') },
-            { key: 'SAFETY', label: t('support.category_safety') },
-            { key: 'QUALITY', label: t('support.category_quality') },
-            { key: 'OTHER', label: t('support.category_other') },
-          ]}
-          onChange={(v) => setCategory(v as SupportTicketCategory)}
-        />
-      </View>
+          <View style={styles.card}>
+            <Text style={styles.section}>{t('support.category')}</Text>
+            <Segmented
+              value={category}
+              options={[
+                { key: 'PAYMENT', label: t('support.category_payment') },
+                { key: 'SAFETY', label: t('support.category_safety') },
+                { key: 'QUALITY', label: t('support.category_quality') },
+                { key: 'OTHER', label: t('support.category_other') },
+              ]}
+              onChange={(v) => setCategory(v as SupportTicketCategory)}
+            />
+          </View>
 
-      <View style={styles.card}>
-        <Text style={styles.section}>{t('support.details')}</Text>
-        <TextField
-          label={t('support.subject_optional')}
-          value={subject}
-          onChangeText={setSubject}
-          placeholder={t('support.subject_placeholder')}
-        />
-        <TextField
-          label={t('support.message_label')}
-          value={message}
-          onChangeText={setMessage}
-          placeholder={t('support.message_placeholder')}
-          multiline
-        />
-      </View>
+          <View style={styles.card}>
+            <Text style={styles.section}>{t('support.details')}</Text>
+            <TextField
+              label={t('support.subject_optional')}
+              value={subject}
+              onChangeText={setSubject}
+              placeholder={t('support.subject_placeholder')}
+            />
+            <TextField
+              label={t('support.message_label')}
+              value={message}
+              onChangeText={setMessage}
+              placeholder={t('support.message_placeholder')}
+              multiline
+            />
+          </View>
 
-      <PrimaryButton label={t('support.create_ticket')} onPress={onCreate} disabled={!canCreate} loading={busy} />
+          <PrimaryButton label={t('support.create_ticket')} onPress={onCreate} disabled={!canCreate} loading={busy} />
+        </ScrollView>
+      </KeyboardAvoidingView>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
+  flex1: { flex: 1 },
+  scrollContent: { gap: theme.space.md, paddingBottom: theme.space.xl },
   screen: { paddingBottom: theme.space.xl, gap: theme.space.md },
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   h1: { color: theme.colors.text, fontSize: 18, fontWeight: '900' },

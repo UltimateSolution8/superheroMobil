@@ -166,6 +166,10 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'buyer.task.submit_rating': 'Submit rating',
     'buyer.task.map_unavailable': 'Map unavailable: missing Google Maps API key.',
     'buyer.task.please_cancel': 'Please add a cancellation reason.',
+    'buyer.task.search_timeout': 'No Superherooo accepted in time. Please try again.',
+    'buyer.task.try_again': 'Try again',
+    'buyer.task.retry_error': 'Could not retry search. Please try again.',
+    'buyer.task.collect_payment_from': 'Please pay {name} in cash/UPI now.',
 
     // Helper - Home
     'helper.online': 'Go online',
@@ -218,6 +222,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'helper.task.rating_placeholder': 'Share feedback',
     'helper.task.submit_rating': 'Submit rating',
     'helper.task.map_unavailable': 'Map unavailable: missing Google Maps API key.',
+    'helper.task.collect_payment_from': 'Collect cash/UPI payment from {name}.',
 
     // Helper - Task Status
     'helper.task.status.searching': 'Searching',
@@ -660,6 +665,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'helper.sort_tasks': 'Sort tasks',
     'helper.kyc.must_complete': 'Complete KYC and wait for admin approval before going online.',
     'helper.go_online_error': 'Could not go online. Try again.',
+    'helper.active_task_only': 'You already have an active task. Finish it to receive new tasks.',
     'helper.offer_expired': 'Offer expired or task already taken.',
     'helper.accept_error': 'Could not accept task.',
     'helper.task.arrival_otp_title': 'Arrival OTP',
@@ -856,6 +862,10 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'buyer.task.submit_rating': 'रेटिंग सबमिट करें',
     'buyer.task.map_unavailable': 'मानचित्र उपलब्ध नहीं: Google Maps API कुंजी गायब है।',
     'buyer.task.please_cancel': 'कृपया रद्दीकरण का कारण जोड़ें।',
+    'buyer.task.search_timeout': 'समय पर कोई सुपरहीरो स्वीकार नहीं कर पाया। कृपया फिर से प्रयास करें।',
+    'buyer.task.try_again': 'फिर से प्रयास करें',
+    'buyer.task.retry_error': 'खोज दोबारा शुरू नहीं हो सकी। कृपया फिर से प्रयास करें।',
+    'buyer.task.collect_payment_from': 'कृपया अब {name} को नकद/UPI से भुगतान करें।',
 
     // Helper - Home
     'helper.online': 'ऑनलाइन जाएँ',
@@ -907,6 +917,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'helper.task.rating_placeholder': 'प्रतिक्रिया साझा करें',
     'helper.task.submit_rating': 'रेटिंग सबमिट करें',
     'helper.task.map_unavailable': 'मानचित्र उपलब्ध नहीं: Google Maps API कुंजी गायब है।',
+    'helper.task.collect_payment_from': '{name} से नकद/UPI भुगतान प्राप्त करें।',
 
     // Helper - Task Status
     'helper.task.status.searching': 'खोज रहे हैं',
@@ -1350,6 +1361,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'helper.sort_tasks': 'कार्य सॉर्ट करें',
     'helper.kyc.must_complete': 'ऑनलाइन होने से पहले KYC पूरा करें और एडमिन अनुमोदन का इंतज़ार करें।',
     'helper.go_online_error': 'ऑनलाइन नहीं जा सके। पुनः प्रयास करें।',
+    'helper.active_task_only': 'आपका एक सक्रिय कार्य चल रहा है। नया कार्य पाने के लिए इसे पूरा करें।',
     'helper.offer_expired': 'ऑफर समाप्त हो गया या कार्य पहले ही लिया जा चुका है।',
     'helper.accept_error': 'कार्य स्वीकार नहीं कर सका।',
     'helper.task.arrival_otp_title': 'आगमन OTP',
@@ -1539,6 +1551,10 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'buyer.task.submit_rating': 'Submit',
     'buyer.task.map_unavailable': 'Map unavailable.',
     'buyer.task.please_cancel': 'Add reason.',
+    'buyer.task.search_timeout': 'సమయంలో ఎవరూ టాస్క్ తీసుకోలేదు. దయచేసి మళ్లీ ప్రయత్నించండి.',
+    'buyer.task.try_again': 'మళ్లీ ప్రయత్నించండి',
+    'buyer.task.retry_error': 'మళ్లీ సెర్చ్ ప్రారంభించలేకపోయాం. దయచేసి మళ్లీ ప్రయత్నించండి.',
+    'buyer.task.collect_payment_from': '{name} కు ఇప్పుడు నగదు/UPI ద్వారా చెల్లించండి.',
     // Helper - Home
     'helper.online': 'Go Online',
     'helper.offline': 'Go Offline',
@@ -1587,6 +1603,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'helper.task.rating_placeholder': 'Feedback',
     'helper.task.submit_rating': 'Submit',
     'helper.task.map_unavailable': 'Map unavailable.',
+    'helper.task.collect_payment_from': '{name} నుండి నగదు/UPI చెల్లింపు తీసుకోండి.',
     // Helper - Task Status
     'helper.task.status.searching': 'Searching',
     'helper.task.status.assigned': 'Assigned',
@@ -2018,6 +2035,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'helper.sort_tasks': 'పనులు సార్ట్ చేయండి',
     'helper.kyc.must_complete': 'ఆన్‌లైన్ అవ్వడానికి ముందు KYC పూర్తి చేసి అడ్మిన్ అప్రూవల్ కోసం వేచిచూడండి.',
     'helper.go_online_error': 'ఆన్‌లైన్ అవ్వలేకపోయాం. మళ్లీ ప్రయత్నించండి.',
+    'helper.active_task_only': 'మీ వద్ద ఇప్పటికే ఒక యాక్టివ్ పని ఉంది. కొత్త పనులు కోసం దాన్ని పూర్తి చేయండి.',
     'helper.offer_expired': 'ఆఫర్ గడువు ముగిసింది లేదా పని ఇప్పటికే తీసుకున్నారు.',
     'helper.accept_error': 'పని అంగీకరించలేకపోయాం.',
     'helper.task.arrival_otp_title': 'ఆగమనం OTP',

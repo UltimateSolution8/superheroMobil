@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Linking, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Linking, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { Asset } from 'react-native-image-picker';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import * as Location from 'expo-location';
@@ -208,6 +208,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
   const status = task?.status ?? 'ASSIGNED';
   const next = useMemo(() => nextStatus(status), [status]);
   const canCancel = status === 'ASSIGNED' || status === 'SEARCHING';
+  const showCollectNotice = status === 'COMPLETED' && !!task?.buyerName;
   const completionSelfieDone = Boolean(task?.completionSelfieUrl);
   const previousStatus = useRef<TaskStatus | null>(null);
   const statusLabel = useCallback(
@@ -735,12 +736,29 @@ export function HelperTaskScreen({ route, navigation }: Props) {
   }, [lastCoords, next, shouldUpdateLoc]);
 
   const lastRouteFetch = useRef(0);
+  const routeCache = useRef<Map<string, { coords: { latitude: number; longitude: number }[]; etaMin: number | null; at: number }>>(new Map());
+  const lastRouteOrigin = useRef<{ lat: number; lng: number } | null>(null);
   useEffect(() => {
     if (next === 'STARTED' || next === 'COMPLETED') return;
     if (!task || !helperLoc || !GOOGLE_MAPS_API_KEY || !hasTaskCoords) return;
     const now = Date.now();
-    if (now - lastRouteFetch.current < 12_000) return;
+    if (now - lastRouteFetch.current < 30_000) return;
+    if (lastRouteOrigin.current) {
+      const moved = distanceMeters(
+        { lat: lastRouteOrigin.current.lat, lng: lastRouteOrigin.current.lng },
+        { lat: helperLoc.lat, lng: helperLoc.lng },
+      );
+      if (moved < 30 && now - lastRouteFetch.current < 90_000) return;
+    }
     lastRouteFetch.current = now;
+    lastRouteOrigin.current = { lat: helperLoc.lat, lng: helperLoc.lng };
+    const key = `${helperLoc.lat.toFixed(4)},${helperLoc.lng.toFixed(4)}->${taskLat.toFixed(4)},${taskLng.toFixed(4)}`;
+    const cached = routeCache.current.get(key);
+    if (cached && now - cached.at < 120_000) {
+      setRouteCoords(cached.coords);
+      setRouteEtaMin(cached.etaMin);
+      return;
+    }
     const fetchRoute = async () => {
       try {
         const url =
@@ -756,16 +774,22 @@ export function HelperTaskScreen({ route, navigation }: Props) {
         if (poly && typeof poly === 'string') {
           const points = decodePolyline(poly);
           setRouteCoords(points);
+          routeCache.current.set(key, { coords: points, etaMin: routeEtaMin, at: Date.now() });
         }
         if (legs?.duration?.value) {
-          setRouteEtaMin(Math.max(1, Math.round(legs.duration.value / 60)));
+          const eta = Math.max(1, Math.round(legs.duration.value / 60));
+          setRouteEtaMin(eta);
+          const existing = routeCache.current.get(key);
+          if (existing) {
+            routeCache.current.set(key, { ...existing, etaMin: eta, at: Date.now() });
+          }
         }
       } catch {
         // best effort
       }
     };
     fetchRoute();
-  }, [helperLoc, hasTaskCoords, next, task, taskLat, taskLng]);
+  }, [hasTaskCoords, helperLoc, next, routeEtaMin, task, taskLat, taskLng]);
 
   const mapMarkers = useMemo(() => {
     const list = [];
@@ -781,7 +805,12 @@ export function HelperTaskScreen({ route, navigation }: Props) {
   if (initialLoad) {
     return (
       <Screen>
-        <TaskHeader onMenu={() => navigation.navigate('Menu')} onRefresh={load} onBack={backHome} />
+        <TaskHeader
+          onMenu={() => navigation.navigate('Menu')}
+          onRefresh={load}
+          onBack={backHome}
+          onSupport={() => navigation.navigate('SupportTickets')}
+        />
         <TaskSkeleton />
       </Screen>
     );
@@ -794,14 +823,23 @@ export function HelperTaskScreen({ route, navigation }: Props) {
 
   return (
     <Screen style={styles.screenPaddingFix}>
-      <TaskHeader onMenu={() => navigation.navigate('Menu')} onRefresh={load} onBack={backHome} />
+      <TaskHeader
+        onMenu={() => navigation.navigate('Menu')}
+        onRefresh={load}
+        onBack={backHome}
+        onSupport={() => navigation.navigate('SupportTickets')}
+      />
 
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
+      <KeyboardAvoidingView
+        style={styles.flex1}
+        behavior={Platform.select({ ios: 'padding', android: undefined })}
       >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
+        >
         {buyerPhone ? (
           <CustomerContactCard
             buyerPhone={buyerPhone}
@@ -813,6 +851,9 @@ export function HelperTaskScreen({ route, navigation }: Props) {
 
         {notice ? <Notice kind="success" text={notice} /> : null}
         {error ? <Notice kind="danger" text={error} /> : null}
+        {showCollectNotice ? (
+          <Notice kind="info" text={t('helper.task.collect_payment_from').replace('{name}', task?.buyerName || t('role.citizen'))} />
+        ) : null}
 
         {showMap ? (
           <MemoizedMapView
@@ -890,7 +931,8 @@ export function HelperTaskScreen({ route, navigation }: Props) {
             />
           ) : null}
         </View>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
 
       {showStickyFooter ? (
         <View style={styles.stickyFooter}>
@@ -918,13 +960,14 @@ export function HelperTaskScreen({ route, navigation }: Props) {
 
 // Sub-components
 
-const TaskHeader = memo(({ onMenu, onRefresh, onBack }: any) => {
+const TaskHeader = memo(({ onMenu, onRefresh, onBack, onSupport }: any) => {
   const { t } = useI18n();
   return (
     <View style={styles.topBar}>
       <MenuButton onPress={onMenu} />
       <Text style={styles.h1}>{t('helper.task.title')}</Text>
       <View style={styles.topActions}>
+        <Text onPress={onSupport} style={styles.link}>{t('buyer.support')}</Text>
         <Text onPress={onRefresh} style={styles.link}>{t('common.refresh')}</Text>
         <Text onPress={onBack} style={styles.link}>{t('common.back')}</Text>
       </View>
@@ -1004,6 +1047,7 @@ const CelebrationOverlay = memo(({ onContinue }: any) => {
 });
 
 const styles = StyleSheet.create({
+  flex1: { flex: 1 },
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   scrollContent: { gap: theme.space.md, paddingBottom: theme.space.xl, position: 'relative', minHeight: '100%' },
   topActions: { flexDirection: 'row', gap: 12, alignItems: 'center' },
@@ -1050,7 +1094,6 @@ const styles = StyleSheet.create({
   formWrap: { padding: theme.space.md, gap: theme.space.sm, backgroundColor: theme.colors.card, borderRadius: theme.radius.md, borderWidth: 1, borderColor: theme.colors.border, marginBottom: theme.space.md },
   actions: { flexDirection: 'row', gap: theme.space.sm, paddingTop: 8 },
   half: { flex: 1 },
-  flex1: { flex: 1 },
   screenPaddingFix: { paddingBottom: 0 },
   stickyFooter: {
     padding: theme.space.lg,

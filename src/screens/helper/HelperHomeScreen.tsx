@@ -6,7 +6,7 @@ import * as Location from 'expo-location';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import type { HelperProfile, TaskOfferedEvent } from '../../api/types';
+import type { HelperProfile, TaskOfferedEvent, TaskStatus } from '../../api/types';
 import * as api from '../../api/client';
 import { ApiError } from '../../api/http';
 import { useAuth } from '../../auth/AuthContext';
@@ -29,6 +29,8 @@ type Props = NativeStackScreenProps<HelperStackParamList, 'HelperHome'>;
 type OfferRowProps = {
   offer: TaskOfferedEvent;
   onAccept: (taskId: string) => void;
+  loading: boolean;
+  disabled: boolean;
 };
 
 const SORT_OPTIONS: Array<{ key: 'distance' | 'time' | 'budget'; labelKey: string }> = [
@@ -38,6 +40,7 @@ const SORT_OPTIONS: Array<{ key: 'distance' | 'time' | 'budget'; labelKey: strin
 ];
 
 const OFFERS_STORAGE_KEY = 'superheroo.helper.offers';
+const ACTIVE_TASK_STATUSES: TaskStatus[] = ['ASSIGNED', 'ARRIVED', 'STARTED'];
 
 function normalizeOffer(raw: TaskOfferedEvent): TaskOfferedEvent {
   const lat = Number(raw.lat);
@@ -61,7 +64,7 @@ function isOfferExpired(offer: TaskOfferedEvent) {
   return Number.isFinite(ts) && ts <= Date.now();
 }
 
-const OfferRow = React.memo(function OfferRow({ offer, onAccept }: OfferRowProps) {
+const OfferRow = React.memo(function OfferRow({ offer, onAccept, loading, disabled }: OfferRowProps) {
   const { t } = useI18n();
   const onPress = useCallback(() => onAccept(offer.taskId), [offer.taskId, onAccept]);
   const km = Math.max(0, Number(offer.distanceMeters) / 1000).toFixed(1);
@@ -91,6 +94,8 @@ const OfferRow = React.memo(function OfferRow({ offer, onAccept }: OfferRowProps
       <PrimaryButton
         label={t('helper.accept')}
         onPress={onPress}
+        loading={loading}
+        disabled={disabled}
         leftIcon={<MaterialCommunityIcons name="handshake" size={18} color={theme.colors.primaryText} />}
       />
     </View>
@@ -103,7 +108,7 @@ export function HelperHomeScreen({ navigation }: Props) {
   const socket = useSocket();
   const online = useIsOnline();
   const { isOnline, setOnline, setLastCoords } = useHelperPresence();
-  const { setActiveTaskId } = useActiveTask();
+  const { activeTaskId, setActiveTaskId } = useActiveTask();
 
   const [profile, setProfile] = useState<HelperProfile | null>(null);
   const [offers, setOffers] = useState<TaskOfferedEvent[]>([]);
@@ -112,8 +117,10 @@ export function HelperHomeScreen({ navigation }: Props) {
   const [autoKycDone, setAutoKycDone] = useState(false);
   const [sortBy, setSortBy] = useState<'distance' | 'time' | 'budget'>('distance');
   const [sortOpen, setSortOpen] = useState(false);
+  const [acceptingTaskId, setAcceptingTaskId] = useState<string | null>(null);
 
   const lastCoords = useRef<{ lat: number; lng: number } | null>(null);
+  const announcedTaskIds = useRef<Set<string>>(new Set());
 
   const persistOffers = useCallback(async (next: TaskOfferedEvent[]) => {
     await AsyncStorage.setItem(OFFERS_STORAGE_KEY, JSON.stringify(next));
@@ -163,9 +170,56 @@ export function HelperHomeScreen({ navigation }: Props) {
     return unsub;
   }, [loadOffersFromStorage, loadProfile, navigation]);
 
+  const notifyLocalTask = useCallback(
+    async (offer: TaskOfferedEvent) => {
+      if (!offer?.taskId || announcedTaskIds.current.has(offer.taskId)) return;
+      announcedTaskIds.current.add(offer.taskId);
+      const amountInr = Math.max(0, Math.round((offer.budgetPaise ?? 0) / 100));
+      const distanceKm = Math.max(0, (offer.distanceMeters ?? 0) / 1000);
+      const distanceText = distanceKm < 1 ? `${Math.round(offer.distanceMeters ?? 0)} m` : `${distanceKm.toFixed(1)} km`;
+      try {
+        await Notifications.scheduleNotificationAsync({
+          content: {
+            title: t('helper.nearby_tasks'),
+            body: `${offer.title} • ₹${amountInr} • ${distanceText}`,
+            data: { type: 'TASK_OFFERED', taskId: offer.taskId },
+          },
+          trigger: null,
+        });
+      } catch {
+        // best effort
+      }
+    },
+    [t],
+  );
+
+  const openActiveTaskIfAny = useCallback(async () => {
+    const mine = await withAuth((t) => api.listMyTasks(t));
+    const active = Array.isArray(mine)
+      ? mine.find((task) => ACTIVE_TASK_STATUSES.includes(task.status))
+      : null;
+    if (!active?.id) {
+      if (activeTaskId) {
+        await setActiveTaskId(null);
+      }
+      return false;
+    }
+    await setActiveTaskId(active.id);
+    setOffers([]);
+    await persistOffers([]);
+    if (navigation.isFocused()) {
+      navigation.navigate('HelperTask', { taskId: active.id });
+    }
+    return true;
+  }, [activeTaskId, navigation, persistOffers, setActiveTaskId, withAuth]);
+
   const loadValidTasks = useCallback(async () => {
     try {
       if (!isOnline) return;
+      const hasActive = await openActiveTaskIfAny();
+      if (hasActive) {
+        return;
+      }
       const available = await withAuth((t) => api.helperGetAvailableTasks(t));
       if (!Array.isArray(available)) return;
 
@@ -185,13 +239,23 @@ export function HelperHomeScreen({ navigation }: Props) {
 
       // replace the entire list with fresh data – keeping old tasks around
       // caused stale/unassigned tasks to linger and break realtime behaviour.
-      const newOffers = available.map(toEvent).slice(0, 20);
-      setOffers(newOffers);
-      persistOffers(newOffers).catch(() => {});
+      const newOffers = Array.from(
+        new Map(available.map(toEvent).map((offer) => [offer.taskId, offer])).values(),
+      ).slice(0, 20);
+      setOffers((prev) => {
+        const prevIds = new Set(prev.map((o) => o.taskId));
+        for (const offer of newOffers) {
+          if (!prevIds.has(offer.taskId)) {
+            void notifyLocalTask(offer);
+          }
+        }
+        persistOffers(newOffers).catch(() => {});
+        return newOffers;
+      });
     } catch {
       // ignore silently
     }
-  }, [isOnline, persistOffers, withAuth]);
+  }, [isOnline, notifyLocalTask, openActiveTaskIfAny, persistOffers, withAuth]);
 
   useEffect(() => {
     loadOffersFromStorage();
@@ -321,18 +385,25 @@ export function HelperHomeScreen({ navigation }: Props) {
 
   const acceptOffer = useCallback(
     async (taskId: string) => {
+      if (acceptingTaskId || activeTaskId) return;
       setError(null);
+      setNotice(null);
+      setAcceptingTaskId(taskId);
       try {
         await withAuth((t) => api.acceptTask(t, taskId));
         await setActiveTaskId(taskId);
-        setOffers((prev) => {
-          const next = prev.filter((o) => o.taskId !== taskId);
-          persistOffers(next).catch(() => { });
-          return next;
-        });
+        setOffers([]);
+        await persistOffers([]);
         navigation.navigate('HelperTask', { taskId });
       } catch (e) {
         if (e instanceof ApiError && e.status === 409) {
+          if (e.message?.toLowerCase().includes('finish your current task')) {
+            const found = await openActiveTaskIfAny();
+            if (found) {
+              setNotice(t('helper.active_task_only'));
+              return;
+            }
+          }
           setNotice(t('helper.offer_expired'));
           setOffers((prev) => {
             const next = prev.filter((o) => o.taskId !== taskId);
@@ -342,15 +413,19 @@ export function HelperHomeScreen({ navigation }: Props) {
           return;
         }
         setError(t('helper.accept_error'));
+      } finally {
+        setAcceptingTaskId(null);
       }
     },
-    [navigation, persistOffers, setActiveTaskId, t, withAuth],
+    [acceptingTaskId, activeTaskId, navigation, openActiveTaskIfAny, persistOffers, setActiveTaskId, t, withAuth],
   );
 
   useEffect(() => {
     if (!socket) return;
     const onOffered = (evt: TaskOfferedEvent) => {
+      if (activeTaskId) return;
       if (!evt || !evt.taskId) return;
+      if (evt.helperId && user?.id && evt.helperId !== user.id) return;
       const normalized = normalizeOffer(evt);
       if (isOfferExpired(normalized)) return;
       setOffers((prev) => {
@@ -359,10 +434,32 @@ export function HelperHomeScreen({ navigation }: Props) {
         persistOffers(next).catch(() => { });
         return next;
       });
+      void notifyLocalTask(normalized);
     };
     const onTaskCreated = () => {
       // When a new task is created, refresh available tasks so helper sees it
       loadValidTasks();
+    };
+    const removeTaskOffer = (taskId?: string | null) => {
+      if (!taskId) return;
+      setOffers((prev) => {
+        if (!prev.some((o) => o.taskId === taskId)) return prev;
+        const next = prev.filter((o) => o.taskId !== taskId);
+        persistOffers(next).catch(() => {});
+        return next;
+      });
+    };
+    const onTaskAssigned = (evt: { taskId?: string; helperId?: string | null }) => {
+      removeTaskOffer(evt?.taskId);
+      if (evt?.taskId && evt?.helperId && user?.id && evt.helperId === user.id) {
+        setActiveTaskId(evt.taskId).catch(() => {});
+      }
+    };
+    const onTaskStatus = (evt: { taskId?: string; status?: string | null }) => {
+      if (!evt?.taskId) return;
+      if (evt.status && evt.status !== 'SEARCHING') {
+        removeTaskOffer(evt.taskId);
+      }
     };
     const onConnected = () => {
       if (isOnline) {
@@ -371,21 +468,29 @@ export function HelperHomeScreen({ navigation }: Props) {
     };
     socket.on('task.offered', onOffered);
     socket.on('task_created', onTaskCreated);
+    socket.on('task_assigned', onTaskAssigned);
+    socket.on('task.assigned', onTaskAssigned);
+    socket.on('task_status_changed', onTaskStatus);
+    socket.on('task.status.changed', onTaskStatus);
     socket.on('connect', onConnected);
     socket.on('reconnect', onConnected);
     return () => {
       socket.off('task.offered', onOffered);
       socket.off('task_created', onTaskCreated);
+      socket.off('task_assigned', onTaskAssigned);
+      socket.off('task.assigned', onTaskAssigned);
+      socket.off('task_status_changed', onTaskStatus);
+      socket.off('task.status.changed', onTaskStatus);
       socket.off('connect', onConnected);
       socket.off('reconnect', onConnected);
     };
-  }, [isOnline, loadValidTasks, persistOffers, socket]);
+  }, [activeTaskId, isOnline, loadValidTasks, notifyLocalTask, persistOffers, setActiveTaskId, socket, user?.id]);
 
   useEffect(() => {
     if (!isOnline) return;
     const timer = setInterval(() => {
       loadValidTasks();
-    }, 12_000);
+    }, 20_000);
     return () => clearInterval(timer);
   }, [isOnline, loadValidTasks]);
 
@@ -419,6 +524,11 @@ export function HelperHomeScreen({ navigation }: Props) {
     return opt ? t(opt.labelKey) : t('helper.sort.distance');
   }, [sortBy, t]);
 
+  const visibleOffers = useMemo(() => {
+    if (activeTaskId) return [];
+    return sortedOffers.filter((o) => !isOfferExpired(o));
+  }, [activeTaskId, sortedOffers]);
+
   return (
     <Screen style={styles.screen}>
       <View style={styles.topBar}>
@@ -439,6 +549,7 @@ export function HelperHomeScreen({ navigation }: Props) {
       ) : null}
       {notice ? <Notice kind="warning" text={notice} /> : null}
       {error ? <Notice kind="danger" text={error} /> : null}
+      {activeTaskId ? <Notice kind="info" text={t('helper.active_task_only')} /> : null}
 
       <View style={styles.card}>
         <Text style={styles.section}>{t('helper.availability')}</Text>
@@ -476,14 +587,28 @@ export function HelperHomeScreen({ navigation }: Props) {
           </Pressable>
         </View>
         <FlatList
-          data={sortedOffers.filter((o) => !isOfferExpired(o))}
+          data={visibleOffers}
           keyExtractor={(o) => o.taskId}
-          renderItem={({ item }) => <OfferRow offer={item} onAccept={acceptOffer} />}
+          renderItem={({ item }) => (
+            <OfferRow
+              offer={item}
+              onAccept={acceptOffer}
+              loading={acceptingTaskId === item.taskId}
+              disabled={Boolean(acceptingTaskId && acceptingTaskId !== item.taskId)}
+            />
+          )}
           contentContainerStyle={styles.offerList}
           initialNumToRender={6}
           windowSize={6}
-          removeClippedSubviews
-          ListEmptyComponent={<Text style={styles.muted}>{isOnline ? t('helper.no_offers') : t('helper.go_online_receive')}</Text>}
+          ListEmptyComponent={
+            <Text style={styles.muted}>
+              {activeTaskId
+                ? t('helper.active_task_only')
+                : isOnline
+                  ? t('helper.no_offers')
+                  : t('helper.go_online_receive')}
+            </Text>
+          }
         />
       </View>
 

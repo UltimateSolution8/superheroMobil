@@ -310,30 +310,29 @@ export function BuyerHomeScreen({ navigation }: Props) {
   }, [t]);
 
   const searchLocation = useCallback(async () => {
-    if (!searchQuery.trim()) return;
+    const query = searchQuery.trim();
+    if (!query) return;
     if (!GOOGLE_MAPS_API_KEY) {
       setError(t('error.maps_api_key'));
       return;
     }
+    const effectiveQuery = suggestions.length > 0 ? suggestions[0].description : query;
     setSearchBusy(true);
     setError(null);
     try {
       const url =
-        'https://maps.googleapis.com/maps/api/place/findplacefromtext/json' +
-        `?input=${encodeURIComponent(searchQuery.trim())}` +
-        '&inputtype=textquery&fields=geometry,formatted_address,name' +
+        'https://maps.googleapis.com/maps/api/geocode/json' +
+        `?address=${encodeURIComponent(effectiveQuery)}` +
         `&key=${encodeURIComponent(GOOGLE_MAPS_API_KEY)}`;
       const res = await fetch(url);
       const json = await res.json();
-      const candidate = json?.candidates?.[0];
+      const candidate = json?.results?.[0];
       const loc = candidate?.geometry?.location;
       if (loc && typeof loc.lat === 'number' && typeof loc.lng === 'number') {
         setLat(loc.lat);
         setLng(loc.lng);
-        if (candidate.formatted_address) {
+        if (candidate?.formatted_address) {
           setAddressText(candidate.formatted_address);
-        } else if (candidate.name) {
-          setAddressText(candidate.name);
         } else {
           resolveAddress(loc.lat, loc.lng);
         }
@@ -346,7 +345,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
     } finally {
       setSearchBusy(false);
     }
-  }, [searchQuery, resolveAddress, t]);
+  }, [resolveAddress, searchQuery, suggestions, t]);
 
   const fetchSuggestions = useCallback(
     async (query: string) => {

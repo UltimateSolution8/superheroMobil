@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -131,34 +131,38 @@ export function SupportTicketScreen({ navigation, route }: Props) {
         </View>
       ) : null}
 
-      <FlatList
-        data={ticket?.messages ?? []}
-        keyExtractor={(m) => m.id}
-        renderItem={({ item }) => <MsgRow item={item} />}
-        contentContainerStyle={styles.list}
-        ListEmptyComponent={<Text style={styles.muted}>{loading ? t('common.loading') : t('support.no_messages')}</Text>}
-        initialNumToRender={12}
-        windowSize={8}
-        removeClippedSubviews
-      />
-
-      <View style={styles.replyCard}>
-        <PrimaryButton
-          label={t('support.transfer_to_admin')}
-          onPress={onHandoff}
-          disabled={!canHandoff}
-          loading={handoffBusy}
-          variant="ghost"
+      <KeyboardAvoidingView style={styles.flex1} behavior={Platform.select({ ios: 'padding', android: undefined })}>
+        <FlatList
+          data={ticket?.messages ?? []}
+          keyExtractor={(m) => m.id}
+          renderItem={({ item }) => <MsgRow item={item} />}
+          contentContainerStyle={styles.list}
+          ListEmptyComponent={<Text style={styles.muted}>{loading ? t('common.loading') : t('support.no_messages')}</Text>}
+          initialNumToRender={12}
+          windowSize={8}
+          removeClippedSubviews
+          keyboardShouldPersistTaps="handled"
         />
-        {ticket?.status === 'IN_PROGRESS' ? <Text style={styles.handoffNote}>{t('support.handoff_active')}</Text> : null}
-        <TextField label={t('support.reply_label')} value={reply} onChangeText={setReply} placeholder={t('support.reply_placeholder')} multiline />
-        <PrimaryButton label={t('common.send')} onPress={onSend} disabled={!canSend} loading={sending} />
-      </View>
+
+        <View style={styles.replyCard}>
+          <PrimaryButton
+            label={t('support.transfer_to_admin')}
+            onPress={onHandoff}
+            disabled={!canHandoff}
+            loading={handoffBusy}
+            variant="ghost"
+          />
+          {ticket?.status === 'IN_PROGRESS' ? <Text style={styles.handoffNote}>{t('support.handoff_active')}</Text> : null}
+          <TextField label={t('support.reply_label')} value={reply} onChangeText={setReply} placeholder={t('support.reply_placeholder')} multiline />
+          <PrimaryButton label={t('common.send')} onPress={onSend} disabled={!canSend} loading={sending} />
+        </View>
+      </KeyboardAvoidingView>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
+  flex1: { flex: 1 },
   screen: { paddingBottom: theme.space.xl, gap: theme.space.md },
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   h1: { color: theme.colors.text, fontSize: 16, fontWeight: '900', flex: 1, textAlign: 'center' },

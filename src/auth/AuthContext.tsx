@@ -54,6 +54,10 @@ function ensureRoleAllowed(user: AuthUser) {
   throw new ApiError(msg, { status: 403 });
 }
 
+function isAuthFailure(error: unknown): boolean {
+  return error instanceof ApiError && (error.status === 401 || error.status === 403);
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AuthState>({
     status: 'loading',
@@ -137,8 +141,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (state.status !== 'signedIn') return;
     if (!state.accessToken || state.user?.role === 'ADMIN') return;
-    registerForPushNotifications(state.accessToken);
-  }, [state.status, state.accessToken, state.user?.role]);
+    registerForPushNotifications(state.accessToken, state.user?.id ?? null);
+  }, [state.status, state.accessToken, state.user?.id, state.user?.role]);
 
   const startOtp = useCallback(async (phone: string, role: UserRole, channel?: string | null) => {
     const res = await api.otpStart(phone, role, channel ?? null);
@@ -215,9 +219,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (ok && statusRef.current === 'signedIn') {
       try {
         await refreshTokens();
-      } catch {
-        await signOut('auth.session_expired');
-        return false;
+      } catch (e) {
+        // Don't force logout on transient network errors while unlocking.
+        if (isAuthFailure(e)) {
+          await signOut('auth.session_expired');
+          return false;
+        }
       }
     }
     return ok;
@@ -233,9 +240,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const sub = AppState.addEventListener('change', (nextState) => {
       if (nextState !== 'active') return;
       if (statusRef.current !== 'signedIn') return;
-      void refreshTokens().catch(() => {
-        // Keep current behavior: user is redirected to login when refresh fails.
-        void signOut('auth.session_expired');
+      void refreshTokens().catch((e) => {
+        // Camera/gallery transitions briefly background the app.
+        // Logout only on real auth failures, not temporary connectivity issues.
+        if (isAuthFailure(e)) {
+          void signOut('auth.session_expired');
+        }
       });
     });
     return () => sub.remove();
@@ -248,15 +258,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         return await fn(at);
       } catch (e) {
-        if (e instanceof ApiError && (e.status === 401 || e.status === 403)) {
-          try {
-            const refreshed = await refreshTokens();
-            return await fn(refreshed.accessToken);
-          } catch {
+        // Business 403s should not logout the user.
+        if (!(e instanceof ApiError) || e.status !== 401) {
+          throw e;
+        }
+        let refreshed: AuthResponse;
+        try {
+          refreshed = await refreshTokens();
+        } catch (refreshErr) {
+          if (isAuthFailure(refreshErr)) {
             await signOut('auth.session_expired');
           }
+          throw e;
         }
-        throw e;
+        try {
+          return await fn(refreshed.accessToken);
+        } catch (retryErr) {
+          if (isAuthFailure(retryErr)) {
+            await signOut('auth.session_expired');
+          }
+          throw retryErr;
+        }
       }
     },
     [refreshTokens, signOut],
