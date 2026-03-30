@@ -3,6 +3,7 @@ import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text
 import Voice from '@react-native-voice/voice';
 import * as Location from 'expo-location';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
@@ -38,6 +39,19 @@ const SCHEDULE_OPTIONS = [
   { key: 'now', labelKey: 'schedule.now' },
   { key: 'later', labelKey: 'schedule.later' },
 ];
+
+function toYmd(value: Date): string {
+  const y = value.getFullYear();
+  const m = String(value.getMonth() + 1).padStart(2, '0');
+  const d = String(value.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function toHm(value: Date): string {
+  const h = String(value.getHours()).padStart(2, '0');
+  const m = String(value.getMinutes()).padStart(2, '0');
+  return `${h}:${m}`;
+}
 
 function estimateSuggestedPriceInr(
   title: string,
@@ -79,8 +93,8 @@ export function BuyerHomeScreen({ navigation }: Props) {
   const [budgetRupees, setBudgetRupees] = useState('150');
   const [urgency, setUrgency] = useState<TaskUrgency>('NORMAL');
   const [scheduleMode, setScheduleMode] = useState<'now' | 'later'>('now');
-  const [scheduleDate, setScheduleDate] = useState('');
-  const [scheduleTime, setScheduleTime] = useState('');
+  const [scheduleAt, setScheduleAt] = useState<Date | null>(null);
+  const [scheduleTouched, setScheduleTouched] = useState(false);
   const [voiceActive, setVoiceActive] = useState(false);
   const [voiceError, setVoiceError] = useState<string | null>(null);
 
@@ -107,30 +121,8 @@ export function BuyerHomeScreen({ navigation }: Props) {
   const budgetOk = useMemo(() => Number.isFinite(Number(budgetRupees)) && Number(budgetRupees) >= 0, [budgetRupees]);
   const scheduledAt = useMemo(() => {
     if (scheduleMode !== 'later') return null;
-    const dateMatch = scheduleDate.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    const timeMatch = scheduleTime.trim().match(/^(\d{1,2}):(\d{2})$/);
-    if (!dateMatch || !timeMatch) return null;
-    const year = Number(dateMatch[1]);
-    const month = Number(dateMatch[2]);
-    const day = Number(dateMatch[3]);
-    const hour = Number(timeMatch[1]);
-    const minute = Number(timeMatch[2]);
-    if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) return null;
-    if (!Number.isFinite(hour) || !Number.isFinite(minute)) return null;
-    if (month < 1 || month > 12 || day < 1 || day > 31) return null;
-    if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
-    const dt = new Date(year, month - 1, day, hour, minute, 0, 0);
-    if (
-      dt.getFullYear() !== year ||
-      dt.getMonth() !== month - 1 ||
-      dt.getDate() !== day ||
-      dt.getHours() !== hour ||
-      dt.getMinutes() !== minute
-    ) {
-      return null;
-    }
-    return dt;
-  }, [scheduleDate, scheduleMode, scheduleTime]);
+    return scheduleAt;
+  }, [scheduleAt, scheduleMode]);
   const scheduleOk = useMemo(() => {
     if (scheduleMode !== 'later') return true;
     if (!scheduledAt) return false;
@@ -318,30 +310,29 @@ export function BuyerHomeScreen({ navigation }: Props) {
   }, [t]);
 
   const searchLocation = useCallback(async () => {
-    if (!searchQuery.trim()) return;
+    const query = searchQuery.trim();
+    if (!query) return;
     if (!GOOGLE_MAPS_API_KEY) {
       setError(t('error.maps_api_key'));
       return;
     }
+    const effectiveQuery = suggestions.length > 0 ? suggestions[0].description : query;
     setSearchBusy(true);
     setError(null);
     try {
       const url =
-        'https://maps.googleapis.com/maps/api/place/findplacefromtext/json' +
-        `?input=${encodeURIComponent(searchQuery.trim())}` +
-        '&inputtype=textquery&fields=geometry,formatted_address,name' +
+        'https://maps.googleapis.com/maps/api/geocode/json' +
+        `?address=${encodeURIComponent(effectiveQuery)}` +
         `&key=${encodeURIComponent(GOOGLE_MAPS_API_KEY)}`;
       const res = await fetch(url);
       const json = await res.json();
-      const candidate = json?.candidates?.[0];
+      const candidate = json?.results?.[0];
       const loc = candidate?.geometry?.location;
       if (loc && typeof loc.lat === 'number' && typeof loc.lng === 'number') {
         setLat(loc.lat);
         setLng(loc.lng);
-        if (candidate.formatted_address) {
+        if (candidate?.formatted_address) {
           setAddressText(candidate.formatted_address);
-        } else if (candidate.name) {
-          setAddressText(candidate.name);
         } else {
           resolveAddress(loc.lat, loc.lng);
         }
@@ -354,7 +345,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
     } finally {
       setSearchBusy(false);
     }
-  }, [searchQuery, resolveAddress, t]);
+  }, [resolveAddress, searchQuery, suggestions, t]);
 
   const fetchSuggestions = useCallback(
     async (query: string) => {
@@ -432,6 +423,74 @@ export function BuyerHomeScreen({ navigation }: Props) {
     [resolveAddress, t],
   );
 
+  useEffect(() => {
+    if (scheduleMode === 'now') {
+      setScheduleAt(null);
+      setScheduleTouched(false);
+    }
+  }, [scheduleMode]);
+
+  const showDatePicker = useCallback(() => {
+    if (Platform.OS !== 'android') return;
+    const now = new Date();
+    const fallback = new Date(now.getTime() + 10 * 60_000);
+    const base = scheduleAt ?? fallback;
+    const minimumDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    DateTimePickerAndroid.open({
+      mode: 'date',
+      value: base,
+      minimumDate,
+      onChange: (event, selectedDate) => {
+        if (event.type !== 'set' || !selectedDate) return;
+        setScheduleTouched(true);
+        const merged = new Date(
+          selectedDate.getFullYear(),
+          selectedDate.getMonth(),
+          selectedDate.getDate(),
+          base.getHours(),
+          base.getMinutes(),
+          0,
+          0,
+        );
+        setScheduleAt(merged);
+      },
+    });
+  }, [scheduleAt]);
+
+  const showTimePicker = useCallback(() => {
+    if (Platform.OS !== 'android') return;
+    const now = new Date();
+    const fallback = new Date(now.getTime() + 10 * 60_000);
+    const base = scheduleAt ?? fallback;
+    DateTimePickerAndroid.open({
+      mode: 'time',
+      value: base,
+      is24Hour: true,
+      onChange: (event, selectedDate) => {
+        if (event.type !== 'set' || !selectedDate) return;
+        setScheduleTouched(true);
+        const merged = new Date(
+          base.getFullYear(),
+          base.getMonth(),
+          base.getDate(),
+          selectedDate.getHours(),
+          selectedDate.getMinutes(),
+          0,
+          0,
+        );
+        setScheduleAt(merged);
+      },
+    });
+  }, [scheduleAt]);
+
+  const onBack = useCallback(() => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+      return;
+    }
+    navigation.navigate('Menu');
+  }, [navigation]);
+
   const onCreate = useCallback(async () => {
     if (!canCreate || busy || lat == null || lng == null) return;
     setBusy(true);
@@ -503,7 +562,12 @@ export function BuyerHomeScreen({ navigation }: Props) {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.topBar}>
-            <MenuButton onPress={() => navigation.navigate('Menu')} />
+            <View style={styles.topLeft}>
+              <Pressable accessibilityRole="button" onPress={onBack} style={styles.backBtn}>
+                <MaterialCommunityIcons name="arrow-left" size={20} color={theme.colors.text} />
+              </Pressable>
+              <MenuButton onPress={() => navigation.navigate('Menu')} />
+            </View>
             <Text style={styles.h1}>{t('buyer.create_task')}</Text>
             <View style={styles.topLinks} />
           </View>
@@ -636,27 +700,27 @@ export function BuyerHomeScreen({ navigation }: Props) {
             {scheduleMode === 'later' ? (
               <View style={styles.scheduleWrap}>
                 <View style={styles.scheduleRow}>
-                  <View style={styles.scheduleField}>
-                    <TextField
-                      label={t('schedule.date_label')}
-                      value={scheduleDate}
-                      onChangeText={setScheduleDate}
-                      placeholder={t('schedule.date_placeholder')}
-                      keyboardType="number-pad"
-                    />
-                  </View>
-                  <View style={styles.scheduleField}>
-                    <TextField
-                      label={t('schedule.time_label')}
-                      value={scheduleTime}
-                      onChangeText={setScheduleTime}
-                      placeholder={t('schedule.time_placeholder')}
-                      keyboardType="number-pad"
-                    />
-                  </View>
+                  <Pressable style={styles.scheduleFieldBtn} onPress={showDatePicker}>
+                    <Text style={styles.scheduleFieldLabel}>{t('schedule.date_label')}</Text>
+                    <View style={styles.scheduleFieldValueWrap}>
+                      <MaterialCommunityIcons name="calendar-month-outline" size={18} color={theme.colors.muted} />
+                      <Text style={scheduledAt ? styles.scheduleFieldValue : styles.scheduleFieldPlaceholder}>
+                        {scheduledAt ? toYmd(scheduledAt) : t('schedule.date_placeholder')}
+                      </Text>
+                    </View>
+                  </Pressable>
+                  <Pressable style={styles.scheduleFieldBtn} onPress={showTimePicker}>
+                    <Text style={styles.scheduleFieldLabel}>{t('schedule.time_label')}</Text>
+                    <View style={styles.scheduleFieldValueWrap}>
+                      <MaterialCommunityIcons name="clock-outline" size={18} color={theme.colors.muted} />
+                      <Text style={scheduledAt ? styles.scheduleFieldValue : styles.scheduleFieldPlaceholder}>
+                        {scheduledAt ? toHm(scheduledAt) : t('schedule.time_placeholder')}
+                      </Text>
+                    </View>
+                  </Pressable>
                 </View>
                 <Text style={styles.muted}>{t('schedule.help')}</Text>
-                {!scheduleOk && (scheduleDate.trim() || scheduleTime.trim()) ? (
+                {!scheduleOk && scheduleTouched ? (
                   <Text style={styles.scheduleError}>{t('schedule.invalid_datetime')}</Text>
                 ) : null}
               </View>
@@ -691,6 +755,17 @@ const styles = StyleSheet.create({
   screen: { padding: 0, gap: 0 },
   scrollContent: { padding: theme.space.lg, gap: theme.space.md, paddingBottom: theme.space.xl * 2 },
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  topLeft: { flexDirection: 'row', alignItems: 'center', gap: theme.space.xs },
+  backBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.card,
+  },
   topLinks: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   h1: { color: theme.colors.text, fontSize: 24, fontWeight: '900', letterSpacing: -0.3 },
   muted: { color: theme.colors.muted, fontSize: 12.5 },
@@ -754,7 +829,20 @@ const styles = StyleSheet.create({
   smartPriceHigh: { color: theme.colors.primary },
   scheduleWrap: { gap: theme.space.xs },
   scheduleRow: { flexDirection: 'row', gap: theme.space.sm },
-  scheduleField: { flex: 1 },
+  scheduleFieldBtn: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radius.sm,
+    backgroundColor: theme.colors.card,
+    paddingHorizontal: theme.space.sm,
+    paddingVertical: 10,
+    gap: 6,
+  },
+  scheduleFieldLabel: { color: theme.colors.muted, fontSize: 12, fontWeight: '800' },
+  scheduleFieldValueWrap: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 20 },
+  scheduleFieldValue: { color: theme.colors.text, fontSize: 14, fontWeight: '700' },
+  scheduleFieldPlaceholder: { color: theme.colors.muted, fontSize: 14 },
   scheduleError: { color: theme.colors.danger, fontSize: 12 },
   actionsRow: { flexDirection: 'row', gap: theme.space.sm, marginTop: 8 },
   half: { flex: 1 },

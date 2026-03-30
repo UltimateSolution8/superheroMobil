@@ -4,7 +4,8 @@ import { Platform } from 'react-native';
 
 import * as api from '../api/client';
 
-const STORAGE_KEY = 'superheroo.pushToken';
+const STORAGE_PREFIX = 'superheroo.pushToken';
+const RE_REGISTER_MS = 24 * 60 * 60 * 1000;
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -16,7 +17,7 @@ Notifications.setNotificationHandler({
   }),
 });
 
-export async function registerForPushNotifications(accessToken: string): Promise<void> {
+export async function registerForPushNotifications(accessToken: string, userId?: string | null): Promise<void> {
   try {
     if (Platform.OS === 'android') {
       await Notifications.setNotificationChannelAsync('tasks', {
@@ -39,11 +40,23 @@ export async function registerForPushNotifications(accessToken: string): Promise
     const token = tokenData?.data;
     if (!token) return;
 
-    const cached = await AsyncStorage.getItem(STORAGE_KEY);
-    if (cached === token) return;
+    const storageKey = `${STORAGE_PREFIX}.${userId ?? 'unknown'}`;
+    const cachedRaw = await AsyncStorage.getItem(storageKey);
+    if (cachedRaw) {
+      try {
+        const cached = JSON.parse(cachedRaw) as { token?: string; at?: number };
+        const stillFresh =
+          cached?.token === token &&
+          typeof cached?.at === 'number' &&
+          Date.now() - cached.at < RE_REGISTER_MS;
+        if (stillFresh) return;
+      } catch {
+        // ignore corrupted cache
+      }
+    }
 
     await api.registerPushToken(accessToken, { token, platform: Platform.OS });
-    await AsyncStorage.setItem(STORAGE_KEY, token);
+    await AsyncStorage.setItem(storageKey, JSON.stringify({ token, at: Date.now() }));
   } catch {
     // best-effort
   }

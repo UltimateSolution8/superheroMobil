@@ -58,6 +58,7 @@ const plugins = Array.from(
     'expo-location',
     'expo-document-picker',
     'expo-notifications',
+    '@react-native-community/datetimepicker',
   ])
 );
 const sharedAndroidPermissions = [

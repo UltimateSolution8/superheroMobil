@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Linking, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Linking, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
@@ -54,6 +54,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
   const [ratingReady, setRatingReady] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
   const [cancelBusy, setCancelBusy] = useState(false);
+  const [retryBusy, setRetryBusy] = useState(false);
   const helperPhone = useMemo(() => {
     const raw = task?.helperPhone;
     if (typeof raw === 'string') return raw.trim();
@@ -70,6 +71,8 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
   const mapProvider = canRenderMap ? PROVIDER_GOOGLE : undefined;
 
   const lastRouteFetch = useRef(0);
+  const routeCache = useRef<Map<string, { coords: { latitude: number; longitude: number }[]; etaMin: number | null; at: number }>>(new Map());
+  const lastRouteOrigin = useRef<{ lat: number; lng: number } | null>(null);
   const mapRef = useRef<MapView | null>(null);
   const lastFitAt = useRef(0);
   const previousStatus = useRef<TaskStatus | null>(null);
@@ -78,6 +81,9 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
   const taskLat = Number(task?.lat);
   const taskLng = Number(task?.lng);
   const hasTaskCoords = Number.isFinite(taskLat) && Number.isFinite(taskLng);
+  const status = task?.status ?? 'SEARCHING';
+  const helperId = task?.assignedHelperId ?? null;
+  const canCancel = status === 'SEARCHING' || status === 'ASSIGNED';
   const mapMarkers = useMemo(() => {
     const list: { key: string; coordinate: { latitude: number; longitude: number }; title?: string; ref?: any }[] = [];
     if (hasTaskCoords) {
@@ -199,10 +205,28 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
   }, [scheduleSilentReload, socket, taskId, hasTaskCoords, taskLat, taskLng]);
 
   useEffect(() => {
+    if (status !== 'ASSIGNED') return;
     if (!task || !helperLoc || !GOOGLE_MAPS_API_KEY || !hasTaskCoords) return;
     const now = Date.now();
-    if (now - lastRouteFetch.current < 12_000) return;
+    if (now - lastRouteFetch.current < 30_000) return;
+    if (lastRouteOrigin.current) {
+      const moved = distanceMeters(
+        { lat: lastRouteOrigin.current.lat, lng: lastRouteOrigin.current.lng },
+        { lat: helperLoc.lat, lng: helperLoc.lng },
+      );
+      if (moved < 30 && now - lastRouteFetch.current < 90_000) {
+        return;
+      }
+    }
     lastRouteFetch.current = now;
+    lastRouteOrigin.current = { lat: helperLoc.lat, lng: helperLoc.lng };
+    const key = `${helperLoc.lat.toFixed(4)},${helperLoc.lng.toFixed(4)}->${taskLat.toFixed(4)},${taskLng.toFixed(4)}`;
+    const cached = routeCache.current.get(key);
+    if (cached && now - cached.at < 120_000) {
+      setRouteCoords(cached.coords);
+      setRouteEtaMin(cached.etaMin);
+      return;
+    }
 
     const fetchRoute = async () => {
       try {
@@ -217,10 +241,17 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
         const poly = route?.overview_polyline?.points;
         const legs = route?.legs?.[0];
         if (poly) {
-          setRouteCoords(decodePolyline(poly));
+          const coords = decodePolyline(poly);
+          setRouteCoords(coords);
+          routeCache.current.set(key, { coords, etaMin: routeEtaMin, at: Date.now() });
         }
         if (legs?.duration?.value) {
-          setRouteEtaMin(Math.max(1, Math.round(legs.duration.value / 60)));
+          const eta = Math.max(1, Math.round(legs.duration.value / 60));
+          setRouteEtaMin(eta);
+          const existing = routeCache.current.get(key);
+          if (existing) {
+            routeCache.current.set(key, { ...existing, etaMin: eta, at: Date.now() });
+          }
         }
       } catch {
         // best-effort
@@ -228,7 +259,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
     };
 
     fetchRoute();
-  }, [helperLoc, task]);
+  }, [hasTaskCoords, helperLoc, routeEtaMin, status, task, taskLat, taskLng]);
 
   useEffect(() => {
     if (!mapRef.current || !hasTaskCoords) return;
@@ -244,10 +275,6 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
   }, [hasTaskCoords, taskLat, taskLng]);
 
   const onBackHome = useCallback(() => navigation.popToTop(), [navigation]);
-
-  const status = task?.status ?? 'SEARCHING';
-  const helperId = task?.assignedHelperId ?? null;
-  const canCancel = status === 'SEARCHING' || status === 'ASSIGNED';
 
   useEffect(() => {
     if (previousStatus.current && previousStatus.current !== 'COMPLETED' && status === 'COMPLETED') {
@@ -266,6 +293,8 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
     }
   }, [status, task?.buyerRating]);
   const canDone = useMemo(() => status === 'COMPLETED', [status]);
+  const showTransitCard = status === 'SEARCHING' || status === 'ASSIGNED';
+  const transitTitle = status === 'SEARCHING' ? t('buyer.task.searching') : t('task.hero_on_the_way');
   const helperDistance = useMemo(() => {
     if (!task || !helperLoc || !hasTaskCoords) return null;
     return distanceMeters({ lat: taskLat, lng: taskLng }, { lat: helperLoc.lat, lng: helperLoc.lng });
@@ -287,6 +316,8 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
   }, [helperDistance]);
 
   const canRate = status === 'COMPLETED' && !task?.buyerRating;
+  const canRetrySearch = status === 'CANCELLED' && task?.cancelledByRole === 'SYSTEM' && !task?.assignedHelperId;
+  const showPaymentNotice = status === 'COMPLETED' && !!task?.helperName;
   const submitRating = useCallback(async () => {
     if (!canRate || ratingBusy) return;
     setRatingBusy(true);
@@ -321,6 +352,21 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
     }
   }, [canCancel, cancelBusy, cancelReason, t, taskId, withAuth]);
 
+  const retrySearch = useCallback(async () => {
+    if (!task || !canRetrySearch || retryBusy) return;
+    setRetryBusy(true);
+    setError(null);
+    try {
+      const result = await withAuth((at) => api.retryTaskSearch(at, task));
+      setActiveTaskId(result.taskId);
+      navigation.replace('BuyerTask', { taskId: result.taskId });
+    } catch {
+      setError(t('buyer.task.retry_error'));
+    } finally {
+      setRetryBusy(false);
+    }
+  }, [canRetrySearch, navigation, retryBusy, setActiveTaskId, t, task, withAuth]);
+
   if (initialLoad) {
     return (
       <Screen style={styles.screen}>
@@ -341,154 +387,174 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
           <MenuButton onPress={() => navigation.navigate('Menu')} />
           <Text style={styles.h1}>{t('task.title')}</Text>
           <View style={styles.topActions}>
+            <Text onPress={() => navigation.navigate('SupportTickets')} style={styles.link}>{t('buyer.support')}</Text>
             <Text onPress={load} style={styles.link}>{t('common.refresh')}</Text>
             <Text onPress={onBackHome} style={styles.link}>{t('common.back')}</Text>
           </View>
         </View>
-        <ScrollView
-          style={styles.scroll}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
+        <KeyboardAvoidingView
+          style={styles.contentWrap}
+          behavior={Platform.select({ ios: 'padding', android: undefined })}
         >
-          {helperPhone ? (
-            <View style={styles.contactRow}>
-              <View>
-                <Text style={styles.label}>{t('buyer.task.hero_label')}</Text>
-                <Text style={styles.value}>{task?.helperName ?? helperPhone}</Text>
-                <Text style={styles.value}>{helperPhone}</Text>
-                {task?.helperAvgRating != null ? (
-                  <Text style={styles.muted}>
-                    {t('task.helper_rating')}: {task.helperAvgRating.toFixed(1)} / 5
-                    {task.helperCompletedCount != null ? ` · ${task.helperCompletedCount} ${t('task.jobs_done')}` : ''}
-                  </Text>
-                ) : null}
-              </View>
-              <PrimaryButton
-                label={t('task.call_hero')}
-                onPress={() => Linking.openURL(`tel:${helperPhone}`)}
-                variant="ghost"
-                style={styles.callButton}
-              />
-            </View>
-          ) : null}
-
-          {error ? <Notice kind="danger" text={error} /> : null}
-
-          {canRenderMap ? (
-            <MemoizedMapView
-              provider={mapProvider}
-              mapRef={mapRef}
-              markers={mapMarkers}
-              routeCoords={routeCoords}
-              initialRegion={{
-                latitude: hasTaskCoords ? taskLat : DEMO_FALLBACK_LOCATION?.lat ?? 12.9716,
-                longitude: hasTaskCoords ? taskLng : DEMO_FALLBACK_LOCATION?.lng ?? 77.5946,
-                latitudeDelta: 0.02,
-                longitudeDelta: 0.02,
-              }}
-              height={220}
-              style={styles.mapWrap}
-            />
-          ) : (
-            <Notice kind="warning" text={t('error.maps_api_key')} />
-          )}
-
-          <View style={styles.liveCard}>
-            <Text style={styles.liveTitle}>{t('task.hero_on_the_way')}</Text>
-            <Text style={styles.liveSub}>{t('task.live_location')}</Text>
-            <View style={styles.liveRow}>
-              <View style={styles.liveStat}>
-                <Text style={styles.liveLabel}>{t('task.distance')}</Text>
-                <Text style={styles.liveValue}>
-                  {helperDistance == null ? '--' : `${(helperDistance / 1000).toFixed(2)} km`}
-                </Text>
-              </View>
-              <View style={styles.liveStat}>
-                <Text style={styles.liveLabel}>{t('task.eta_label')}</Text>
-                <Text style={styles.liveValue}>{helperEta == null ? '--' : `${helperEta} min`}</Text>
-              </View>
-              <View style={styles.liveStat}>
-                <Text style={styles.liveLabel}>{t('task.updated')}</Text>
-                <Text style={styles.liveValue}>{helperLastSeen == null ? '--' : `${helperLastSeen}s`}</Text>
-              </View>
-            </View>
-          </View>
-
-          <View style={styles.card}>
-            <Text style={styles.status}>{status === 'SEARCHING' ? t('buyer.task.searching') : status === 'ASSIGNED' ? t('buyer.task.assigned') : status === 'ARRIVED' ? t('buyer.task.arrived') : status === 'STARTED' ? t('buyer.task.started') : status === 'COMPLETED' ? t('buyer.task.completed') : status === 'CANCELLED' ? t('buyer.task.cancelled') : status}</Text>
-            {helperArrived ? <Notice kind="success" text={t('buyer.task.hero_arrived')} /> : null}
-            {task?.title ? <Text style={styles.title}>{task.title}</Text> : null}
-            {helperId ? (
-              <Text style={styles.muted}>{t('buyer.task.hero_label')}: {task?.helperName ?? task?.helperPhone ?? t('buyer.task.assigned')}</Text>
-            ) : null}
-            {task?.addressText ? <Text style={styles.muted}>{t('buyer.address_optional')}: {task.addressText}</Text> : null}
-            {task?.description ? <Text style={styles.desc}>{task.description}</Text> : null}
-            {scheduledAtLabel ? <Text style={styles.muted}>{t('task.scheduled_for')}: {scheduledAtLabel}</Text> : null}
-            <Text style={styles.muted}>{t('buyer.task.urgency')}: {task?.urgency ?? '-'} | {t('buyer.task.eta')}: {task?.timeMinutes ?? '-'} {t('buyer.task.minutes')}</Text>
-            <Text style={styles.muted}>{t('buyer.task.budget')}: {t('currency.inr')} {task ? (task.budgetPaise / 100).toFixed(0) : '-'}</Text>
-            {task?.arrivalOtp ? <Text style={styles.otp}>{t('buyer.task.arrival_otp')}: {task.arrivalOtp}</Text> : null}
-            {task?.completionOtp ? <Text style={styles.otp}>{t('buyer.task.completion_otp')}: {task.completionOtp}</Text> : null}
-
-            <PrimaryButton label={t('task.refresh')} onPress={load} loading={busy} variant="ghost" />
-            {task ? (
-              <PrimaryButton
-                label={t('task.download_invoice')}
-                onPress={() => downloadTaskInvoice(task, 'buyer')}
-                variant="ghost"
-              />
-            ) : null}
-
-            {canCancel ? (
-              <>
-                <TextField
-                  label={t('task.cancellation_reason')}
-                  value={cancelReason}
-                  onChangeText={setCancelReason}
-                  placeholder={t('task.share_cancelling')}
-                />
+          <ScrollView
+            style={styles.scroll}
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
+          >
+            {helperPhone ? (
+              <View style={styles.contactRow}>
+                <View>
+                  <Text style={styles.label}>{t('buyer.task.hero_label')}</Text>
+                  <Text style={styles.value}>{task?.helperName ?? helperPhone}</Text>
+                  <Text style={styles.value}>{helperPhone}</Text>
+                  {task?.helperAvgRating != null ? (
+                    <Text style={styles.muted}>
+                      {t('task.helper_rating')}: {task.helperAvgRating.toFixed(1)} / 5
+                      {task.helperCompletedCount != null ? ` · ${task.helperCompletedCount} ${t('task.jobs_done')}` : ''}
+                    </Text>
+                  ) : null}
+                </View>
                 <PrimaryButton
-                  label={t('task.cancel_task')}
-                  onPress={submitCancel}
-                  loading={cancelBusy}
-                  variant="danger"
+                  label={t('task.call_hero')}
+                  onPress={() => Linking.openURL(`tel:${helperPhone}`)}
+                  variant="ghost"
+                  style={styles.callButton}
                 />
-              </>
+              </View>
             ) : null}
-          </View>
 
-          {canDone ? <Notice kind="success" text={t('buyer.task.completed_notice')} /> : null}
+            {error ? <Notice kind="danger" text={error} /> : null}
 
-          {status === 'COMPLETED' && ratingReady ? (
-            <View style={styles.ratingCard}>
-              <Text style={styles.liveTitle}>{t('task.rate_hero')}</Text>
-              {task?.buyerRating ? (
-                <Text style={styles.muted}>{t('task.your_rating')}: {task.buyerRating.toFixed(1)} / 5</Text>
-              ) : (
-                <>
-                  <View style={styles.ratingRow}>
-                    {[1, 2, 3, 4, 5].map((r) => (
-                      <Text
-                        key={`rate-${r}`}
-                        style={[styles.star, r <= rating ? styles.starOn : styles.starOff]}
-                        onPress={() => setRating(r)}
-                      >
-                        ★
-                      </Text>
-                    ))}
+            {canRenderMap ? (
+              <MemoizedMapView
+                provider={mapProvider}
+                mapRef={mapRef}
+                markers={mapMarkers}
+                routeCoords={routeCoords}
+                initialRegion={{
+                  latitude: hasTaskCoords ? taskLat : DEMO_FALLBACK_LOCATION?.lat ?? 12.9716,
+                  longitude: hasTaskCoords ? taskLng : DEMO_FALLBACK_LOCATION?.lng ?? 77.5946,
+                  latitudeDelta: 0.02,
+                  longitudeDelta: 0.02,
+                }}
+                height={220}
+                style={styles.mapWrap}
+              />
+            ) : (
+              <Notice kind="warning" text={t('error.maps_api_key')} />
+            )}
+
+            {showTransitCard ? (
+              <View style={styles.liveCard}>
+                <Text style={styles.liveTitle}>{transitTitle}</Text>
+                <Text style={styles.liveSub}>{t('task.live_location')}</Text>
+                <View style={styles.liveRow}>
+                  <View style={styles.liveStat}>
+                    <Text style={styles.liveLabel}>{t('task.distance')}</Text>
+                    <Text style={styles.liveValue}>
+                      {helperDistance == null ? '--' : `${(helperDistance / 1000).toFixed(2)} km`}
+                    </Text>
                   </View>
+                  <View style={styles.liveStat}>
+                    <Text style={styles.liveLabel}>{t('task.eta_label')}</Text>
+                    <Text style={styles.liveValue}>{helperEta == null ? '--' : `${helperEta} min`}</Text>
+                  </View>
+                  <View style={styles.liveStat}>
+                    <Text style={styles.liveLabel}>{t('task.updated')}</Text>
+                    <Text style={styles.liveValue}>{helperLastSeen == null ? '--' : `${helperLastSeen}s`}</Text>
+                  </View>
+                </View>
+              </View>
+            ) : null}
+
+            <View style={styles.card}>
+              <Text style={styles.status}>{status === 'SEARCHING' ? t('buyer.task.searching') : status === 'ASSIGNED' ? t('buyer.task.assigned') : status === 'ARRIVED' ? t('buyer.task.arrived') : status === 'STARTED' ? t('buyer.task.started') : status === 'COMPLETED' ? t('buyer.task.completed') : status === 'CANCELLED' ? t('buyer.task.cancelled') : status}</Text>
+              {helperArrived ? <Notice kind="success" text={t('buyer.task.hero_arrived')} /> : null}
+              {task?.title ? <Text style={styles.title}>{task.title}</Text> : null}
+              {helperId ? (
+                <Text style={styles.muted}>{t('buyer.task.hero_label')}: {task?.helperName ?? task?.helperPhone ?? t('buyer.task.assigned')}</Text>
+              ) : null}
+              {task?.addressText ? <Text style={styles.muted}>{t('buyer.address_optional')}: {task.addressText}</Text> : null}
+              {task?.description ? <Text style={styles.desc}>{task.description}</Text> : null}
+              {scheduledAtLabel ? <Text style={styles.muted}>{t('task.scheduled_for')}: {scheduledAtLabel}</Text> : null}
+              <Text style={styles.muted}>{t('buyer.task.urgency')}: {task?.urgency ?? '-'} | {t('buyer.task.eta')}: {task?.timeMinutes ?? '-'} {t('buyer.task.minutes')}</Text>
+              <Text style={styles.muted}>{t('buyer.task.budget')}: {t('currency.inr')} {task ? (task.budgetPaise / 100).toFixed(0) : '-'}</Text>
+              {task?.arrivalOtp ? <Text style={styles.otp}>{t('buyer.task.arrival_otp')}: {task.arrivalOtp}</Text> : null}
+              {task?.completionOtp ? <Text style={styles.otp}>{t('buyer.task.completion_otp')}: {task.completionOtp}</Text> : null}
+              {canRetrySearch ? <Notice kind="warning" text={task?.cancelReason || t('buyer.task.search_timeout')} /> : null}
+              {showPaymentNotice ? (
+                <Notice kind="info" text={t('buyer.task.collect_payment_from').replace('{name}', task?.helperName || t('role.superherooo'))} />
+              ) : null}
+
+              <PrimaryButton label={t('task.refresh')} onPress={load} loading={busy} variant="ghost" />
+              {task ? (
+                <PrimaryButton
+                  label={t('task.download_invoice')}
+                  onPress={() => downloadTaskInvoice(task, 'buyer')}
+                  variant="ghost"
+                />
+              ) : null}
+              {canRetrySearch ? (
+                <PrimaryButton
+                  label={t('buyer.task.try_again')}
+                  onPress={retrySearch}
+                  loading={retryBusy}
+                />
+              ) : null}
+
+              {canCancel ? (
+                <>
                   <TextField
-                    label={t('task.comment_optional')}
-                    value={ratingComment}
-                    onChangeText={setRatingComment}
-                    placeholder={t('task.share_feedback')}
+                    label={t('task.cancellation_reason')}
+                    value={cancelReason}
+                    onChangeText={setCancelReason}
+                    placeholder={t('task.share_cancelling')}
                   />
-                  <PrimaryButton label={t('task.submit_rating')} onPress={submitRating} loading={ratingBusy} />
+                  <PrimaryButton
+                    label={t('task.cancel_task')}
+                    onPress={submitCancel}
+                    loading={cancelBusy}
+                    variant="danger"
+                  />
                 </>
-              )}
+              ) : null}
             </View>
-          ) : null}
-        </ScrollView>
+
+            {canDone ? <Notice kind="success" text={t('buyer.task.completed_notice')} /> : null}
+
+            {status === 'COMPLETED' && ratingReady ? (
+              <View style={styles.ratingCard}>
+                <Text style={styles.liveTitle}>{t('task.rate_hero')}</Text>
+                {task?.buyerRating ? (
+                  <Text style={styles.muted}>{t('task.your_rating')}: {task.buyerRating.toFixed(1)} / 5</Text>
+                ) : (
+                  <>
+                    <View style={styles.ratingRow}>
+                      {[1, 2, 3, 4, 5].map((r) => (
+                        <Text
+                          key={`rate-${r}`}
+                          style={[styles.star, r <= rating ? styles.starOn : styles.starOff]}
+                          onPress={() => setRating(r)}
+                        >
+                          ★
+                        </Text>
+                      ))}
+                    </View>
+                    <TextField
+                      label={t('task.comment_optional')}
+                      value={ratingComment}
+                      onChangeText={setRatingComment}
+                      placeholder={t('task.share_feedback')}
+                    />
+                    <PrimaryButton label={t('task.submit_rating')} onPress={submitRating} loading={ratingBusy} />
+                  </>
+                )}
+              </View>
+            ) : null}
+          </ScrollView>
+        </KeyboardAvoidingView>
       </View>
 
       {showCelebration ? (

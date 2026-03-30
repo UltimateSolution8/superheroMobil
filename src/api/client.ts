@@ -327,6 +327,20 @@ export async function cancelTask(
   return normalizeTask(task);
 }
 
+export async function retryTaskSearch(accessToken: string, sourceTask: Task): Promise<CreateTaskResponse> {
+  return createTask(accessToken, {
+    title: sourceTask.title,
+    description: sourceTask.description,
+    urgency: sourceTask.urgency,
+    timeMinutes: sourceTask.timeMinutes,
+    budgetPaise: sourceTask.budgetPaise,
+    lat: sourceTask.lat,
+    lng: sourceTask.lng,
+    addressText: sourceTask.addressText ?? null,
+    scheduledAt: sourceTask.scheduledAt ?? null,
+  });
+}
+
 export async function uploadTaskSelfie(
   accessToken: string,
   taskId: string,
