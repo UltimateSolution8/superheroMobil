@@ -23,6 +23,8 @@ import { BuyerHelperIdCardScreen } from '../screens/buyer/BuyerHelperIdCardScree
 import { BuyerTaskScreen } from '../screens/buyer/BuyerTaskScreen';
 import { HelperHomeScreen } from '../screens/helper/HelperHomeScreen';
 import { HelperIdCardScreen } from '../screens/helper/HelperIdCardScreen';
+import { HelperLearnScreen } from '../screens/helper/HelperLearnScreen';
+import { HelperAssessmentScreen } from '../screens/helper/HelperAssessmentScreen';
 import { HelperKycScreen } from '../screens/helper/HelperKycScreen';
 import { HelperVideoKycScreen } from '../screens/helper/HelperVideoKycScreen';
 import { HelperLiveKycCallScreen } from '../screens/helper/HelperLiveKycCallScreen';
@@ -112,6 +114,8 @@ export function AppNavigator() {
                 >
                   <HelperStack.Screen name="HelperHome" component={HelperHomeScreen} />
                   <HelperStack.Screen name="HelperIdCard" component={HelperIdCardScreen} />
+                  <HelperStack.Screen name="HelperLearn" component={HelperLearnScreen} />
+                  <HelperStack.Screen name="HelperAssessment" component={HelperAssessmentScreen} />
                   <HelperStack.Screen name="HelperKyc" component={HelperKycScreen} />
                   <HelperStack.Screen name="HelperVideoKyc" component={HelperVideoKycScreen} />
                   <HelperStack.Screen name="HelperLiveKycCall" component={HelperLiveKycCallScreen} />

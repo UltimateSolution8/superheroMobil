@@ -297,3 +297,74 @@ export type HelperIdCard = {
   idBackUrl?: string | null;
   issuedAt?: string | null;
 };
+
+export type TrainingMaterial = {
+  id: string;
+  title: string;
+  description?: string | null;
+  contentType: 'VIDEO' | 'PDF' | 'AUDIO' | 'LINK' | string;
+  resourceUrl: string;
+  thumbnailUrl?: string | null;
+  durationSeconds?: number | null;
+  active: boolean;
+  helperProgressPercent?: number | null;
+  helperProgressStatus?: string | null;
+  totalLearners?: number | null;
+  completedLearners?: number | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type HelperTrainingProgress = {
+  id: string;
+  materialId: string;
+  materialTitle?: string | null;
+  helperId: string;
+  helperName?: string | null;
+  status: 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED' | string;
+  progressPercent: number;
+  viewedSeconds: number;
+  lastAccessedAt?: string | null;
+  completedAt?: string | null;
+  updatedAt: string;
+};
+
+export type LearningAssessment = {
+  id: string;
+  title: string;
+  description?: string | null;
+  instructions?: string | null;
+  maxAttempts: number;
+  timeLimitMinutes?: number | null;
+  passPercentage: number;
+  questionSchema: any[];
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type HelperAssessmentStart = {
+  attemptId: string;
+  assessmentId: string;
+  attemptNo: number;
+  maxAttempts: number;
+  timeLimitMinutes?: number | null;
+  startedAt: string;
+};
+
+export type HelperAssessmentAttempt = {
+  id: string;
+  assessmentId: string;
+  assessmentTitle?: string | null;
+  helperId: string;
+  helperName?: string | null;
+  attemptNo: number;
+  status: 'IN_PROGRESS' | 'PASSED' | 'FAILED' | 'TIMED_OUT' | string;
+  scorePercentage?: number | null;
+  correctCount?: number | null;
+  totalCount?: number | null;
+  startedAt: string;
+  submittedAt?: string | null;
+  durationSeconds?: number | null;
+  answers?: Record<string, any> | null;
+};

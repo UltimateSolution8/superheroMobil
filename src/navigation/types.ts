@@ -34,6 +34,8 @@ export type BuyerStackParamList = {
 export type HelperStackParamList = {
   HelperHome: undefined;
   HelperIdCard: undefined;
+  HelperLearn: undefined;
+  HelperAssessment: { assessmentId: string };
   HelperKyc: undefined;
   HelperVideoKyc: undefined;
   HelperLiveKycCall: { appId: number; roomId: string; token: string; userId: string; userName: string };

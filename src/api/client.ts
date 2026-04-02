@@ -11,6 +11,11 @@ import type {
   BatchCreateResponse,
   BatchPreviewResponse,
   HelperIdCard,
+  TrainingMaterial,
+  HelperTrainingProgress,
+  LearningAssessment,
+  HelperAssessmentStart,
+  HelperAssessmentAttempt,
   HelperProfile,
   LiveKycSession,
   VideoKycStartResponse,
@@ -309,6 +314,71 @@ export async function getBatchItems(accessToken: string, batchId: string): Promi
 
 export async function helperIdCard(accessToken: string): Promise<HelperIdCard> {
   return fetchJson(url('/api/v1/helper/id-card'), {
+    method: 'GET',
+    headers: authHeaders(accessToken),
+  });
+}
+
+export async function helperLearnMaterials(accessToken: string): Promise<TrainingMaterial[]> {
+  return fetchJson(url('/api/v1/helper/learn/materials'), {
+    method: 'GET',
+    headers: authHeaders(accessToken),
+  });
+}
+
+export async function helperLearnProgress(accessToken: string): Promise<HelperTrainingProgress[]> {
+  return fetchJson(url('/api/v1/helper/learn/progress'), {
+    method: 'GET',
+    headers: authHeaders(accessToken),
+  });
+}
+
+export async function helperUpdateLearnProgress(
+  accessToken: string,
+  materialId: string,
+  payload: { progressPercent?: number | null; viewedSeconds?: number | null; completed?: boolean | null },
+): Promise<HelperTrainingProgress> {
+  return fetchJson(url(`/api/v1/helper/learn/materials/${materialId}/progress`), {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function helperLearnAssessments(accessToken: string): Promise<LearningAssessment[]> {
+  return fetchJson(url('/api/v1/helper/learn/assessments'), {
+    method: 'GET',
+    headers: authHeaders(accessToken),
+  });
+}
+
+export async function helperStartAssessment(
+  accessToken: string,
+  assessmentId: string,
+): Promise<HelperAssessmentStart> {
+  return fetchJson(url(`/api/v1/helper/learn/assessments/${assessmentId}/start`), {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+  });
+}
+
+export async function helperSubmitAssessment(
+  accessToken: string,
+  assessmentId: string,
+  payload: { attemptId: string; answers: Record<string, any> },
+): Promise<HelperAssessmentAttempt> {
+  return fetchJson(url(`/api/v1/helper/learn/assessments/${assessmentId}/submit`), {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function helperAssessmentAttempts(
+  accessToken: string,
+  assessmentId: string,
+): Promise<HelperAssessmentAttempt[]> {
+  return fetchJson(url(`/api/v1/helper/learn/assessments/${assessmentId}/attempts`), {
     method: 'GET',
     headers: authHeaders(accessToken),
   });
