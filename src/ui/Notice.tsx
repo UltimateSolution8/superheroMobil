@@ -26,13 +26,6 @@ export const Notice = memo(function Notice({
     return 'rgba(37,99,235,0.10)';
   }, [kind]);
 
-  const border = useMemo(() => {
-    if (kind === 'danger') return 'rgba(239,68,68,0.35)';
-    if (kind === 'success') return 'rgba(16,185,129,0.35)';
-    if (kind === 'warning') return 'rgba(245,158,11,0.35)';
-    return 'rgba(37,99,235,0.35)';
-  }, [kind]);
-
   const glyph = useMemo(() => {
     if (kind === 'danger') return '!';
     if (kind === 'success') return 'OK';
@@ -41,7 +34,8 @@ export const Notice = memo(function Notice({
   }, [kind]);
 
   return (
-    <View style={[styles.wrap, { backgroundColor: bg, borderColor: border }]}>
+    <View style={[styles.wrap, { backgroundColor: bg }]}>
+      <View style={[styles.accentRail, { backgroundColor: `${accent}55` }]} />
       <View style={[styles.badge, { backgroundColor: `${accent}22` }]}>
         <Text style={[styles.badgeText, { color: accent }]}>{glyph}</Text>
       </View>
@@ -60,18 +54,26 @@ export const Notice = memo(function Notice({
 
 const styles = StyleSheet.create({
   wrap: {
-    borderWidth: 1,
+    borderWidth: 0,
     borderRadius: 14,
     paddingHorizontal: theme.space.md,
     paddingVertical: 10,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+    overflow: 'hidden',
     shadowColor: '#000',
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.04,
     shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 10,
-    elevation: 2,
+    shadowRadius: 8,
+    elevation: 1,
+  },
+  accentRail: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 4,
   },
   badge: {
     width: 20,
