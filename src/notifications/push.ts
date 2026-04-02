@@ -34,11 +34,17 @@ export async function registerForPushNotifications(accessToken: string, userId?:
       const request = await Notifications.requestPermissionsAsync();
       status = request.status;
     }
-    if (status !== 'granted') return;
+    if (status !== 'granted') {
+      console.warn('[push] notification permission not granted');
+      return;
+    }
 
     const tokenData = await Notifications.getDevicePushTokenAsync();
     const token = tokenData?.data;
-    if (!token) return;
+    if (!token) {
+      console.warn('[push] device push token is empty');
+      return;
+    }
 
     const storageKey = `${STORAGE_PREFIX}.${userId ?? 'unknown'}`;
     const cachedRaw = await AsyncStorage.getItem(storageKey);
@@ -49,7 +55,9 @@ export async function registerForPushNotifications(accessToken: string, userId?:
           cached?.token === token &&
           typeof cached?.at === 'number' &&
           Date.now() - cached.at < RE_REGISTER_MS;
-        if (stillFresh) return;
+        if (stillFresh) {
+          return;
+        }
       } catch {
         // ignore corrupted cache
       }
@@ -57,7 +65,8 @@ export async function registerForPushNotifications(accessToken: string, userId?:
 
     await api.registerPushToken(accessToken, { token, platform: Platform.OS });
     await AsyncStorage.setItem(storageKey, JSON.stringify({ token, at: Date.now() }));
-  } catch {
-    // best-effort
+    console.log(`[push] token registered for user=${userId ?? 'unknown'} platform=${Platform.OS}`);
+  } catch (e) {
+    console.warn('[push] failed to register push token', e);
   }
 }
