@@ -50,6 +50,14 @@ export type CreateTaskResponse = {
   offeredTo: string[];
 };
 
+export type CreateBulkTaskResponse = {
+  batchId: string | null;
+  helperCountRequested: number;
+  createdCount: number;
+  failedCount: number;
+  taskIds: string[];
+};
+
 export type BatchCreateItem = {
   title: string;
   description: string;
@@ -84,6 +92,35 @@ export type BatchCreateResponse = {
   createdCount: number;
   failedCount: number;
   status: string;
+};
+
+export type BatchSummary = {
+  id: string;
+  title: string;
+  notes?: string | null;
+  status: string;
+  createdAt: string;
+  scheduledWindowStart?: string | null;
+  scheduledWindowEnd?: string | null;
+  total: number;
+  byTaskStatus: Record<string, number>;
+};
+
+export type BatchItem = {
+  id: string;
+  lineNo: number;
+  externalRef?: string | null;
+  priority: number;
+  lineStatus: string;
+  errorMessage?: string | null;
+  taskId?: string | null;
+  taskStatus?: TaskStatus | null;
+  taskTitle?: string | null;
+  helperId?: string | null;
+  helperName?: string | null;
+  helperDistanceMeters?: number | null;
+  canRetry: boolean;
+  canCancel: boolean;
 };
 
 export type PushTokenRequest = {
@@ -246,4 +283,17 @@ export type LiveKycSession = {
   token: string;
   status: string;
   expiresAt: string;
+};
+
+export type HelperIdCard = {
+  helperId: string;
+  badgeId: string;
+  fullName: string;
+  phone?: string | null;
+  kycStatus: string;
+  idNumberMasked?: string | null;
+  selfieUrl?: string | null;
+  idFrontUrl?: string | null;
+  idBackUrl?: string | null;
+  issuedAt?: string | null;
 };

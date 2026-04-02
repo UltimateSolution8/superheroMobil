@@ -110,6 +110,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'buyer.description_placeholder': 'Example: "Need immediate help fixing RO leakage"',
     'buyer.expected_time': 'Expected time (minutes)',
     'buyer.budget': 'Budget (INR)',
+    'buyer.helpers_needed': 'No. of Superherooos needed',
     'buyer.address_optional': 'Address (optional)',
     'buyer.address_placeholder': 'Landmark / apartment / gate',
     'buyer.refresh_location': 'Refresh location',
@@ -589,6 +590,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'menu.default_name': 'Superherooo User',
     'menu.default_name_citizen': 'Citizen',
     'menu.default_name_partner': 'Superherooo',
+    'menu.id_card': 'ID Card',
     'menu.bulk_tasks': 'Bulk Tasks',
 
     // Bulk Tasks
@@ -611,6 +613,21 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'bulk.title_required': 'Batch name is required.',
     'bulk.created_summary': 'Batch created. Success: {created}, Failed: {failed}, ID: {batchId}',
     'bulk.create_failed': 'Could not create batch.',
+    'bulk.track_title': 'Bulk Request',
+    'bulk.track_load_failed': 'Could not load bulk request details.',
+    'bulk.helpers_accepted': '{count} helpers accepted',
+    'bulk.status_breakdown': 'Status',
+    'bulk.helper_lines': 'Helper Lines',
+    'bulk.open_task': 'Open Task',
+
+    // ID Card
+    'id_card.title': 'Superherooo ID Card',
+    'id_card.phone': 'Phone',
+    'id_card.kyc_status': 'KYC',
+    'id_card.id_masked': 'ID',
+    'id_card.issued_at': 'Issued',
+    'id_card.view_helper': 'View Superherooo ID Card',
+    'id_card.unavailable': 'Superherooo ID card is not available yet.',
 
     // Payments
     'payments.wallet_title': 'Superherooo Wallet',
@@ -828,6 +845,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'buyer.description_placeholder': 'उदाहरण: "RO लीकेज ठीक करने में मदद चाहिए"',
     'buyer.expected_time': 'अनुमानित समय (मिनट)',
     'buyer.budget': 'बजट (INR)',
+    'buyer.helpers_needed': 'आवश्यक Superherooo की संख्या',
     'buyer.address_optional': 'पता (वैकल्पिक)',
     'buyer.address_placeholder': 'लैंडमार्क / अपार्टमेंट / गेट',
     'buyer.refresh_location': 'लोकेशन रिफ्रेश करें',
@@ -1307,6 +1325,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'menu.default_name': 'Superherooo यूज़र',
     'menu.default_name_citizen': 'नागरिक',
     'menu.default_name_partner': 'Superherooo',
+    'menu.id_card': 'आईडी कार्ड',
     'menu.bulk_tasks': 'बल्क कार्य',
 
     // Bulk Tasks
@@ -1329,6 +1348,21 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'bulk.title_required': 'बैच नाम आवश्यक है।',
     'bulk.created_summary': 'बैच बन गया। सफल: {created}, विफल: {failed}, ID: {batchId}',
     'bulk.create_failed': 'बैच नहीं बन सका।',
+    'bulk.track_title': 'बल्क अनुरोध',
+    'bulk.track_load_failed': 'बल्क अनुरोध का विवरण लोड नहीं हो सका।',
+    'bulk.helpers_accepted': '{count} helpers accepted',
+    'bulk.status_breakdown': 'स्थिति',
+    'bulk.helper_lines': 'हेल्पर लाइन्स',
+    'bulk.open_task': 'कार्य खोलें',
+
+    // ID Card
+    'id_card.title': 'Superherooo आईडी कार्ड',
+    'id_card.phone': 'फोन',
+    'id_card.kyc_status': 'KYC',
+    'id_card.id_masked': 'आईडी',
+    'id_card.issued_at': 'जारी तिथि',
+    'id_card.view_helper': 'Superherooo आईडी कार्ड देखें',
+    'id_card.unavailable': 'Superherooo का आईडी कार्ड अभी उपलब्ध नहीं है।',
 
     // Payments
     'payments.wallet_title': 'Superherooo वॉलेट',
@@ -1541,6 +1575,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'buyer.description_placeholder': 'Example: Need immediate help fixing RO leakage',
     'buyer.expected_time': 'Expected Time (minutes)',
     'buyer.budget': 'Budget (INR)',
+    'buyer.helpers_needed': 'అవసరమైన Superherooo సంఖ్య',
     'buyer.address_optional': 'Address (optional)',
     'buyer.address_placeholder': 'Landmark / apartment / gate',
     'buyer.refresh_location': 'Refresh Location',
@@ -2003,6 +2038,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'menu.default_name': 'Superherooo యూజర్',
     'menu.default_name_citizen': 'Citizen',
     'menu.default_name_partner': 'Superherooo',
+    'menu.id_card': 'ఐడి కార్డ్',
     'menu.bulk_tasks': 'బల్క్ టాస్కులు',
 
     // Bulk Tasks
@@ -2025,6 +2061,21 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'bulk.title_required': 'బ్యాచ్ పేరు తప్పనిసరి.',
     'bulk.created_summary': 'బ్యాచ్ సృష్టించబడింది. విజయవంతం: {created}, విఫలం: {failed}, ID: {batchId}',
     'bulk.create_failed': 'బ్యాచ్ సృష్టించలేకపోయాం.',
+    'bulk.track_title': 'బల్క్ అభ్యర్థన',
+    'bulk.track_load_failed': 'బల్క్ అభ్యర్థన వివరాలు లోడ్ కాలేదు.',
+    'bulk.helpers_accepted': '{count} helpers accepted',
+    'bulk.status_breakdown': 'స్థితి',
+    'bulk.helper_lines': 'హెల్పర్ లైన్లు',
+    'bulk.open_task': 'టాస్క్ ఓపెన్ చేయి',
+
+    // ID Card
+    'id_card.title': 'Superherooo ఐడి కార్డ్',
+    'id_card.phone': 'ఫోన్',
+    'id_card.kyc_status': 'KYC',
+    'id_card.id_masked': 'ఐడి',
+    'id_card.issued_at': 'జారీ తేదీ',
+    'id_card.view_helper': 'Superherooo ఐడి కార్డ్ చూడండి',
+    'id_card.unavailable': 'Superherooo ఐడి కార్డ్ ఇప్పుడే అందుబాటులో లేదు.',
 
     // Payments
     'payments.wallet_title': 'Superherooo వాలెట్',

@@ -83,6 +83,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
   const hasTaskCoords = Number.isFinite(taskLat) && Number.isFinite(taskLng);
   const status = task?.status ?? 'SEARCHING';
   const helperId = task?.assignedHelperId ?? null;
+  const canDownloadInvoice = status === 'COMPLETED';
   const canCancel = status === 'SEARCHING' || status === 'ASSIGNED';
   const mapMarkers = useMemo(() => {
     const list: { key: string; coordinate: { latitude: number; longitude: number }; title?: string; ref?: any }[] = [];
@@ -476,6 +477,13 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
               {helperId ? (
                 <Text style={styles.muted}>{t('buyer.task.hero_label')}: {task?.helperName ?? task?.helperPhone ?? t('buyer.task.assigned')}</Text>
               ) : null}
+              {helperId ? (
+                <PrimaryButton
+                  label={t('id_card.view_helper')}
+                  onPress={() => navigation.navigate('BuyerHelperIdCard', { taskId })}
+                  variant="ghost"
+                />
+              ) : null}
               {task?.addressText ? <Text style={styles.muted}>{t('buyer.address_optional')}: {task.addressText}</Text> : null}
               {task?.description ? <Text style={styles.desc}>{task.description}</Text> : null}
               {scheduledAtLabel ? <Text style={styles.muted}>{t('task.scheduled_for')}: {scheduledAtLabel}</Text> : null}
@@ -489,7 +497,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
               ) : null}
 
               <PrimaryButton label={t('task.refresh')} onPress={load} loading={busy} variant="ghost" />
-              {task ? (
+              {task && canDownloadInvoice ? (
                 <PrimaryButton
                   label={t('task.download_invoice')}
                   onPress={() => downloadTaskInvoice(task, 'buyer')}

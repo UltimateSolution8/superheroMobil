@@ -15,6 +15,8 @@ export type AuthStackParamList = {
 export type BuyerStackParamList = {
   BuyerHome: undefined;
   BuyerBulkTasks: undefined;
+  BuyerBulkRequest: { batchId: string };
+  BuyerHelperIdCard: { taskId: string };
   BuyerTask: { taskId: string };
   Menu: undefined;
   Profile: undefined;
@@ -31,6 +33,7 @@ export type BuyerStackParamList = {
 
 export type HelperStackParamList = {
   HelperHome: undefined;
+  HelperIdCard: undefined;
   HelperKyc: undefined;
   HelperVideoKyc: undefined;
   HelperLiveKycCall: { appId: number; roomId: string; token: string; userId: string; userName: string };

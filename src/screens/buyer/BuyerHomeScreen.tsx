@@ -91,6 +91,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
   const [suggestions, setSuggestions] = useState<Array<{ placeId: string; description: string }>>([]);
   const [timeMinutes, setTimeMinutes] = useState('30');
   const [budgetRupees, setBudgetRupees] = useState('150');
+  const [helperCount, setHelperCount] = useState('1');
   const [urgency, setUrgency] = useState<TaskUrgency>('NORMAL');
   const [scheduleMode, setScheduleMode] = useState<'now' | 'later'>('now');
   const [scheduleAt, setScheduleAt] = useState<Date | null>(null);
@@ -119,6 +120,10 @@ export function BuyerHomeScreen({ navigation }: Props) {
   const descOk = useMemo(() => description.trim().length >= 10, [description]);
   const timeOk = useMemo(() => Number.isFinite(Number(timeMinutes)) && Number(timeMinutes) >= 1, [timeMinutes]);
   const budgetOk = useMemo(() => Number.isFinite(Number(budgetRupees)) && Number(budgetRupees) >= 0, [budgetRupees]);
+  const helperCountOk = useMemo(
+    () => Number.isFinite(Number(helperCount)) && Number(helperCount) >= 1 && Number(helperCount) <= 25,
+    [helperCount],
+  );
   const scheduledAt = useMemo(() => {
     if (scheduleMode !== 'later') return null;
     return scheduleAt;
@@ -129,8 +134,8 @@ export function BuyerHomeScreen({ navigation }: Props) {
     return scheduledAt.getTime() > Date.now() + 60_000;
   }, [scheduleMode, scheduledAt]);
   const canCreate = useMemo(
-    () => Boolean(online && titleOk && descOk && timeOk && budgetOk && scheduleOk && lat != null && lng != null),
-    [budgetOk, descOk, lat, lng, online, scheduleOk, timeOk, titleOk],
+    () => Boolean(online && titleOk && descOk && timeOk && budgetOk && helperCountOk && scheduleOk && lat != null && lng != null),
+    [budgetOk, descOk, helperCountOk, lat, lng, online, scheduleOk, timeOk, titleOk],
   );
   const pricing = useMemo(() => {
     const minutes = Number(timeMinutes);
@@ -147,6 +152,10 @@ export function BuyerHomeScreen({ navigation }: Props) {
   const voiceActiveRef = useRef(false);
   const voiceResultsRef = useRef<Set<string>>(new Set());
   const lastSpeechTimeRef = useRef<number>(0);
+  const suggestionCache = useRef<Map<string, { at: number; data: Array<{ placeId: string; description: string }> }>>(new Map());
+  const detailsCache = useRef<Map<string, { at: number; lat: number; lng: number; address?: string }>>(new Map());
+  const geocodeCache = useRef<Map<string, { at: number; lat: number; lng: number; address?: string }>>(new Map());
+  const placesSessionToken = useRef<string>('');
 
   const resolveAddress = useCallback(async (latitude: number, longitude: number) => {
     try {
@@ -317,6 +326,18 @@ export function BuyerHomeScreen({ navigation }: Props) {
       return;
     }
     const effectiveQuery = suggestions.length > 0 ? suggestions[0].description : query;
+    const cacheKey = effectiveQuery.toLowerCase();
+    const now = Date.now();
+    const cached = geocodeCache.current.get(cacheKey);
+    if (cached && now - cached.at < 5 * 60_000) {
+      setLat(cached.lat);
+      setLng(cached.lng);
+      if (cached.address) {
+        setAddressText(cached.address);
+      }
+      setSuggestions([]);
+      return;
+    }
     setSearchBusy(true);
     setError(null);
     try {
@@ -333,8 +354,10 @@ export function BuyerHomeScreen({ navigation }: Props) {
         setLng(loc.lng);
         if (candidate?.formatted_address) {
           setAddressText(candidate.formatted_address);
+          geocodeCache.current.set(cacheKey, { at: Date.now(), lat: loc.lat, lng: loc.lng, address: candidate.formatted_address });
         } else {
           resolveAddress(loc.lat, loc.lng);
+          geocodeCache.current.set(cacheKey, { at: Date.now(), lat: loc.lat, lng: loc.lng });
         }
         setSuggestions([]);
       } else {
@@ -350,12 +373,23 @@ export function BuyerHomeScreen({ navigation }: Props) {
   const fetchSuggestions = useCallback(
     async (query: string) => {
       if (!GOOGLE_MAPS_API_KEY) return;
+      const key = query.toLowerCase();
+      const now = Date.now();
+      const cached = suggestionCache.current.get(key);
+      if (cached && now - cached.at < 90_000) {
+        setSuggestions(cached.data);
+        return;
+      }
+      if (!placesSessionToken.current) {
+        placesSessionToken.current = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+      }
       setAutoSearchBusy(true);
       try {
         const url =
           'https://maps.googleapis.com/maps/api/place/autocomplete/json' +
           `?input=${encodeURIComponent(query)}` +
           '&types=geocode' +
+          `&sessiontoken=${encodeURIComponent(placesSessionToken.current)}` +
           `&key=${encodeURIComponent(GOOGLE_MAPS_API_KEY)}`;
         const res = await fetch(url);
         const json = await res.json();
@@ -365,6 +399,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
           description: p.description,
         }));
         setSuggestions(trimmed);
+        suggestionCache.current.set(key, { at: now, data: trimmed });
       } catch {
         setSuggestions([]);
       } finally {
@@ -378,6 +413,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
     const q = searchQuery.trim();
     if (q.length < 3) {
       setSuggestions([]);
+      placesSessionToken.current = '';
       return undefined;
     }
     const t = setTimeout(() => {
@@ -394,10 +430,23 @@ export function BuyerHomeScreen({ navigation }: Props) {
       setSuggestions([]);
       setSearchQuery(description);
       try {
+        const cached = detailsCache.current.get(placeId);
+        if (cached && Date.now() - cached.at < 10 * 60_000) {
+          setLat(cached.lat);
+          setLng(cached.lng);
+          if (cached.address) {
+            setAddressText(cached.address);
+          } else {
+            resolveAddress(cached.lat, cached.lng);
+          }
+          placesSessionToken.current = '';
+          return;
+        }
         const url =
           'https://maps.googleapis.com/maps/api/place/details/json' +
           `?place_id=${encodeURIComponent(placeId)}` +
           '&fields=geometry,formatted_address,name' +
+          `&sessiontoken=${encodeURIComponent(placesSessionToken.current || `${Date.now()}`)}` +
           `&key=${encodeURIComponent(GOOGLE_MAPS_API_KEY)}`;
         const res = await fetch(url);
         const json = await res.json();
@@ -408,15 +457,19 @@ export function BuyerHomeScreen({ navigation }: Props) {
           setLng(loc.lng);
           if (result.formatted_address) {
             setAddressText(result.formatted_address);
+            detailsCache.current.set(placeId, { at: Date.now(), lat: loc.lat, lng: loc.lng, address: result.formatted_address });
           } else if (result.name) {
             setAddressText(result.name);
+            detailsCache.current.set(placeId, { at: Date.now(), lat: loc.lat, lng: loc.lng, address: result.name });
           } else {
             resolveAddress(loc.lat, loc.lng);
+            detailsCache.current.set(placeId, { at: Date.now(), lat: loc.lat, lng: loc.lng });
           }
         }
       } catch {
         setError(t('error.fetch_details'));
       } finally {
+        placesSessionToken.current = '';
         setSearchBusy(false);
       }
     },
@@ -501,21 +554,50 @@ export function BuyerHomeScreen({ navigation }: Props) {
         return;
       }
       const scheduledAtIso = scheduleMode === 'later' && scheduledAt ? scheduledAt.toISOString() : null;
-      const res = await withAuth((t) =>
-        api.createTask(t, {
-          title: title.trim(),
-          description: description.trim(),
-          urgency,
-          timeMinutes: Number(timeMinutes),
-          budgetPaise: Math.round(Number(budgetRupees) * 100),
-          lat,
-          lng,
-          addressText: addressText.trim() || null,
-          scheduledAt: scheduledAtIso,
-        }),
-      );
-      await setActiveTaskId(res.taskId);
-      navigation.navigate('BuyerTask', { taskId: res.taskId });
+      const helpersNeeded = Math.max(1, Math.min(25, Number(helperCount) || 1));
+      if (helpersNeeded > 1) {
+        const res = await withAuth((t) =>
+          api.createBulkTask(t, {
+            title: title.trim(),
+            description: description.trim(),
+            urgency,
+            timeMinutes: Number(timeMinutes),
+            budgetPaise: Math.round(Number(budgetRupees) * 100),
+            lat,
+            lng,
+            addressText: addressText.trim() || null,
+            scheduledAt: scheduledAtIso,
+            helperCount: helpersNeeded,
+          }),
+        );
+        if (res.batchId) {
+          await setActiveTaskId(null);
+          navigation.navigate('BuyerBulkRequest', { batchId: res.batchId });
+          return;
+        }
+        const firstTaskId = Array.isArray(res.taskIds) ? res.taskIds[0] : null;
+        if (firstTaskId) {
+          await setActiveTaskId(firstTaskId);
+          navigation.navigate('BuyerTask', { taskId: firstTaskId });
+          return;
+        }
+      } else {
+        const res = await withAuth((t) =>
+          api.createTask(t, {
+            title: title.trim(),
+            description: description.trim(),
+            urgency,
+            timeMinutes: Number(timeMinutes),
+            budgetPaise: Math.round(Number(budgetRupees) * 100),
+            lat,
+            lng,
+            addressText: addressText.trim() || null,
+            scheduledAt: scheduledAtIso,
+          }),
+        );
+        await setActiveTaskId(res.taskId);
+        navigation.navigate('BuyerTask', { taskId: res.taskId });
+      }
     } catch (e) {
       if (e instanceof ApiError && e.status === 401) return;
       if (e instanceof ApiError) {
@@ -526,7 +608,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
     } finally {
       setBusy(false);
     }
-  }, [addressText, budgetRupees, busy, canCreate, description, lat, lng, navigation, scheduleMode, scheduleOk, scheduledAt, timeMinutes, title, urgency, withAuth, t]);
+  }, [addressText, budgetRupees, busy, canCreate, description, helperCount, lat, lng, navigation, scheduleMode, scheduleOk, scheduledAt, setActiveTaskId, timeMinutes, title, urgency, withAuth, t]);
 
   const toggleVoice = useCallback(async () => {
     setVoiceError(null);
@@ -671,6 +753,12 @@ export function BuyerHomeScreen({ navigation }: Props) {
             </View>
             <TextField label={t('buyer.expected_time')} value={timeMinutes} onChangeText={setTimeMinutes} keyboardType="number-pad" />
             <TextField label={t('buyer.budget')} value={budgetRupees} onChangeText={setBudgetRupees} keyboardType="number-pad" />
+            <TextField
+              label={t('buyer.helpers_needed')}
+              value={helperCount}
+              onChangeText={setHelperCount}
+              keyboardType="number-pad"
+            />
             {pricing ? (
               <View style={styles.smartPriceBox}>
                 <Text style={styles.smartPriceTitle}>{t('buyer.smart_price_title')}</Text>

@@ -879,7 +879,7 @@ export function HelperTaskScreen({ route, navigation }: Props) {
             {helperEta == null ? '--' : `${helperEta} ${t('helper.task.minutes')}`}
           </Text>
           <PrimaryButton label={t('task.open_maps')} onPress={openMaps} variant="ghost" />
-          {task ? (
+          {task && status === 'COMPLETED' ? (
             <PrimaryButton
               label={t('task.download_invoice')}
               onPress={() => downloadTaskInvoice(task, 'helper')}

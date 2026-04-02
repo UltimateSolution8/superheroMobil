@@ -4,9 +4,13 @@ import type {
   AuthResponse,
   CreateTaskRequest,
   CreateTaskResponse,
+  CreateBulkTaskResponse,
   BatchCreateItem,
+  BatchSummary,
+  BatchItem,
   BatchCreateResponse,
   BatchPreviewResponse,
+  HelperIdCard,
   HelperProfile,
   LiveKycSession,
   VideoKycStartResponse,
@@ -251,6 +255,17 @@ export async function createTask(accessToken: string, req: CreateTaskRequest): P
   });
 }
 
+export async function createBulkTask(
+  accessToken: string,
+  req: CreateTaskRequest & { helperCount: number },
+): Promise<CreateBulkTaskResponse> {
+  return fetchJson(url('/api/v1/tasks/bulk'), {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+    body: JSON.stringify(req),
+  });
+}
+
 export async function previewBatch(
   accessToken: string,
   items: BatchCreateItem[],
@@ -275,6 +290,34 @@ export async function createBatch(
     method: 'POST',
     headers: authHeaders(accessToken),
     body: JSON.stringify(payload),
+  });
+}
+
+export async function getBatchSummary(accessToken: string, batchId: string): Promise<BatchSummary> {
+  return fetchJson(url(`/api/v1/batches/${batchId}`), {
+    method: 'GET',
+    headers: authHeaders(accessToken),
+  });
+}
+
+export async function getBatchItems(accessToken: string, batchId: string): Promise<BatchItem[]> {
+  return fetchJson(url(`/api/v1/batches/${batchId}/items`), {
+    method: 'GET',
+    headers: authHeaders(accessToken),
+  });
+}
+
+export async function helperIdCard(accessToken: string): Promise<HelperIdCard> {
+  return fetchJson(url('/api/v1/helper/id-card'), {
+    method: 'GET',
+    headers: authHeaders(accessToken),
+  });
+}
+
+export async function taskHelperIdCard(accessToken: string, taskId: string): Promise<HelperIdCard> {
+  return fetchJson(url(`/api/v1/tasks/${taskId}/helper-id-card`), {
+    method: 'GET',
+    headers: authHeaders(accessToken),
   });
 }
 

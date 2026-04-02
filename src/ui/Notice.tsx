@@ -43,17 +43,23 @@ export const Notice = memo(function Notice({
 
 const styles = StyleSheet.create({
   wrap: {
-    borderWidth: 1,
-    borderRadius: theme.radius.lg,
+    borderWidth: 0,
+    borderRadius: 14,
     paddingHorizontal: theme.space.md,
-    paddingVertical: theme.space.sm,
+    paddingVertical: 11,
     flexDirection: 'row',
     alignItems: 'center',
-    ...theme.shadow.card,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 8,
+    elevation: 2,
   },
   text: {
     color: theme.colors.text,
-    fontSize: 13.5,
-    lineHeight: 19,
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '600',
   },
 });
