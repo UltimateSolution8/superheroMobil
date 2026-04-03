@@ -12,7 +12,22 @@ export type AuthStackParamList = {
   Diagnostics: undefined;
 };
 
+export type BuyerTabParamList = {
+  BuyerLanding: undefined;
+  BuyerCreate: undefined;
+  BuyerBulk: undefined;
+  BuyerProfile: undefined;
+};
+
+export type HelperTabParamList = {
+  HelperLanding: undefined;
+  HelperTasks: undefined;
+  HelperLearnTab: undefined;
+  HelperProfile: undefined;
+};
+
 export type BuyerStackParamList = {
+  BuyerTabs: undefined;
   BuyerHome: undefined;
   BuyerBulkTasks: undefined;
   BuyerBulkRequest: { batchId: string };
@@ -32,6 +47,7 @@ export type BuyerStackParamList = {
 };
 
 export type HelperStackParamList = {
+  HelperTabs: undefined;
   HelperHome: undefined;
   HelperIdCard: undefined;
   HelperLearn: undefined;

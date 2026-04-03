@@ -73,7 +73,7 @@ export function ProfileScreen({ navigation }: Props) {
     <Screen>
       <View style={styles.topBar}>
         <Text style={styles.h1}>{t('profile.title')}</Text>
-        <Text onPress={() => navigation.goBack()} style={styles.link}>
+        <Text onPress={() => (navigation.canGoBack() ? navigation.goBack() : (navigation as any).navigate(role === 'HELPER' ? 'HelperTabs' : 'BuyerTabs'))} style={styles.link}>
           {t('common.back')}
         </Text>
       </View>
@@ -93,6 +93,14 @@ export function ProfileScreen({ navigation }: Props) {
 
         <TextField label={t('profile.display_name')} value={displayName} onChangeText={setDisplayName} placeholder={t('profile.display_name_placeholder')} />
         <PrimaryButton label={t('common.save')} onPress={save} loading={busy} />
+        <View style={styles.quickRow}>
+          <PrimaryButton label={t('tabs.tasks')} variant="ghost" onPress={() => navigation.navigate('History')} style={styles.quickBtn} />
+          <PrimaryButton label={t('payments.title')} variant="ghost" onPress={() => navigation.navigate('Payments')} style={styles.quickBtn} />
+        </View>
+        <View style={styles.quickRow}>
+          <PrimaryButton label={t('settings.title')} variant="ghost" onPress={() => navigation.navigate('Settings')} style={styles.quickBtn} />
+          <PrimaryButton label={t('buyer.support')} variant="ghost" onPress={() => navigation.navigate('SupportTickets')} style={styles.quickBtn} />
+        </View>
       </View>
     </Screen>
   );
@@ -113,4 +121,6 @@ const styles = StyleSheet.create({
   },
   label: { color: theme.colors.muted, fontSize: 12, fontWeight: '800' },
   value: { color: theme.colors.text, fontSize: 14, fontWeight: '600' },
+  quickRow: { flexDirection: 'row', gap: theme.space.sm },
+  quickBtn: { flex: 1 },
 });

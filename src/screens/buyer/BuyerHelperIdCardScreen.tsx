@@ -6,7 +6,6 @@ import * as api from '../../api/client';
 import type { HelperIdCard } from '../../api/types';
 import { useAuth } from '../../auth/AuthContext';
 import type { BuyerStackParamList } from '../../navigation/types';
-import { MenuButton } from '../../ui/MenuButton';
 import { Notice } from '../../ui/Notice';
 import { PrimaryButton } from '../../ui/PrimaryButton';
 import { Screen } from '../../ui/Screen';
@@ -43,9 +42,11 @@ export function BuyerHelperIdCardScreen({ route, navigation }: Props) {
   return (
     <Screen>
       <View style={styles.topBar}>
-        <MenuButton onPress={() => navigation.navigate('Menu')} />
+        <Text onPress={() => (navigation.canGoBack() ? navigation.goBack() : (navigation as any).navigate('BuyerTabs', { screen: 'BuyerLanding' }))} style={styles.link}>
+          {t('common.back')}
+        </Text>
         <Text style={styles.h1}>{t('id_card.title')}</Text>
-        <Text onPress={() => navigation.goBack()} style={styles.link}>{t('common.back')}</Text>
+        <Text onPress={() => navigation.navigate('SupportTickets')} style={styles.link}>{t('buyer.support')}</Text>
       </View>
       <ScrollView contentContainerStyle={styles.scroll}>
         {error ? <Notice kind="warning" text={error} /> : null}

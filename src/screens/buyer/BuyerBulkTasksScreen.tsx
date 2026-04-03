@@ -1,6 +1,8 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from 'expo-file-system/legacy';
+import * as Sharing from 'expo-sharing';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import * as api from '../../api/client';
@@ -8,7 +10,6 @@ import type { BatchCreateItem, BatchPreviewItemResult } from '../../api/types';
 import { useAuth } from '../../auth/AuthContext';
 import type { BuyerStackParamList } from '../../navigation/types';
 import { Screen } from '../../ui/Screen';
-import { MenuButton } from '../../ui/MenuButton';
 import { Notice } from '../../ui/Notice';
 import { PrimaryButton } from '../../ui/PrimaryButton';
 import { TextField } from '../../ui/TextField';
@@ -17,36 +18,11 @@ import { useI18n } from '../../i18n/I18nProvider';
 
 type Props = NativeStackScreenProps<BuyerStackParamList, 'BuyerBulkTasks'>;
 
-const DEFAULT_LINES = JSON.stringify(
-  [
-    {
-      title: 'AC repair',
-      description: 'Split AC not cooling in hall',
-      urgency: 'HIGH',
-      timeMinutes: 90,
-      budgetPaise: 120000,
-      lat: 12.9716,
-      lng: 77.5946,
-      addressText: 'MG Road, Bengaluru',
-      externalRef: 'SITE-001',
-      priority: 2,
-    },
-    {
-      title: 'Deep cleaning',
-      description: 'Kitchen and bathroom deep cleaning',
-      urgency: 'NORMAL',
-      timeMinutes: 120,
-      budgetPaise: 180000,
-      lat: 12.975,
-      lng: 77.605,
-      addressText: 'Indiranagar, Bengaluru',
-      externalRef: 'SITE-002',
-      priority: 3,
-    },
-  ],
-  null,
-  2,
-);
+const SAMPLE_CSV = [
+  'title,description,urgency,timeMinutes,budgetPaise,lat,lng,addressText,scheduledAt,externalRef,priority',
+  '"AC repair","Split AC not cooling in hall",HIGH,90,120000,17.4376,78.4482,"Madhapur, Hyderabad",,SITE-001,2',
+  '"Deep cleaning","Kitchen and bathroom deep cleaning",NORMAL,120,180000,17.4916,78.3995,"Kukatpally, Hyderabad",,SITE-002,3',
+].join('\n');
 
 function parseCsvLine(line: string): string[] {
   const out: string[] = [];
@@ -111,20 +87,11 @@ export function BuyerBulkTasksScreen({ navigation }: Props) {
   const { t } = useI18n();
   const [title, setTitle] = useState('My Bulk Batch');
   const [notes, setNotes] = useState('');
-  const [itemsText, setItemsText] = useState(DEFAULT_LINES);
+  const [items, setItems] = useState<BatchCreateItem[]>([]);
   const [preview, setPreview] = useState<BatchPreviewItemResult[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-
-  const parsedItems = useMemo(() => {
-    try {
-      const parsed = JSON.parse(itemsText);
-      return Array.isArray(parsed) ? (parsed as BatchCreateItem[]) : null;
-    } catch {
-      return null;
-    }
-  }, [itemsText]);
 
   const onImportCsv = useCallback(async () => {
     setError(null);
@@ -144,8 +111,24 @@ export function BuyerBulkTasksScreen({ navigation }: Props) {
         setError(t('bulk.no_rows'));
         return;
       }
-      setItemsText(JSON.stringify(lines, null, 2));
+      setItems(lines);
       setNotice(t('bulk.csv_loaded').replace('{count}', String(lines.length)));
+    } catch {
+      setError(t('bulk.csv_failed'));
+    }
+  }, [t]);
+
+  const onDownloadSample = useCallback(async () => {
+    setError(null);
+    setNotice(null);
+    try {
+      const dir = FileSystem.cacheDirectory || FileSystem.documentDirectory || '';
+      const fileUri = `${dir}superheroo-bulk-sample.csv`;
+      await FileSystem.writeAsStringAsync(fileUri, SAMPLE_CSV, { encoding: FileSystem.EncodingType.UTF8 });
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(fileUri, { mimeType: 'text/csv', dialogTitle: 'Sample CSV' });
+      }
+      setNotice(t('bulk.sample_ready'));
     } catch {
       setError(t('bulk.csv_failed'));
     }
@@ -154,13 +137,13 @@ export function BuyerBulkTasksScreen({ navigation }: Props) {
   const onPreview = useCallback(async () => {
     setError(null);
     setNotice(null);
-    if (!parsedItems || !parsedItems.length) {
-      setError(t('bulk.invalid_json'));
+    if (!items.length) {
+      setError(t('bulk.no_rows'));
       return;
     }
     setBusy(true);
     try {
-      const res = await withAuth((at) => api.previewBatch(at, parsedItems));
+      const res = await withAuth((at) => api.previewBatch(at, items));
       setPreview(res.items || []);
       setNotice(t('bulk.preview_ready'));
     } catch {
@@ -168,13 +151,13 @@ export function BuyerBulkTasksScreen({ navigation }: Props) {
     } finally {
       setBusy(false);
     }
-  }, [parsedItems, t, withAuth]);
+  }, [items, t, withAuth]);
 
   const onCreate = useCallback(async () => {
     setError(null);
     setNotice(null);
-    if (!parsedItems || !parsedItems.length) {
-      setError(t('bulk.invalid_json'));
+    if (!items.length) {
+      setError(t('bulk.no_rows'));
       return;
     }
     if (!title.trim()) {
@@ -188,7 +171,7 @@ export function BuyerBulkTasksScreen({ navigation }: Props) {
           title: title.trim(),
           notes: notes.trim() || null,
           idempotencyKey: `buyer-bulk-${Date.now()}`,
-          items: parsedItems,
+          items,
         }),
       );
       setNotice(
@@ -203,14 +186,16 @@ export function BuyerBulkTasksScreen({ navigation }: Props) {
     } finally {
       setBusy(false);
     }
-  }, [navigation, notes, parsedItems, t, title, withAuth]);
+  }, [items, navigation, notes, t, title, withAuth]);
 
   return (
     <Screen>
       <View style={styles.topBar}>
-        <MenuButton onPress={() => navigation.navigate('Menu')} />
+        <Text onPress={() => (navigation.canGoBack() ? navigation.goBack() : (navigation as any).navigate('BuyerTabs', { screen: 'BuyerLanding' }))} style={styles.link}>
+          {t('common.back')}
+        </Text>
         <Text style={styles.h1}>{t('bulk.title')}</Text>
-        <Text onPress={() => navigation.goBack()} style={styles.link}>{t('common.back')}</Text>
+        <Text onPress={() => navigation.navigate('SupportTickets')} style={styles.link}>{t('buyer.support')}</Text>
       </View>
       <KeyboardAvoidingView style={styles.flex1} behavior={Platform.select({ ios: 'padding', android: undefined })}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
@@ -220,14 +205,12 @@ export function BuyerBulkTasksScreen({ navigation }: Props) {
           <View style={styles.card}>
             <TextField label={t('bulk.batch_name')} value={title} onChangeText={setTitle} />
             <TextField label={t('bulk.notes')} value={notes} onChangeText={setNotes} />
-            <PrimaryButton label={t('bulk.import_csv')} onPress={onImportCsv} variant="ghost" />
+            <View style={styles.row}>
+              <PrimaryButton label={t('bulk.import_csv')} onPress={onImportCsv} variant="ghost" style={styles.half} />
+              <PrimaryButton label={t('bulk.download_sample')} onPress={onDownloadSample} variant="ghost" style={styles.half} />
+            </View>
             <Text style={styles.hint}>{t('bulk.csv_header')}</Text>
-            <TextField
-              label={t('bulk.items_json')}
-              value={itemsText}
-              onChangeText={setItemsText}
-              multiline
-            />
+            <Text style={styles.hint}>{t('bulk.rows_loaded').replace('{count}', String(items.length))}</Text>
             <View style={styles.row}>
               <PrimaryButton label={t('bulk.preview')} onPress={onPreview} loading={busy} variant="ghost" style={styles.half} />
               <PrimaryButton label={t('bulk.create_batch')} onPress={onCreate} loading={busy} style={styles.half} />

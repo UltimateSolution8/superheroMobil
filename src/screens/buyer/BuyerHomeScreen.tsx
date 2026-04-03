@@ -19,7 +19,6 @@ import { PrimaryButton } from '../../ui/PrimaryButton';
 import { TextField } from '../../ui/TextField';
 import { Notice } from '../../ui/Notice';
 import { Segmented } from '../../ui/Segmented';
-import { MenuButton } from '../../ui/MenuButton';
 import { theme } from '../../ui/theme';
 import { DEMO_FALLBACK_LOCATION, GOOGLE_MAPS_API_KEY } from '../../config';
 import type { BuyerStackParamList } from '../../navigation/types';
@@ -541,7 +540,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
       navigation.goBack();
       return;
     }
-    navigation.navigate('Menu');
+    (navigation as any).navigate('BuyerTabs', { screen: 'BuyerLanding' });
   }, [navigation]);
 
   const onCreate = useCallback(async () => {
@@ -648,10 +647,12 @@ export function BuyerHomeScreen({ navigation }: Props) {
               <Pressable accessibilityRole="button" onPress={onBack} style={styles.backBtn}>
                 <MaterialCommunityIcons name="arrow-left" size={20} color={theme.colors.text} />
               </Pressable>
-              <MenuButton onPress={() => navigation.navigate('Menu')} />
             </View>
             <Text style={styles.h1}>{t('buyer.create_task')}</Text>
-            <View style={styles.topLinks} />
+            <View style={styles.topLinks}>
+              <Text onPress={() => navigation.navigate('SupportTickets')} style={styles.link}>{t('buyer.support')}</Text>
+              <Text onPress={() => navigation.navigate('Profile')} style={styles.link}>{t('menu.profile')}</Text>
+            </View>
           </View>
 
           {!online ? <Notice kind="warning" text={t('buyer.offline')} /> : null}

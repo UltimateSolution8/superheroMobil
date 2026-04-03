@@ -157,6 +157,13 @@ export function HelperAssessmentScreen({ route, navigation }: Props) {
     const options = parseOptions(question);
 
     if (!qId) return null;
+    if (qType === 'section') {
+      return (
+        <View key={qId} style={styles.sectionCard}>
+          <Text style={styles.sectionTitle}>{label}</Text>
+        </View>
+      );
+    }
 
     if (qType === 'single_choice' || qType === 'radio') {
       return (
@@ -234,6 +241,37 @@ export function HelperAssessmentScreen({ route, navigation }: Props) {
       );
     }
 
+    if (qType === 'rating' || qType === 'star' || qType === 'stars') {
+      const ratingVal = Number(current) || 0;
+      return (
+        <View key={qId} style={styles.qCard}>
+          <Text style={styles.qLabel}>{label}{required ? ' *' : ''}</Text>
+          <View style={styles.optionWrap}>
+            {[1, 2, 3, 4, 5].map((n) => (
+              <Pressable
+                key={`${qId}-star-${n}`}
+                style={[styles.optionChip, ratingVal === n ? styles.optionChipActive : null]}
+                onPress={() => setAnswers((prev) => ({ ...prev, [qId]: n }))}
+              >
+                <Text style={[styles.optionText, ratingVal === n ? styles.optionTextActive : null]}>
+                  {'★'.repeat(n)}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+      );
+    }
+
+    const keyboardType =
+      qType === 'number' || qType === 'numeric' || qType === 'rating'
+        ? 'number-pad'
+        : qType === 'email'
+          ? 'email-address'
+          : qType === 'url'
+            ? 'url'
+            : 'default';
+
     return (
       <View key={qId} style={styles.qCard}>
         <Text style={styles.qLabel}>{label}{required ? ' *' : ''}</Text>
@@ -243,7 +281,7 @@ export function HelperAssessmentScreen({ route, navigation }: Props) {
           onChangeText={(text) =>
             setAnswers((prev) => ({ ...prev, [qId]: qType === 'number' || qType === 'numeric' ? Number(text || 0) : text }))
           }
-          keyboardType={qType === 'number' || qType === 'numeric' ? 'number-pad' : 'default'}
+          keyboardType={keyboardType as any}
           multiline={qType === 'text' || qType === 'long_text'}
         />
       </View>
@@ -338,6 +376,14 @@ const styles = StyleSheet.create({
   meta: { color: theme.colors.muted, fontSize: 12, lineHeight: 18 },
   actions: { flexDirection: 'row', gap: 8 },
   actionBtn: { flex: 1 },
+  sectionCard: {
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: 12,
+    padding: 10,
+    backgroundColor: theme.colors.surfaceRaised,
+  },
+  sectionTitle: { color: theme.colors.text, fontWeight: '900', fontSize: 13 },
   qCard: {
     borderWidth: 1,
     borderColor: theme.colors.border,

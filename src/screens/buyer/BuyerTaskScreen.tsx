@@ -13,7 +13,6 @@ import { useSocket } from '../../realtime/SocketProvider';
 import { Screen } from '../../ui/Screen';
 import { PrimaryButton } from '../../ui/PrimaryButton';
 import { Notice } from '../../ui/Notice';
-import { MenuButton } from '../../ui/MenuButton';
 import { TextField } from '../../ui/TextField';
 import { TaskSkeleton } from '../../ui/TaskSkeleton';
 import { MemoizedMapView } from '../../ui/MemoizedMapView';
@@ -367,7 +366,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
     return (
       <Screen style={styles.screen}>
         <View style={styles.topBar}>
-          <MenuButton onPress={() => navigation.navigate('Menu')} />
+          <Text onPress={onBackHome} style={styles.link}>{t('common.back')}</Text>
           <Text style={styles.h1}>{t('task.title')}</Text>
           <View style={styles.topActions} />
         </View>
@@ -380,12 +379,11 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
     <Screen style={styles.screen}>
       <View style={styles.contentWrap}>
         <View style={styles.topBar}>
-          <MenuButton onPress={() => navigation.navigate('Menu')} />
+          <Text onPress={onBackHome} style={styles.link}>{t('common.back')}</Text>
           <Text style={styles.h1}>{t('task.title')}</Text>
           <View style={styles.topActions}>
             <Text onPress={() => navigation.navigate('SupportTickets')} style={styles.link}>{t('buyer.support')}</Text>
             <Text onPress={load} style={styles.link}>{t('common.refresh')}</Text>
-            <Text onPress={onBackHome} style={styles.link}>{t('common.back')}</Text>
           </View>
         </View>
         <KeyboardAvoidingView
