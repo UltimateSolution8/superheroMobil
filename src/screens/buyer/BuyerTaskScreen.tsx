@@ -6,7 +6,8 @@ import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
 
 import type { Task, TaskAssignedEvent, TaskStatusChangedEvent, TaskStatus } from '../../api/types';
 import * as api from '../../api/client';
-import { distanceMeters, decodePolyline } from '../../utils/geo';
+import { distanceMeters } from '../../utils/geo';
+import { fetchBestRoute } from '../../utils/routing';
 import { useAuth } from '../../auth/AuthContext';
 import { useSocket } from '../../realtime/SocketProvider';
 import { Screen } from '../../ui/Screen';
@@ -83,6 +84,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
   const hasTaskCoords = Number.isFinite(taskLat) && Number.isFinite(taskLng);
   const status = task?.status ?? 'SEARCHING';
   const helperId = task?.assignedHelperId ?? null;
+  const canDownloadInvoice = status === 'COMPLETED';
   const canCancel = status === 'SEARCHING' || status === 'ASSIGNED';
   const mapMarkers = useMemo(() => {
     const list: { key: string; coordinate: { latitude: number; longitude: number }; title?: string; ref?: any }[] = [];
@@ -206,7 +208,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
 
   useEffect(() => {
     if (status !== 'ASSIGNED') return;
-    if (!task || !helperLoc || !GOOGLE_MAPS_API_KEY || !hasTaskCoords) return;
+    if (!task || !helperLoc || !hasTaskCoords) return;
     const now = Date.now();
     if (now - lastRouteFetch.current < 30_000) return;
     if (lastRouteOrigin.current) {
@@ -230,27 +232,21 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
 
     const fetchRoute = async () => {
       try {
-        const url =
-          'https://maps.googleapis.com/maps/api/directions/json' +
-          `?origin=${helperLoc.lat},${helperLoc.lng}` +
-          `&destination=${taskLat},${taskLng}` +
-          `&key=${encodeURIComponent(GOOGLE_MAPS_API_KEY)}`;
-        const res = await fetch(url);
-        const json = await res.json();
-        const route = json?.routes?.[0];
-        const poly = route?.overview_polyline?.points;
-        const legs = route?.legs?.[0];
-        if (poly) {
-          const coords = decodePolyline(poly);
-          setRouteCoords(coords);
-          routeCache.current.set(key, { coords, etaMin: routeEtaMin, at: Date.now() });
+        const result = await fetchBestRoute(
+          { lat: helperLoc.lat, lng: helperLoc.lng },
+          { lat: taskLat, lng: taskLng },
+          GOOGLE_MAPS_API_KEY,
+        );
+        if (!result) return;
+        if (result.coords.length > 0) {
+          setRouteCoords(result.coords);
+          routeCache.current.set(key, { coords: result.coords, etaMin: result.etaMin, at: Date.now() });
         }
-        if (legs?.duration?.value) {
-          const eta = Math.max(1, Math.round(legs.duration.value / 60));
-          setRouteEtaMin(eta);
+        if (result.etaMin != null) {
+          setRouteEtaMin(result.etaMin);
           const existing = routeCache.current.get(key);
           if (existing) {
-            routeCache.current.set(key, { ...existing, etaMin: eta, at: Date.now() });
+            routeCache.current.set(key, { ...existing, etaMin: result.etaMin, at: Date.now() });
           }
         }
       } catch {
@@ -476,6 +472,13 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
               {helperId ? (
                 <Text style={styles.muted}>{t('buyer.task.hero_label')}: {task?.helperName ?? task?.helperPhone ?? t('buyer.task.assigned')}</Text>
               ) : null}
+              {helperId ? (
+                <PrimaryButton
+                  label={t('id_card.view_helper')}
+                  onPress={() => navigation.navigate('BuyerHelperIdCard', { taskId })}
+                  variant="ghost"
+                />
+              ) : null}
               {task?.addressText ? <Text style={styles.muted}>{t('buyer.address_optional')}: {task.addressText}</Text> : null}
               {task?.description ? <Text style={styles.desc}>{task.description}</Text> : null}
               {scheduledAtLabel ? <Text style={styles.muted}>{t('task.scheduled_for')}: {scheduledAtLabel}</Text> : null}
@@ -489,7 +492,7 @@ export function BuyerTaskScreen({ route, navigation }: Props) {
               ) : null}
 
               <PrimaryButton label={t('task.refresh')} onPress={load} loading={busy} variant="ghost" />
-              {task ? (
+              {task && canDownloadInvoice ? (
                 <PrimaryButton
                   label={t('task.download_invoice')}
                   onPress={() => downloadTaskInvoice(task, 'buyer')}

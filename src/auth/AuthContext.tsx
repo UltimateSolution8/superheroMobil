@@ -240,13 +240,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const sub = AppState.addEventListener('change', (nextState) => {
       if (nextState !== 'active') return;
       if (statusRef.current !== 'signedIn') return;
-      void refreshTokens().catch((e) => {
-        // Camera/gallery transitions briefly background the app.
-        // Logout only on real auth failures, not temporary connectivity issues.
-        if (isAuthFailure(e)) {
-          void signOut('auth.session_expired');
-        }
-      });
+      void refreshTokens()
+        .then((auth) => {
+          if (auth.user?.role === 'ADMIN') return;
+          return registerForPushNotifications(auth.accessToken, auth.user?.id ?? null);
+        })
+        .catch((e) => {
+          // Camera/gallery transitions briefly background the app.
+          // Logout only on real auth failures, not temporary connectivity issues.
+          if (isAuthFailure(e)) {
+            void signOut('auth.session_expired');
+          }
+        });
     });
     return () => sub.remove();
   }, [refreshTokens, signOut]);

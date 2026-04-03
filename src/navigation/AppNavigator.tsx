@@ -18,8 +18,13 @@ import { OnboardingScreen } from '../screens/OnboardingScreen';
 import { RoleSelectionScreen } from '../screens/RoleSelectionScreen';
 import { BuyerHomeScreen } from '../screens/buyer/BuyerHomeScreen';
 import { BuyerBulkTasksScreen } from '../screens/buyer/BuyerBulkTasksScreen';
+import { BuyerBulkRequestScreen } from '../screens/buyer/BuyerBulkRequestScreen';
+import { BuyerHelperIdCardScreen } from '../screens/buyer/BuyerHelperIdCardScreen';
 import { BuyerTaskScreen } from '../screens/buyer/BuyerTaskScreen';
 import { HelperHomeScreen } from '../screens/helper/HelperHomeScreen';
+import { HelperIdCardScreen } from '../screens/helper/HelperIdCardScreen';
+import { HelperLearnScreen } from '../screens/helper/HelperLearnScreen';
+import { HelperAssessmentScreen } from '../screens/helper/HelperAssessmentScreen';
 import { HelperKycScreen } from '../screens/helper/HelperKycScreen';
 import { HelperVideoKycScreen } from '../screens/helper/HelperVideoKycScreen';
 import { HelperLiveKycCallScreen } from '../screens/helper/HelperLiveKycCallScreen';
@@ -88,6 +93,8 @@ export function AppNavigator() {
                 >
                   <BuyerStack.Screen name="BuyerHome" component={BuyerHomeScreen} />
                   <BuyerStack.Screen name="BuyerBulkTasks" component={BuyerBulkTasksScreen} />
+                  <BuyerStack.Screen name="BuyerBulkRequest" component={BuyerBulkRequestScreen} />
+                  <BuyerStack.Screen name="BuyerHelperIdCard" component={BuyerHelperIdCardScreen} />
                   <BuyerStack.Screen name="BuyerTask" component={BuyerTaskScreen} />
                   <BuyerStack.Screen name="Menu" component={MenuScreen} />
                   <BuyerStack.Screen name="Profile" component={ProfileScreen} />
@@ -106,6 +113,9 @@ export function AppNavigator() {
                   screenOptions={{ headerShown: false, animation: 'slide_from_right', contentStyle: { backgroundColor: theme.colors.bg } }}
                 >
                   <HelperStack.Screen name="HelperHome" component={HelperHomeScreen} />
+                  <HelperStack.Screen name="HelperIdCard" component={HelperIdCardScreen} />
+                  <HelperStack.Screen name="HelperLearn" component={HelperLearnScreen} />
+                  <HelperStack.Screen name="HelperAssessment" component={HelperAssessmentScreen} />
                   <HelperStack.Screen name="HelperKyc" component={HelperKycScreen} />
                   <HelperStack.Screen name="HelperVideoKyc" component={HelperVideoKycScreen} />
                   <HelperStack.Screen name="HelperLiveKycCall" component={HelperLiveKycCallScreen} />

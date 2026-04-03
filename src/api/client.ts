@@ -4,9 +4,18 @@ import type {
   AuthResponse,
   CreateTaskRequest,
   CreateTaskResponse,
+  CreateBulkTaskResponse,
   BatchCreateItem,
+  BatchSummary,
+  BatchItem,
   BatchCreateResponse,
   BatchPreviewResponse,
+  HelperIdCard,
+  TrainingMaterial,
+  HelperTrainingProgress,
+  LearningAssessment,
+  HelperAssessmentStart,
+  HelperAssessmentAttempt,
   HelperProfile,
   LiveKycSession,
   VideoKycStartResponse,
@@ -251,6 +260,17 @@ export async function createTask(accessToken: string, req: CreateTaskRequest): P
   });
 }
 
+export async function createBulkTask(
+  accessToken: string,
+  req: CreateTaskRequest & { helperCount: number },
+): Promise<CreateBulkTaskResponse> {
+  return fetchJson(url('/api/v1/tasks/bulk'), {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+    body: JSON.stringify(req),
+  });
+}
+
 export async function previewBatch(
   accessToken: string,
   items: BatchCreateItem[],
@@ -275,6 +295,99 @@ export async function createBatch(
     method: 'POST',
     headers: authHeaders(accessToken),
     body: JSON.stringify(payload),
+  });
+}
+
+export async function getBatchSummary(accessToken: string, batchId: string): Promise<BatchSummary> {
+  return fetchJson(url(`/api/v1/batches/${batchId}`), {
+    method: 'GET',
+    headers: authHeaders(accessToken),
+  });
+}
+
+export async function getBatchItems(accessToken: string, batchId: string): Promise<BatchItem[]> {
+  return fetchJson(url(`/api/v1/batches/${batchId}/items`), {
+    method: 'GET',
+    headers: authHeaders(accessToken),
+  });
+}
+
+export async function helperIdCard(accessToken: string): Promise<HelperIdCard> {
+  return fetchJson(url('/api/v1/helper/id-card'), {
+    method: 'GET',
+    headers: authHeaders(accessToken),
+  });
+}
+
+export async function helperLearnMaterials(accessToken: string): Promise<TrainingMaterial[]> {
+  return fetchJson(url('/api/v1/helper/learn/materials'), {
+    method: 'GET',
+    headers: authHeaders(accessToken),
+  });
+}
+
+export async function helperLearnProgress(accessToken: string): Promise<HelperTrainingProgress[]> {
+  return fetchJson(url('/api/v1/helper/learn/progress'), {
+    method: 'GET',
+    headers: authHeaders(accessToken),
+  });
+}
+
+export async function helperUpdateLearnProgress(
+  accessToken: string,
+  materialId: string,
+  payload: { progressPercent?: number | null; viewedSeconds?: number | null; completed?: boolean | null },
+): Promise<HelperTrainingProgress> {
+  return fetchJson(url(`/api/v1/helper/learn/materials/${materialId}/progress`), {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function helperLearnAssessments(accessToken: string): Promise<LearningAssessment[]> {
+  return fetchJson(url('/api/v1/helper/learn/assessments'), {
+    method: 'GET',
+    headers: authHeaders(accessToken),
+  });
+}
+
+export async function helperStartAssessment(
+  accessToken: string,
+  assessmentId: string,
+): Promise<HelperAssessmentStart> {
+  return fetchJson(url(`/api/v1/helper/learn/assessments/${assessmentId}/start`), {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+  });
+}
+
+export async function helperSubmitAssessment(
+  accessToken: string,
+  assessmentId: string,
+  payload: { attemptId: string; answers: Record<string, any> },
+): Promise<HelperAssessmentAttempt> {
+  return fetchJson(url(`/api/v1/helper/learn/assessments/${assessmentId}/submit`), {
+    method: 'POST',
+    headers: authHeaders(accessToken),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function helperAssessmentAttempts(
+  accessToken: string,
+  assessmentId: string,
+): Promise<HelperAssessmentAttempt[]> {
+  return fetchJson(url(`/api/v1/helper/learn/assessments/${assessmentId}/attempts`), {
+    method: 'GET',
+    headers: authHeaders(accessToken),
+  });
+}
+
+export async function taskHelperIdCard(accessToken: string, taskId: string): Promise<HelperIdCard> {
+  return fetchJson(url(`/api/v1/tasks/${taskId}/helper-id-card`), {
+    method: 'GET',
+    headers: authHeaders(accessToken),
   });
 }
 
