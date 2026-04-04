@@ -30,7 +30,7 @@ export function LoginScreen({ navigation, route }: Props) {
   const [error, setError] = useState<string | null>(null);
   const insets = useSafeAreaInsets();
 
-  const canSend = useMemo(() => normalizePhone(phone).length === 10, [phone]);
+  const canSend = useMemo(() => /^[6-9]\d{9}$/.test(normalizePhone(phone)), [phone]);
 
   React.useEffect(() => {
     if (LOCKED_ROLE) {
@@ -83,10 +83,6 @@ export function LoginScreen({ navigation, route }: Props) {
     [busy, canSend, navigation, phone, role, startOtp, t],
   );
 
-  const onSignup = useCallback(() => {
-    const targetRole = LOCKED_ROLE ?? role;
-    navigation.navigate(targetRole === 'BUYER' ? 'BuyerSignup' : 'HelperSignup');
-  }, [navigation, role]);
   const authNoticeText = authNotice ? t(authNotice) : null;
 
   return (
@@ -148,8 +144,7 @@ export function LoginScreen({ navigation, route }: Props) {
                 {t('login.otp_call')}
               </Text>
             </View>
-            <PrimaryButton label={t('login.sign_up')} onPress={onSignup} variant="ghost" />
-            <PrimaryButton label={t('login.sign_in')} onPress={() => navigation.navigate('EmailLogin')} variant="ghost" />
+            <Text style={styles.helperText}>{t('login.otp_autocreate')}</Text>
             <Text onPress={() => navigation.navigate('Diagnostics')} style={styles.alt}>
               {t('login.diagnostics')}
             </Text>
@@ -173,6 +168,7 @@ const styles = StyleSheet.create({
   footer: { gap: 12, marginTop: 8 },
   otpOptions: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 6 },
   otpLink: { color: theme.colors.primary, fontWeight: '700', fontSize: 12 },
+  helperText: { color: theme.colors.muted, fontSize: 12.5, lineHeight: 18, textAlign: 'center' },
   alt: { color: theme.colors.primary, fontWeight: '800', textAlign: 'center', paddingVertical: 4 },
   legal: { color: theme.colors.muted, fontSize: 12, lineHeight: 18 },
 });

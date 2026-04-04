@@ -15,12 +15,10 @@ import { useSocket } from '../../realtime/SocketProvider';
 import { Screen } from '../../ui/Screen';
 import { PrimaryButton } from '../../ui/PrimaryButton';
 import { Notice } from '../../ui/Notice';
-import { MenuButton } from '../../ui/MenuButton';
 import { theme } from '../../ui/theme';
 import { DEMO_FALLBACK_LOCATION } from '../../config';
 import type { HelperStackParamList } from '../../navigation/types';
 import { useI18n } from '../../i18n/I18nProvider';
-import { APP_DISPLAY_NAME } from '../../config';
 import { useHelperPresence } from '../../state/HelperPresenceContext';
 import { useActiveTask } from '../../state/ActiveTaskContext';
 
@@ -532,9 +530,11 @@ export function HelperHomeScreen({ navigation }: Props) {
   return (
     <Screen style={styles.screen}>
       <View style={styles.topBar}>
-        <MenuButton onPress={() => navigation.navigate('Menu')} />
-        <Text style={styles.h1}>{APP_DISPLAY_NAME}</Text>
-        <View style={styles.topLinks} />
+        <Text style={styles.h1}>{t('tabs.tasks')}</Text>
+        <View style={styles.topLinks}>
+          <Text onPress={() => navigation.navigate('SupportTickets')} style={styles.link}>{t('buyer.support')}</Text>
+          <Text onPress={() => navigation.navigate('Profile')} style={styles.link}>{t('menu.profile')}</Text>
+        </View>
       </View>
 
       {!online ? <Notice kind="warning" text={t('buyer.offline')} /> : null}

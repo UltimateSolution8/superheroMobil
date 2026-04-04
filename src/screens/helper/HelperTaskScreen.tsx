@@ -17,7 +17,6 @@ import { Screen } from '../../ui/Screen';
 import { PrimaryButton } from '../../ui/PrimaryButton';
 import { Notice } from '../../ui/Notice';
 import { TextField } from '../../ui/TextField';
-import { MenuButton } from '../../ui/MenuButton';
 import { TaskSkeleton } from '../../ui/TaskSkeleton';
 import { MemoizedMapView } from '../../ui/MemoizedMapView';
 import { theme } from '../../ui/theme';
@@ -801,7 +800,6 @@ export function HelperTaskScreen({ route, navigation }: Props) {
     return (
       <Screen>
         <TaskHeader
-          onMenu={() => navigation.navigate('Menu')}
           onRefresh={load}
           onBack={backHome}
           onSupport={() => navigation.navigate('SupportTickets')}
@@ -819,7 +817,6 @@ export function HelperTaskScreen({ route, navigation }: Props) {
   return (
     <Screen style={styles.screenPaddingFix}>
       <TaskHeader
-        onMenu={() => navigation.navigate('Menu')}
         onRefresh={load}
         onBack={backHome}
         onSupport={() => navigation.navigate('SupportTickets')}
@@ -955,16 +952,15 @@ export function HelperTaskScreen({ route, navigation }: Props) {
 
 // Sub-components
 
-const TaskHeader = memo(({ onMenu, onRefresh, onBack, onSupport }: any) => {
+const TaskHeader = memo(({ onRefresh, onBack, onSupport }: any) => {
   const { t } = useI18n();
   return (
     <View style={styles.topBar}>
-      <MenuButton onPress={onMenu} />
+      <Text onPress={onBack} style={styles.link}>{t('common.back')}</Text>
       <Text style={styles.h1}>{t('helper.task.title')}</Text>
       <View style={styles.topActions}>
         <Text onPress={onSupport} style={styles.link}>{t('buyer.support')}</Text>
         <Text onPress={onRefresh} style={styles.link}>{t('common.refresh')}</Text>
-        <Text onPress={onBack} style={styles.link}>{t('common.back')}</Text>
       </View>
     </View>
   );

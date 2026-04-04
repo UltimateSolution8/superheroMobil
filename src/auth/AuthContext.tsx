@@ -119,18 +119,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setState({ status: 'signedOut', accessToken: null, refreshToken: null, user: null });
         return;
       }
+      // Keep users signed in across app restarts like a production ride app.
+      // Refresh in background and only sign out on real auth failures.
+      accessRef.current = auth.accessToken;
+      refreshRef.current = auth.refreshToken;
+      setState({ status: 'signedIn', ...auth });
       try {
-        // Always bootstrap with a fresh access token so idle-resume and PIN unlock stay stable.
-        refreshRef.current = auth.refreshToken;
         const refreshed = await api.refresh(auth.refreshToken);
         if (cancelled) return;
         await applyAuth(refreshed);
-      } catch {
+      } catch (e) {
         if (cancelled) return;
-        await clearAuth();
-        accessRef.current = null;
-        refreshRef.current = null;
-        setState({ status: 'signedOut', accessToken: null, refreshToken: null, user: null });
+        if (isAuthFailure(e)) {
+          await clearAuth();
+          accessRef.current = null;
+          refreshRef.current = null;
+          setState({ status: 'signedOut', accessToken: null, refreshToken: null, user: null });
+        }
       }
     })();
     return () => {

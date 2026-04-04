@@ -2,6 +2,8 @@ import React from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import { useAuth } from '../auth/AuthContext';
 import { useUploadQueueProcessor } from '../hooks/useUploadQueueProcessor';
@@ -16,11 +18,13 @@ import { OtpScreen } from '../screens/OtpScreen';
 import { SplashScreen } from '../screens/SplashScreen';
 import { OnboardingScreen } from '../screens/OnboardingScreen';
 import { RoleSelectionScreen } from '../screens/RoleSelectionScreen';
+import { BuyerLandingScreen } from '../screens/buyer/BuyerLandingScreen';
 import { BuyerHomeScreen } from '../screens/buyer/BuyerHomeScreen';
 import { BuyerBulkTasksScreen } from '../screens/buyer/BuyerBulkTasksScreen';
 import { BuyerBulkRequestScreen } from '../screens/buyer/BuyerBulkRequestScreen';
 import { BuyerHelperIdCardScreen } from '../screens/buyer/BuyerHelperIdCardScreen';
 import { BuyerTaskScreen } from '../screens/buyer/BuyerTaskScreen';
+import { HelperLandingScreen } from '../screens/helper/HelperLandingScreen';
 import { HelperHomeScreen } from '../screens/helper/HelperHomeScreen';
 import { HelperIdCardScreen } from '../screens/helper/HelperIdCardScreen';
 import { HelperLearnScreen } from '../screens/helper/HelperLearnScreen';
@@ -41,7 +45,7 @@ import { DiagnosticsScreen } from '../screens/common/DiagnosticsScreen';
 import { PinLockScreen } from '../screens/common/PinLockScreen';
 import { SosScreen } from '../screens/common/SosScreen';
 import { TermsScreen } from '../screens/common/TermsScreen';
-import type { AuthStackParamList, BuyerStackParamList, HelperStackParamList } from './types';
+import type { AuthStackParamList, BuyerStackParamList, BuyerTabParamList, HelperStackParamList, HelperTabParamList } from './types';
 import { theme } from '../ui/theme';
 import { useI18n } from '../i18n/I18nProvider';
 import { LOCKED_ROLE } from '../config';
@@ -49,6 +53,120 @@ import { LOCKED_ROLE } from '../config';
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const BuyerStack = createNativeStackNavigator<BuyerStackParamList>();
 const HelperStack = createNativeStackNavigator<HelperStackParamList>();
+const BuyerTab = createBottomTabNavigator<BuyerTabParamList>();
+const HelperTab = createBottomTabNavigator<HelperTabParamList>();
+
+function BuyerTabsNavigator() {
+  const { t } = useI18n();
+  return (
+    <BuyerTab.Navigator
+      initialRouteName="BuyerLanding"
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: theme.colors.primary,
+        tabBarInactiveTintColor: theme.colors.muted,
+        tabBarStyle: {
+          backgroundColor: theme.colors.card,
+          borderTopColor: theme.colors.border,
+          borderTopWidth: 1,
+          height: 66,
+          paddingBottom: 8,
+          paddingTop: 8,
+        },
+        tabBarLabelStyle: { fontSize: 11, fontWeight: '700' },
+      }}
+    >
+      <BuyerTab.Screen
+        name="BuyerLanding"
+        component={BuyerLandingScreen as any}
+        options={{
+          tabBarLabel: t('tabs.home'),
+          tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="home-variant-outline" size={size} color={color} />,
+        }}
+      />
+      <BuyerTab.Screen
+        name="BuyerCreate"
+        component={BuyerHomeScreen as any}
+        options={{
+          tabBarLabel: t('tabs.create_task'),
+          tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="plus-circle-outline" size={size} color={color} />,
+        }}
+      />
+      <BuyerTab.Screen
+        name="BuyerBulk"
+        component={BuyerBulkTasksScreen as any}
+        options={{
+          tabBarLabel: t('tabs.bulk'),
+          tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="file-delimited-outline" size={size} color={color} />,
+        }}
+      />
+      <BuyerTab.Screen
+        name="BuyerProfile"
+        component={ProfileScreen as any}
+        options={{
+          tabBarLabel: t('tabs.profile'),
+          tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="account-circle-outline" size={size} color={color} />,
+        }}
+      />
+    </BuyerTab.Navigator>
+  );
+}
+
+function HelperTabsNavigator() {
+  const { t } = useI18n();
+  return (
+    <HelperTab.Navigator
+      initialRouteName="HelperLanding"
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: theme.colors.primary,
+        tabBarInactiveTintColor: theme.colors.muted,
+        tabBarStyle: {
+          backgroundColor: theme.colors.card,
+          borderTopColor: theme.colors.border,
+          borderTopWidth: 1,
+          height: 66,
+          paddingBottom: 8,
+          paddingTop: 8,
+        },
+        tabBarLabelStyle: { fontSize: 11, fontWeight: '700' },
+      }}
+    >
+      <HelperTab.Screen
+        name="HelperLanding"
+        component={HelperLandingScreen as any}
+        options={{
+          tabBarLabel: t('tabs.home'),
+          tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="home-variant-outline" size={size} color={color} />,
+        }}
+      />
+      <HelperTab.Screen
+        name="HelperTasks"
+        component={HelperHomeScreen as any}
+        options={{
+          tabBarLabel: t('tabs.tasks'),
+          tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="briefcase-outline" size={size} color={color} />,
+        }}
+      />
+      <HelperTab.Screen
+        name="HelperLearnTab"
+        component={HelperLearnScreen as any}
+        options={{
+          tabBarLabel: t('tabs.learn'),
+          tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="school-outline" size={size} color={color} />,
+        }}
+      />
+      <HelperTab.Screen
+        name="HelperProfile"
+        component={ProfileScreen as any}
+        options={{
+          tabBarLabel: t('tabs.profile'),
+          tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="account-circle-outline" size={size} color={color} />,
+        }}
+      />
+    </HelperTab.Navigator>
+  );
+}
 
 export function AppNavigator() {
   const { status, user, pinRequired, pinVerified, authNotice } = useAuth();
@@ -91,6 +209,7 @@ export function AppNavigator() {
                 <BuyerStack.Navigator
                   screenOptions={{ headerShown: false, animation: 'slide_from_right', contentStyle: { backgroundColor: theme.colors.bg } }}
                 >
+                  <BuyerStack.Screen name="BuyerTabs" component={BuyerTabsNavigator} />
                   <BuyerStack.Screen name="BuyerHome" component={BuyerHomeScreen} />
                   <BuyerStack.Screen name="BuyerBulkTasks" component={BuyerBulkTasksScreen} />
                   <BuyerStack.Screen name="BuyerBulkRequest" component={BuyerBulkRequestScreen} />
@@ -112,6 +231,7 @@ export function AppNavigator() {
                 <HelperStack.Navigator
                   screenOptions={{ headerShown: false, animation: 'slide_from_right', contentStyle: { backgroundColor: theme.colors.bg } }}
                 >
+                  <HelperStack.Screen name="HelperTabs" component={HelperTabsNavigator} />
                   <HelperStack.Screen name="HelperHome" component={HelperHomeScreen} />
                   <HelperStack.Screen name="HelperIdCard" component={HelperIdCardScreen} />
                   <HelperStack.Screen name="HelperLearn" component={HelperLearnScreen} />
