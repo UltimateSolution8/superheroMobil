@@ -28,6 +28,7 @@ export function BuyerLandingScreen() {
   const nav = useNavigation<any>();
   const { user } = useAuth();
   const { t } = useI18n();
+  const showBulk = Boolean(user?.bulkCsvEnabled);
   const [availability, setAvailability] = useState<Availability>('checking');
 
   useEffect(() => {
@@ -80,10 +81,7 @@ export function BuyerLandingScreen() {
               <Text style={styles.cityChipLiveText}>Hyderabad • {t('home.live_now')}</Text>
             </View>
             <View style={styles.cityChip}>
-              <Text style={styles.cityChipText}>Bengaluru • {t('home.coming_soon')}</Text>
-            </View>
-            <View style={styles.cityChip}>
-              <Text style={styles.cityChipText}>Pune • {t('home.coming_soon')}</Text>
+              <Text style={styles.cityChipText}>{t('home.launching_soon_line')}</Text>
             </View>
           </View>
         </View>
@@ -94,11 +92,13 @@ export function BuyerLandingScreen() {
             <Text style={styles.quickTitle}>{t('tabs.create_task')}</Text>
             <Text style={styles.quickSub}>{t('home.quick_create')}</Text>
           </Pressable>
-          <Pressable style={styles.quickCard} onPress={() => nav.navigate('BuyerBulkTasks')}>
-            <MaterialCommunityIcons name="file-delimited-outline" size={24} color={theme.colors.primary} />
-            <Text style={styles.quickTitle}>{t('tabs.bulk')}</Text>
-            <Text style={styles.quickSub}>{t('home.quick_bulk')}</Text>
-          </Pressable>
+          {showBulk ? (
+            <Pressable style={styles.quickCard} onPress={() => nav.navigate('BuyerBulkTasks')}>
+              <MaterialCommunityIcons name="file-delimited-outline" size={24} color={theme.colors.primary} />
+              <Text style={styles.quickTitle}>{t('tabs.bulk')}</Text>
+              <Text style={styles.quickSub}>{t('home.quick_bulk')}</Text>
+            </Pressable>
+          ) : null}
           <Pressable style={styles.quickCard} onPress={() => nav.navigate('History')}>
             <MaterialCommunityIcons name="history" size={24} color={theme.colors.primary} />
             <Text style={styles.quickTitle}>{t('tabs.tasks')}</Text>

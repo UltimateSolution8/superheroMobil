@@ -5,6 +5,7 @@ export type AuthUser = {
   role: UserRole;
   phone: string;
   displayName?: string | null;
+  bulkCsvEnabled?: boolean;
 };
 
 export type MeProfile = {
@@ -14,6 +15,7 @@ export type MeProfile = {
   email?: string | null;
   displayName?: string | null;
   demoBalancePaise?: number | null;
+  bulkCsvEnabled?: boolean;
 };
 
 export type AuthResponse = {

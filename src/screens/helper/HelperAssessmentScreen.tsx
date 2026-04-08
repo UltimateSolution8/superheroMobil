@@ -304,6 +304,10 @@ export function HelperAssessmentScreen({ route, navigation }: Props) {
       ) : null}
 
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        <View style={styles.infoCard}>
+          <Text style={styles.infoText}>{t('learn.assessment_intro')}</Text>
+        </View>
+
         {assessment?.instructions ? (
           <View style={styles.card}>
             <Text style={styles.meta}>{assessment.instructions}</Text>
@@ -417,4 +421,12 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surfaceSoft,
   },
   attemptTitle: { color: theme.colors.text, fontWeight: '800', fontSize: 13 },
+  infoCard: {
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radius.md,
+    padding: theme.space.md,
+    backgroundColor: theme.colors.surfaceRaised,
+  },
+  infoText: { color: theme.colors.muted, fontSize: 12.5, lineHeight: 18 },
 });

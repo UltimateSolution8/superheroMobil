@@ -27,6 +27,14 @@ import { useActiveTask } from '../../state/ActiveTaskContext';
 
 type Props = NativeStackScreenProps<BuyerStackParamList, 'BuyerHome'>;
 
+type LocationSuggestion = {
+  placeId: string;
+  description: string;
+  source: 'osm' | 'google';
+  lat?: number;
+  lng?: number;
+};
+
 const URGENCY_OPTIONS: { labelKey: string; key: TaskUrgency }[] = [
   { labelKey: 'urgency.low', key: 'LOW' },
   { labelKey: 'urgency.normal', key: 'NORMAL' },
@@ -87,7 +95,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchBusy, setSearchBusy] = useState(false);
   const [autoSearchBusy, setAutoSearchBusy] = useState(false);
-  const [suggestions, setSuggestions] = useState<Array<{ placeId: string; description: string }>>([]);
+  const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
   const [timeMinutes, setTimeMinutes] = useState('30');
   const [budgetRupees, setBudgetRupees] = useState('150');
   const [helperCount, setHelperCount] = useState('1');
@@ -151,7 +159,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
   const voiceActiveRef = useRef(false);
   const voiceResultsRef = useRef<Set<string>>(new Set());
   const lastSpeechTimeRef = useRef<number>(0);
-  const suggestionCache = useRef<Map<string, { at: number; data: Array<{ placeId: string; description: string }> }>>(new Map());
+  const suggestionCache = useRef<Map<string, { at: number; data: LocationSuggestion[] }>>(new Map());
   const detailsCache = useRef<Map<string, { at: number; lat: number; lng: number; address?: string }>>(new Map());
   const geocodeCache = useRef<Map<string, { at: number; lat: number; lng: number; address?: string }>>(new Map());
   const placesSessionToken = useRef<string>('');
@@ -320,11 +328,19 @@ export function BuyerHomeScreen({ navigation }: Props) {
   const searchLocation = useCallback(async () => {
     const query = searchQuery.trim();
     if (!query) return;
-    if (!GOOGLE_MAPS_API_KEY) {
-      setError(t('error.maps_api_key'));
+    const topSuggestion = suggestions[0];
+    if (
+      topSuggestion &&
+      Number.isFinite(topSuggestion.lat) &&
+      Number.isFinite(topSuggestion.lng)
+    ) {
+      setLat(Number(topSuggestion.lat));
+      setLng(Number(topSuggestion.lng));
+      setAddressText(topSuggestion.description);
+      setSuggestions([]);
       return;
     }
-    const effectiveQuery = suggestions.length > 0 ? suggestions[0].description : query;
+    const effectiveQuery = topSuggestion?.description || query;
     const cacheKey = effectiveQuery.toLowerCase();
     const now = Date.now();
     const cached = geocodeCache.current.get(cacheKey);
@@ -340,6 +356,41 @@ export function BuyerHomeScreen({ navigation }: Props) {
     setSearchBusy(true);
     setError(null);
     try {
+      // OSM first: avoids unnecessary Google Geocoding spend.
+      const osmUrl =
+        'https://nominatim.openstreetmap.org/search' +
+        `?format=jsonv2&limit=1&q=${encodeURIComponent(effectiveQuery)}`;
+      try {
+        const osmRes = await fetch(osmUrl, {
+          headers: {
+            Accept: 'application/json',
+          },
+        });
+        const osmJson = await osmRes.json();
+        const first = Array.isArray(osmJson) ? osmJson[0] : null;
+        const osmLat = first?.lat != null ? Number(first.lat) : NaN;
+        const osmLng = first?.lon != null ? Number(first.lon) : NaN;
+        if (Number.isFinite(osmLat) && Number.isFinite(osmLng)) {
+          const addr =
+            typeof first?.display_name === 'string' && first.display_name.trim()
+              ? first.display_name.trim()
+              : effectiveQuery;
+          setLat(osmLat);
+          setLng(osmLng);
+          setAddressText(addr);
+          geocodeCache.current.set(cacheKey, { at: Date.now(), lat: osmLat, lng: osmLng, address: addr });
+          setSuggestions([]);
+          return;
+        }
+      } catch {
+        // fall through to Google fallback
+      }
+
+      if (!GOOGLE_MAPS_API_KEY) {
+        setError(t('error.location_not_found'));
+        return;
+      }
+
       const url =
         'https://maps.googleapis.com/maps/api/geocode/json' +
         `?address=${encodeURIComponent(effectiveQuery)}` +
@@ -371,7 +422,6 @@ export function BuyerHomeScreen({ navigation }: Props) {
 
   const fetchSuggestions = useCallback(
     async (query: string) => {
-      if (!GOOGLE_MAPS_API_KEY) return;
       const key = query.toLowerCase();
       const now = Date.now();
       const cached = suggestionCache.current.get(key);
@@ -379,23 +429,70 @@ export function BuyerHomeScreen({ navigation }: Props) {
         setSuggestions(cached.data);
         return;
       }
-      if (!placesSessionToken.current) {
-        placesSessionToken.current = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-      }
       setAutoSearchBusy(true);
       try {
-        const url =
+        // Free OSM autocomplete first.
+        const osmUrl = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=6&lang=en`;
+        try {
+          const osmRes = await fetch(osmUrl, { headers: { Accept: 'application/json' } });
+          const osmJson = await osmRes.json();
+          const features = Array.isArray(osmJson?.features) ? osmJson.features : [];
+          const osmSuggestions: LocationSuggestion[] = features
+            .map((f: any, idx: number) => {
+              const coords = Array.isArray(f?.geometry?.coordinates) ? f.geometry.coordinates : [];
+              const lng = coords.length >= 2 ? Number(coords[0]) : NaN;
+              const lat = coords.length >= 2 ? Number(coords[1]) : NaN;
+              if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+              const props = f?.properties || {};
+              const labelParts = [
+                props.name,
+                props.street,
+                props.city,
+                props.state,
+                props.country,
+              ]
+                .map((v: unknown) => (typeof v === 'string' ? v.trim() : ''))
+                .filter(Boolean);
+              const description = labelParts.length > 0 ? labelParts.join(', ') : query;
+              return {
+                placeId: `osm-${idx}-${lat.toFixed(5)}-${lng.toFixed(5)}`,
+                description,
+                source: 'osm',
+                lat,
+                lng,
+              } as LocationSuggestion;
+            })
+            .filter(Boolean) as LocationSuggestion[];
+          if (osmSuggestions.length > 0) {
+            setSuggestions(osmSuggestions);
+            suggestionCache.current.set(key, { at: now, data: osmSuggestions });
+            return;
+          }
+        } catch {
+          // continue to Google fallback
+        }
+
+        if (!GOOGLE_MAPS_API_KEY) {
+          setSuggestions([]);
+          return;
+        }
+        if (!placesSessionToken.current) {
+          placesSessionToken.current = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+        }
+
+        const googleUrl =
           'https://maps.googleapis.com/maps/api/place/autocomplete/json' +
           `?input=${encodeURIComponent(query)}` +
           '&types=geocode' +
           `&sessiontoken=${encodeURIComponent(placesSessionToken.current)}` +
           `&key=${encodeURIComponent(GOOGLE_MAPS_API_KEY)}`;
-        const res = await fetch(url);
+        const res = await fetch(googleUrl);
         const json = await res.json();
         const preds = Array.isArray(json?.predictions) ? json.predictions : [];
-        const trimmed = preds.slice(0, 6).map((p: any) => ({
+        const trimmed: LocationSuggestion[] = preds.slice(0, 6).map((p: any) => ({
           placeId: p.place_id,
           description: p.description,
+          source: 'google',
         }));
         setSuggestions(trimmed);
         suggestionCache.current.set(key, { at: now, data: trimmed });
@@ -422,13 +519,38 @@ export function BuyerHomeScreen({ navigation }: Props) {
   }, [fetchSuggestions, searchQuery]);
 
   const selectSuggestion = useCallback(
-    async (placeId: string, description: string) => {
-      if (!GOOGLE_MAPS_API_KEY) return;
+    async (suggestion: LocationSuggestion) => {
       setError(null);
       setSearchBusy(true);
       setSuggestions([]);
-      setSearchQuery(description);
+      setSearchQuery(suggestion.description);
       try {
+        if (
+          suggestion.source === 'osm' &&
+          Number.isFinite(suggestion.lat) &&
+          Number.isFinite(suggestion.lng)
+        ) {
+          const nextLat = Number(suggestion.lat);
+          const nextLng = Number(suggestion.lng);
+          setLat(nextLat);
+          setLng(nextLng);
+          setAddressText(suggestion.description);
+          detailsCache.current.set(suggestion.placeId, {
+            at: Date.now(),
+            lat: nextLat,
+            lng: nextLng,
+            address: suggestion.description,
+          });
+          placesSessionToken.current = '';
+          return;
+        }
+
+        if (!GOOGLE_MAPS_API_KEY) {
+          setError(t('error.maps_api_key'));
+          return;
+        }
+
+        const placeId = suggestion.placeId;
         const cached = detailsCache.current.get(placeId);
         if (cached && Date.now() - cached.at < 10 * 60_000) {
           setLat(cached.lat);
@@ -683,7 +805,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
           {suggestions.length > 0 ? (
             <View style={styles.suggestions}>
               {suggestions.map((s) => (
-                <Pressable key={s.placeId} style={styles.suggestionRow} onPress={() => selectSuggestion(s.placeId, s.description)}>
+                <Pressable key={s.placeId} style={styles.suggestionRow} onPress={() => selectSuggestion(s)}>
                   <Text style={styles.suggestionText}>{s.description}</Text>
                 </Pressable>
               ))}
