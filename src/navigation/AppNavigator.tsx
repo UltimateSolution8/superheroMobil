@@ -61,7 +61,8 @@ function BuyerTabsNavigator() {
   const { user } = useAuth();
   const { t } = useI18n();
   const insets = useSafeAreaInsets();
-  const tabBarBottom = Math.max(insets.bottom, Platform.OS === 'android' ? 14 : 6);
+  // Keep tab actions above Android's 3-button/gesture navigation bar on all handsets.
+  const tabBarBottom = Math.max(insets.bottom, Platform.OS === 'android' ? 22 : 8);
   const showBuyerBulkTab = Boolean(user?.bulkCsvEnabled);
   return (
     <BuyerTab.Navigator
@@ -75,9 +76,9 @@ function BuyerTabsNavigator() {
           backgroundColor: theme.colors.card,
           borderTopColor: theme.colors.border,
           borderTopWidth: 1,
-          height: 56 + tabBarBottom,
+          height: 58 + tabBarBottom,
           paddingBottom: tabBarBottom,
-          paddingTop: 6,
+          paddingTop: 8,
         },
         tabBarLabelStyle: { fontSize: 11, fontWeight: '700' },
       }}
@@ -123,7 +124,8 @@ function BuyerTabsNavigator() {
 function HelperTabsNavigator() {
   const { t } = useI18n();
   const insets = useSafeAreaInsets();
-  const tabBarBottom = Math.max(insets.bottom, Platform.OS === 'android' ? 14 : 6);
+  // Keep tab actions above Android's 3-button/gesture navigation bar on all handsets.
+  const tabBarBottom = Math.max(insets.bottom, Platform.OS === 'android' ? 22 : 8);
   return (
     <HelperTab.Navigator
       initialRouteName="HelperLanding"
@@ -136,9 +138,9 @@ function HelperTabsNavigator() {
           backgroundColor: theme.colors.card,
           borderTopColor: theme.colors.border,
           borderTopWidth: 1,
-          height: 56 + tabBarBottom,
+          height: 58 + tabBarBottom,
           paddingBottom: tabBarBottom,
-          paddingTop: 6,
+          paddingTop: 8,
         },
         tabBarLabelStyle: { fontSize: 11, fontWeight: '700' },
       }}
