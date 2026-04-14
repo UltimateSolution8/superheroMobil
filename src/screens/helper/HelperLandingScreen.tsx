@@ -1,8 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, ImageBackground, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useNavigation } from '@react-navigation/native';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { HelperProfile } from '../../api/types';
 import * as api from '../../api/client';
@@ -31,6 +33,8 @@ export function HelperLandingScreen() {
   const nav = useNavigation<any>();
   const { user, withAuth } = useAuth();
   const { t } = useI18n();
+  const insets = useSafeAreaInsets();
+  const tabBarHeight = useBottomTabBarHeight();
   const [availability, setAvailability] = useState<Availability>('checking');
   const [profile, setProfile] = useState<HelperProfile | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -80,7 +84,10 @@ export function HelperLandingScreen() {
 
   return (
     <Screen style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={[styles.scroll, { paddingBottom: tabBarHeight + Math.max(insets.bottom, theme.space.md) + theme.space.lg }]}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.hero}>
           <View style={styles.heroHead}>
             <Image source={require('../../../assets/superheroo-logo.png')} style={styles.logo} />
@@ -108,6 +115,23 @@ export function HelperLandingScreen() {
         </View>
 
         {error ? <Notice kind="danger" text={error} /> : null}
+
+        <View style={styles.photoRow}>
+          <ImageBackground source={require('../../../assets/landing/partner-team.jpg')} style={styles.photoCard} imageStyle={styles.photoImage}>
+            <View style={styles.photoOverlay}>
+              <Text style={styles.photoKicker}>{t('home.card_partner_kicker')}</Text>
+              <Text style={styles.photoTitle}>{t('home.card_partner_title')}</Text>
+              <Text style={styles.photoSub}>{t('home.card_partner_sub')}</Text>
+            </View>
+          </ImageBackground>
+          <ImageBackground source={require('../../../assets/landing/hyderabad-city.jpg')} style={styles.photoCard} imageStyle={styles.photoImage}>
+            <View style={styles.photoOverlay}>
+              <Text style={styles.photoKicker}>{t('home.card_city_kicker')}</Text>
+              <Text style={styles.photoTitle}>{t('home.card_city_title')}</Text>
+              <Text style={styles.photoSub}>{t('home.card_city_sub')}</Text>
+            </View>
+          </ImageBackground>
+        </View>
 
         <View style={styles.quickGrid}>
           <Pressable style={styles.quickCard} onPress={() => nav.navigate('HelperHome')}>
@@ -182,6 +206,26 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surfaceSoft,
   },
   kycBadgeText: { color: theme.colors.text, fontSize: 12, fontWeight: '700' },
+  photoRow: { gap: theme.space.sm },
+  photoCard: {
+    minHeight: 138,
+    borderRadius: theme.radius.lg,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    ...theme.shadow.card,
+  },
+  photoImage: { borderRadius: theme.radius.lg },
+  photoOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    gap: 4,
+    padding: theme.space.md,
+    backgroundColor: 'rgba(4, 10, 24, 0.44)',
+  },
+  photoKicker: { color: '#E6F1FF', fontSize: 11, fontWeight: '800', letterSpacing: 0.3 },
+  photoTitle: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: -0.2 },
+  photoSub: { color: '#E6EAF2', fontSize: 12, lineHeight: 17 },
   quickGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
