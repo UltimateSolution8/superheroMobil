@@ -8,6 +8,14 @@ export type RouteResult = {
   etaMin: number | null;
 };
 
+const routeCache = new Map<string, { at: number; result: RouteResult }>();
+const ROUTE_CACHE_TTL_MS = 60_000;
+
+function routeCacheKey(origin: LatLng, destination: LatLng): string {
+  const round = (value: number) => value.toFixed(4);
+  return `${round(origin.lat)},${round(origin.lng)}->${round(destination.lat)},${round(destination.lng)}`;
+}
+
 function normalizeEta(seconds: unknown): number | null {
   const n = typeof seconds === 'number' ? seconds : Number(seconds);
   if (!Number.isFinite(n) || n <= 0) return null;
@@ -64,9 +72,17 @@ export async function fetchBestRoute(
   destination: LatLng,
   googleApiKey?: string | null,
 ): Promise<RouteResult | null> {
+  const key = routeCacheKey(origin, destination);
+  const now = Date.now();
+  const cached = routeCache.get(key);
+  if (cached && now - cached.at <= ROUTE_CACHE_TTL_MS) {
+    return cached.result;
+  }
+
   try {
     const osrm = await fetchRouteFromOsrm(origin, destination);
     if (osrm && (osrm.coords.length > 0 || osrm.etaMin != null)) {
+      routeCache.set(key, { at: now, result: osrm });
       return osrm;
     }
   } catch {
@@ -76,6 +92,7 @@ export async function fetchBestRoute(
   try {
     const google = await fetchRouteFromGoogle(origin, destination, googleApiKey);
     if (google && (google.coords.length > 0 || google.etaMin != null)) {
+      routeCache.set(key, { at: now, result: google });
       return google;
     }
   } catch {

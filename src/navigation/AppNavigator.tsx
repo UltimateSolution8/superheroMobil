@@ -1,9 +1,10 @@
 import React from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Platform, StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useAuth } from '../auth/AuthContext';
 import { useUploadQueueProcessor } from '../hooks/useUploadQueueProcessor';
@@ -57,7 +58,12 @@ const BuyerTab = createBottomTabNavigator<BuyerTabParamList>();
 const HelperTab = createBottomTabNavigator<HelperTabParamList>();
 
 function BuyerTabsNavigator() {
+  const { user } = useAuth();
   const { t } = useI18n();
+  const insets = useSafeAreaInsets();
+  // Keep tab actions above Android's 3-button/gesture navigation bar on all handsets.
+  const tabBarBottom = Math.max(insets.bottom, Platform.OS === 'android' ? 22 : 8);
+  const showBuyerBulkTab = Boolean(user?.bulkCsvEnabled);
   return (
     <BuyerTab.Navigator
       initialRouteName="BuyerLanding"
@@ -65,12 +71,13 @@ function BuyerTabsNavigator() {
         headerShown: false,
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: theme.colors.muted,
+        tabBarHideOnKeyboard: true,
         tabBarStyle: {
           backgroundColor: theme.colors.card,
           borderTopColor: theme.colors.border,
           borderTopWidth: 1,
-          height: 66,
-          paddingBottom: 8,
+          height: 58 + tabBarBottom,
+          paddingBottom: tabBarBottom,
           paddingTop: 8,
         },
         tabBarLabelStyle: { fontSize: 11, fontWeight: '700' },
@@ -92,14 +99,16 @@ function BuyerTabsNavigator() {
           tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="plus-circle-outline" size={size} color={color} />,
         }}
       />
-      <BuyerTab.Screen
-        name="BuyerBulk"
-        component={BuyerBulkTasksScreen as any}
-        options={{
-          tabBarLabel: t('tabs.bulk'),
-          tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="file-delimited-outline" size={size} color={color} />,
-        }}
-      />
+      {showBuyerBulkTab ? (
+        <BuyerTab.Screen
+          name="BuyerBulk"
+          component={BuyerBulkTasksScreen as any}
+          options={{
+            tabBarLabel: t('tabs.bulk'),
+            tabBarIcon: ({ color, size }) => <MaterialCommunityIcons name="file-delimited-outline" size={size} color={color} />,
+          }}
+        />
+      ) : null}
       <BuyerTab.Screen
         name="BuyerProfile"
         component={ProfileScreen as any}
@@ -114,6 +123,9 @@ function BuyerTabsNavigator() {
 
 function HelperTabsNavigator() {
   const { t } = useI18n();
+  const insets = useSafeAreaInsets();
+  // Keep tab actions above Android's 3-button/gesture navigation bar on all handsets.
+  const tabBarBottom = Math.max(insets.bottom, Platform.OS === 'android' ? 22 : 8);
   return (
     <HelperTab.Navigator
       initialRouteName="HelperLanding"
@@ -121,12 +133,13 @@ function HelperTabsNavigator() {
         headerShown: false,
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: theme.colors.muted,
+        tabBarHideOnKeyboard: true,
         tabBarStyle: {
           backgroundColor: theme.colors.card,
           borderTopColor: theme.colors.border,
           borderTopWidth: 1,
-          height: 66,
-          paddingBottom: 8,
+          height: 58 + tabBarBottom,
+          paddingBottom: tabBarBottom,
           paddingTop: 8,
         },
         tabBarLabelStyle: { fontSize: 11, fontWeight: '700' },

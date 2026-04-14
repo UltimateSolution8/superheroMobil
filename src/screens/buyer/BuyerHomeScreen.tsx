@@ -27,6 +27,14 @@ import { useActiveTask } from '../../state/ActiveTaskContext';
 
 type Props = NativeStackScreenProps<BuyerStackParamList, 'BuyerHome'>;
 
+type LocationSuggestion = {
+  placeId: string;
+  description: string;
+  source: 'osm' | 'google';
+  lat?: number;
+  lng?: number;
+};
+
 const URGENCY_OPTIONS: { labelKey: string; key: TaskUrgency }[] = [
   { labelKey: 'urgency.low', key: 'LOW' },
   { labelKey: 'urgency.normal', key: 'NORMAL' },
@@ -38,6 +46,23 @@ const SCHEDULE_OPTIONS = [
   { key: 'now', labelKey: 'schedule.now' },
   { key: 'later', labelKey: 'schedule.later' },
 ];
+
+const HYDERABAD = { lat: 17.385, lng: 78.4867 };
+const HYDERABAD_RADIUS_KM = 55;
+
+function haversineKm(aLat: number, aLng: number, bLat: number, bLng: number) {
+  const toRad = (n: number) => (n * Math.PI) / 180;
+  const dLat = toRad(bLat - aLat);
+  const dLng = toRad(bLng - aLng);
+  const s1 = Math.sin(dLat / 2);
+  const s2 = Math.sin(dLng / 2);
+  const aa = s1 * s1 + Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) * s2 * s2;
+  return 6371 * (2 * Math.atan2(Math.sqrt(aa), Math.sqrt(1 - aa)));
+}
+
+function isHyderabadLocation(lat: number, lng: number): boolean {
+  return haversineKm(lat, lng, HYDERABAD.lat, HYDERABAD.lng) <= HYDERABAD_RADIUS_KM;
+}
 
 function toYmd(value: Date): string {
   const y = value.getFullYear();
@@ -87,7 +112,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchBusy, setSearchBusy] = useState(false);
   const [autoSearchBusy, setAutoSearchBusy] = useState(false);
-  const [suggestions, setSuggestions] = useState<Array<{ placeId: string; description: string }>>([]);
+  const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
   const [timeMinutes, setTimeMinutes] = useState('30');
   const [budgetRupees, setBudgetRupees] = useState('150');
   const [helperCount, setHelperCount] = useState('1');
@@ -151,7 +176,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
   const voiceActiveRef = useRef(false);
   const voiceResultsRef = useRef<Set<string>>(new Set());
   const lastSpeechTimeRef = useRef<number>(0);
-  const suggestionCache = useRef<Map<string, { at: number; data: Array<{ placeId: string; description: string }> }>>(new Map());
+  const suggestionCache = useRef<Map<string, { at: number; data: LocationSuggestion[] }>>(new Map());
   const detailsCache = useRef<Map<string, { at: number; lat: number; lng: number; address?: string }>>(new Map());
   const geocodeCache = useRef<Map<string, { at: number; lat: number; lng: number; address?: string }>>(new Map());
   const placesSessionToken = useRef<string>('');
@@ -171,14 +196,31 @@ export function BuyerHomeScreen({ navigation }: Props) {
     }
   }, []);
 
+  const applySelectedLocation = useCallback(
+    (latitude: number, longitude: number, nextAddress?: string) => {
+      if (!isHyderabadLocation(latitude, longitude)) {
+        setError(t('buyer.hyderabad_only'));
+        return false;
+      }
+      setError(null);
+      setLat(latitude);
+      setLng(longitude);
+      if (nextAddress && nextAddress.trim()) {
+        setAddressText(nextAddress.trim());
+      }
+      return true;
+    },
+    [t],
+  );
+
   const onMapPress = useCallback(
     (evt: { nativeEvent: { coordinate: { latitude: number; longitude: number } } }) => {
       const { latitude, longitude } = evt.nativeEvent.coordinate;
-      setLat(latitude);
-      setLng(longitude);
-      resolveAddress(latitude, longitude);
+      if (applySelectedLocation(latitude, longitude)) {
+        resolveAddress(latitude, longitude);
+      }
     },
-    [resolveAddress],
+    [applySelectedLocation, resolveAddress],
   );
 
   const refreshLocation = useCallback(async () => {
@@ -320,45 +362,88 @@ export function BuyerHomeScreen({ navigation }: Props) {
   const searchLocation = useCallback(async () => {
     const query = searchQuery.trim();
     if (!query) return;
-    if (!GOOGLE_MAPS_API_KEY) {
-      setError(t('error.maps_api_key'));
+    const topSuggestion = suggestions[0];
+    if (
+      topSuggestion &&
+      Number.isFinite(topSuggestion.lat) &&
+      Number.isFinite(topSuggestion.lng)
+    ) {
+      const nextLat = Number(topSuggestion.lat);
+      const nextLng = Number(topSuggestion.lng);
+      if (applySelectedLocation(nextLat, nextLng, topSuggestion.description)) {
+        setSuggestions([]);
+      }
       return;
     }
-    const effectiveQuery = suggestions.length > 0 ? suggestions[0].description : query;
+    const effectiveQuery = topSuggestion?.description || query;
     const cacheKey = effectiveQuery.toLowerCase();
     const now = Date.now();
     const cached = geocodeCache.current.get(cacheKey);
     if (cached && now - cached.at < 5 * 60_000) {
-      setLat(cached.lat);
-      setLng(cached.lng);
-      if (cached.address) {
-        setAddressText(cached.address);
+      if (applySelectedLocation(cached.lat, cached.lng, cached.address)) {
+        setSuggestions([]);
       }
-      setSuggestions([]);
       return;
     }
     setSearchBusy(true);
     setError(null);
     try {
+      // OSM first: avoids unnecessary Google Geocoding spend.
+      const osmUrl =
+        'https://nominatim.openstreetmap.org/search' +
+        `?format=jsonv2&limit=1&q=${encodeURIComponent(effectiveQuery)}` +
+        '&viewbox=78.15,17.60,78.75,17.20&bounded=1';
+      try {
+        const osmRes = await fetch(osmUrl, {
+          headers: {
+            Accept: 'application/json',
+          },
+        });
+        const osmJson = await osmRes.json();
+        const first = Array.isArray(osmJson) ? osmJson[0] : null;
+        const osmLat = first?.lat != null ? Number(first.lat) : NaN;
+        const osmLng = first?.lon != null ? Number(first.lon) : NaN;
+        if (Number.isFinite(osmLat) && Number.isFinite(osmLng)) {
+          const addr =
+            typeof first?.display_name === 'string' && first.display_name.trim()
+              ? first.display_name.trim()
+              : effectiveQuery;
+          if (applySelectedLocation(osmLat, osmLng, addr)) {
+            geocodeCache.current.set(cacheKey, { at: Date.now(), lat: osmLat, lng: osmLng, address: addr });
+            setSuggestions([]);
+          }
+          return;
+        }
+      } catch {
+        // fall through to Google fallback
+      }
+
+      if (!GOOGLE_MAPS_API_KEY) {
+        setError(t('error.location_not_found'));
+        return;
+      }
+
       const url =
         'https://maps.googleapis.com/maps/api/geocode/json' +
         `?address=${encodeURIComponent(effectiveQuery)}` +
+        '&components=country:IN' +
+        `&location=${HYDERABAD.lat},${HYDERABAD.lng}&radius=55000` +
         `&key=${encodeURIComponent(GOOGLE_MAPS_API_KEY)}`;
       const res = await fetch(url);
       const json = await res.json();
       const candidate = json?.results?.[0];
       const loc = candidate?.geometry?.location;
       if (loc && typeof loc.lat === 'number' && typeof loc.lng === 'number') {
-        setLat(loc.lat);
-        setLng(loc.lng);
-        if (candidate?.formatted_address) {
-          setAddressText(candidate.formatted_address);
-          geocodeCache.current.set(cacheKey, { at: Date.now(), lat: loc.lat, lng: loc.lng, address: candidate.formatted_address });
-        } else {
-          resolveAddress(loc.lat, loc.lng);
-          geocodeCache.current.set(cacheKey, { at: Date.now(), lat: loc.lat, lng: loc.lng });
+        const formattedAddress = candidate?.formatted_address as string | undefined;
+        if (applySelectedLocation(loc.lat, loc.lng, formattedAddress)) {
+          if (formattedAddress) {
+            geocodeCache.current.set(cacheKey, { at: Date.now(), lat: loc.lat, lng: loc.lng, address: formattedAddress });
+          } else {
+            resolveAddress(loc.lat, loc.lng);
+            geocodeCache.current.set(cacheKey, { at: Date.now(), lat: loc.lat, lng: loc.lng });
+          }
+          setSuggestions([]);
         }
-        setSuggestions([]);
       } else {
         setError(t('error.location_not_found'));
       }
@@ -367,11 +452,10 @@ export function BuyerHomeScreen({ navigation }: Props) {
     } finally {
       setSearchBusy(false);
     }
-  }, [resolveAddress, searchQuery, suggestions, t]);
+  }, [applySelectedLocation, resolveAddress, searchQuery, suggestions, t]);
 
   const fetchSuggestions = useCallback(
     async (query: string) => {
-      if (!GOOGLE_MAPS_API_KEY) return;
       const key = query.toLowerCase();
       const now = Date.now();
       const cached = suggestionCache.current.get(key);
@@ -379,23 +463,73 @@ export function BuyerHomeScreen({ navigation }: Props) {
         setSuggestions(cached.data);
         return;
       }
-      if (!placesSessionToken.current) {
-        placesSessionToken.current = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-      }
       setAutoSearchBusy(true);
       try {
-        const url =
+        // Free OSM autocomplete first.
+        const osmUrl = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=6&lang=en&lat=${HYDERABAD.lat}&lon=${HYDERABAD.lng}`;
+        try {
+          const osmRes = await fetch(osmUrl, { headers: { Accept: 'application/json' } });
+          const osmJson = await osmRes.json();
+          const features = Array.isArray(osmJson?.features) ? osmJson.features : [];
+          const osmSuggestions: LocationSuggestion[] = features
+            .map((f: any, idx: number) => {
+              const coords = Array.isArray(f?.geometry?.coordinates) ? f.geometry.coordinates : [];
+              const lng = coords.length >= 2 ? Number(coords[0]) : NaN;
+              const lat = coords.length >= 2 ? Number(coords[1]) : NaN;
+              if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+              const props = f?.properties || {};
+              const labelParts = [
+                props.name,
+                props.street,
+                props.city,
+                props.state,
+                props.country,
+              ]
+                .map((v: unknown) => (typeof v === 'string' ? v.trim() : ''))
+                .filter(Boolean);
+              const description = labelParts.length > 0 ? labelParts.join(', ') : query;
+              return {
+                placeId: `osm-${idx}-${lat.toFixed(5)}-${lng.toFixed(5)}`,
+                description,
+                source: 'osm',
+                lat,
+                lng,
+              } as LocationSuggestion;
+            })
+            .filter(Boolean) as LocationSuggestion[];
+          if (osmSuggestions.length > 0) {
+            setSuggestions(osmSuggestions);
+            suggestionCache.current.set(key, { at: now, data: osmSuggestions });
+            return;
+          }
+        } catch {
+          // continue to Google fallback
+        }
+
+        if (!GOOGLE_MAPS_API_KEY) {
+          setSuggestions([]);
+          return;
+        }
+        if (!placesSessionToken.current) {
+          placesSessionToken.current = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+        }
+
+        const googleUrl =
           'https://maps.googleapis.com/maps/api/place/autocomplete/json' +
           `?input=${encodeURIComponent(query)}` +
           '&types=geocode' +
+          '&components=country:in' +
+          `&location=${HYDERABAD.lat},${HYDERABAD.lng}` +
+          '&radius=55000' +
           `&sessiontoken=${encodeURIComponent(placesSessionToken.current)}` +
           `&key=${encodeURIComponent(GOOGLE_MAPS_API_KEY)}`;
-        const res = await fetch(url);
+        const res = await fetch(googleUrl);
         const json = await res.json();
         const preds = Array.isArray(json?.predictions) ? json.predictions : [];
-        const trimmed = preds.slice(0, 6).map((p: any) => ({
+        const trimmed: LocationSuggestion[] = preds.slice(0, 6).map((p: any) => ({
           placeId: p.place_id,
           description: p.description,
+          source: 'google',
         }));
         setSuggestions(trimmed);
         suggestionCache.current.set(key, { at: now, data: trimmed });
@@ -422,21 +556,44 @@ export function BuyerHomeScreen({ navigation }: Props) {
   }, [fetchSuggestions, searchQuery]);
 
   const selectSuggestion = useCallback(
-    async (placeId: string, description: string) => {
-      if (!GOOGLE_MAPS_API_KEY) return;
+    async (suggestion: LocationSuggestion) => {
       setError(null);
       setSearchBusy(true);
       setSuggestions([]);
-      setSearchQuery(description);
+      setSearchQuery(suggestion.description);
       try {
+        if (
+          suggestion.source === 'osm' &&
+          Number.isFinite(suggestion.lat) &&
+          Number.isFinite(suggestion.lng)
+        ) {
+          const nextLat = Number(suggestion.lat);
+          const nextLng = Number(suggestion.lng);
+          setLat(nextLat);
+          setLng(nextLng);
+          setAddressText(suggestion.description);
+          detailsCache.current.set(suggestion.placeId, {
+            at: Date.now(),
+            lat: nextLat,
+            lng: nextLng,
+            address: suggestion.description,
+          });
+          placesSessionToken.current = '';
+          return;
+        }
+
+        if (!GOOGLE_MAPS_API_KEY) {
+          setError(t('error.maps_api_key'));
+          return;
+        }
+
+        const placeId = suggestion.placeId;
         const cached = detailsCache.current.get(placeId);
         if (cached && Date.now() - cached.at < 10 * 60_000) {
-          setLat(cached.lat);
-          setLng(cached.lng);
-          if (cached.address) {
-            setAddressText(cached.address);
-          } else {
-            resolveAddress(cached.lat, cached.lng);
+          if (applySelectedLocation(cached.lat, cached.lng, cached.address)) {
+            if (!cached.address) {
+              resolveAddress(cached.lat, cached.lng);
+            }
           }
           placesSessionToken.current = '';
           return;
@@ -452,17 +609,19 @@ export function BuyerHomeScreen({ navigation }: Props) {
         const result = json?.result;
         const loc = result?.geometry?.location;
         if (loc && typeof loc.lat === 'number' && typeof loc.lng === 'number') {
-          setLat(loc.lat);
-          setLng(loc.lng);
-          if (result.formatted_address) {
-            setAddressText(result.formatted_address);
-            detailsCache.current.set(placeId, { at: Date.now(), lat: loc.lat, lng: loc.lng, address: result.formatted_address });
-          } else if (result.name) {
-            setAddressText(result.name);
-            detailsCache.current.set(placeId, { at: Date.now(), lat: loc.lat, lng: loc.lng, address: result.name });
-          } else {
-            resolveAddress(loc.lat, loc.lng);
-            detailsCache.current.set(placeId, { at: Date.now(), lat: loc.lat, lng: loc.lng });
+          const selectedAddress =
+            typeof result?.formatted_address === 'string'
+              ? result.formatted_address
+              : typeof result?.name === 'string'
+                ? result.name
+                : undefined;
+          if (applySelectedLocation(loc.lat, loc.lng, selectedAddress)) {
+            if (selectedAddress) {
+              detailsCache.current.set(placeId, { at: Date.now(), lat: loc.lat, lng: loc.lng, address: selectedAddress });
+            } else {
+              resolveAddress(loc.lat, loc.lng);
+              detailsCache.current.set(placeId, { at: Date.now(), lat: loc.lat, lng: loc.lng });
+            }
           }
         }
       } catch {
@@ -472,7 +631,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
         setSearchBusy(false);
       }
     },
-    [resolveAddress, t],
+    [applySelectedLocation, resolveAddress, t],
   );
 
   useEffect(() => {
@@ -548,6 +707,10 @@ export function BuyerHomeScreen({ navigation }: Props) {
     setBusy(true);
     setError(null);
     try {
+      if (!isHyderabadLocation(lat, lng)) {
+        setError(t('buyer.hyderabad_only'));
+        return;
+      }
       if (scheduleMode === 'later' && !scheduleOk) {
         setError(t('schedule.invalid_datetime'));
         return;
@@ -683,7 +846,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
           {suggestions.length > 0 ? (
             <View style={styles.suggestions}>
               {suggestions.map((s) => (
-                <Pressable key={s.placeId} style={styles.suggestionRow} onPress={() => selectSuggestion(s.placeId, s.description)}>
+                <Pressable key={s.placeId} style={styles.suggestionRow} onPress={() => selectSuggestion(s)}>
                   <Text style={styles.suggestionText}>{s.description}</Text>
                 </Pressable>
               ))}
@@ -703,8 +866,8 @@ export function BuyerHomeScreen({ navigation }: Props) {
                   provider={mapProvider}
                   onPress={onMapPress}
                   initialRegion={{
-                    latitude: lat ?? DEMO_FALLBACK_LOCATION?.lat ?? 12.9716,
-                    longitude: lng ?? DEMO_FALLBACK_LOCATION?.lng ?? 77.5946,
+                    latitude: lat ?? DEMO_FALLBACK_LOCATION?.lat ?? HYDERABAD.lat,
+                    longitude: lng ?? DEMO_FALLBACK_LOCATION?.lng ?? HYDERABAD.lng,
                     latitudeDelta: 0.01,
                     longitudeDelta: 0.01,
                   }}

@@ -1,8 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, ImageBackground, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useNavigation } from '@react-navigation/native';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useAuth } from '../../auth/AuthContext';
 import { Screen } from '../../ui/Screen';
@@ -28,6 +30,9 @@ export function BuyerLandingScreen() {
   const nav = useNavigation<any>();
   const { user } = useAuth();
   const { t } = useI18n();
+  const insets = useSafeAreaInsets();
+  const tabBarHeight = useBottomTabBarHeight();
+  const showBulk = Boolean(user?.bulkCsvEnabled);
   const [availability, setAvailability] = useState<Availability>('checking');
 
   useEffect(() => {
@@ -63,7 +68,10 @@ export function BuyerLandingScreen() {
 
   return (
     <Screen style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={[styles.scroll, { paddingBottom: tabBarHeight + Math.max(insets.bottom, theme.space.md) + theme.space.lg }]}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.hero}>
           <View style={styles.heroHead}>
             <Image source={require('../../../assets/superheroo-logo.png')} style={styles.logo} />
@@ -80,12 +88,26 @@ export function BuyerLandingScreen() {
               <Text style={styles.cityChipLiveText}>Hyderabad • {t('home.live_now')}</Text>
             </View>
             <View style={styles.cityChip}>
-              <Text style={styles.cityChipText}>Bengaluru • {t('home.coming_soon')}</Text>
-            </View>
-            <View style={styles.cityChip}>
-              <Text style={styles.cityChipText}>Pune • {t('home.coming_soon')}</Text>
+              <Text style={styles.cityChipText}>{t('home.launching_soon_line')}</Text>
             </View>
           </View>
+        </View>
+
+        <View style={styles.photoRow}>
+          <ImageBackground source={require('../../../assets/landing/citizen-hero.jpg')} style={styles.photoCard} imageStyle={styles.photoImage}>
+            <View style={styles.photoOverlay}>
+              <Text style={styles.photoKicker}>{t('home.card_fast_kicker')}</Text>
+              <Text style={styles.photoTitle}>{t('home.card_fast_title')}</Text>
+              <Text style={styles.photoSub}>{t('home.card_fast_sub')}</Text>
+            </View>
+          </ImageBackground>
+          <ImageBackground source={require('../../../assets/landing/hyderabad-city.jpg')} style={styles.photoCard} imageStyle={styles.photoImage}>
+            <View style={styles.photoOverlay}>
+              <Text style={styles.photoKicker}>{t('home.card_city_kicker')}</Text>
+              <Text style={styles.photoTitle}>{t('home.card_city_title')}</Text>
+              <Text style={styles.photoSub}>{t('home.card_city_sub')}</Text>
+            </View>
+          </ImageBackground>
         </View>
 
         <View style={styles.quickGrid}>
@@ -94,11 +116,13 @@ export function BuyerLandingScreen() {
             <Text style={styles.quickTitle}>{t('tabs.create_task')}</Text>
             <Text style={styles.quickSub}>{t('home.quick_create')}</Text>
           </Pressable>
-          <Pressable style={styles.quickCard} onPress={() => nav.navigate('BuyerBulkTasks')}>
-            <MaterialCommunityIcons name="file-delimited-outline" size={24} color={theme.colors.primary} />
-            <Text style={styles.quickTitle}>{t('tabs.bulk')}</Text>
-            <Text style={styles.quickSub}>{t('home.quick_bulk')}</Text>
-          </Pressable>
+          {showBulk ? (
+            <Pressable style={styles.quickCard} onPress={() => nav.navigate('BuyerBulkTasks')}>
+              <MaterialCommunityIcons name="file-delimited-outline" size={24} color={theme.colors.primary} />
+              <Text style={styles.quickTitle}>{t('tabs.bulk')}</Text>
+              <Text style={styles.quickSub}>{t('home.quick_bulk')}</Text>
+            </Pressable>
+          ) : null}
           <Pressable style={styles.quickCard} onPress={() => nav.navigate('History')}>
             <MaterialCommunityIcons name="history" size={24} color={theme.colors.primary} />
             <Text style={styles.quickTitle}>{t('tabs.tasks')}</Text>
@@ -168,6 +192,26 @@ const styles = StyleSheet.create({
   },
   cityChipText: { color: theme.colors.muted, fontSize: 11.5, fontWeight: '700' },
   cityChipLiveText: { color: theme.colors.success, fontSize: 11.5, fontWeight: '800' },
+  photoRow: { gap: theme.space.sm },
+  photoCard: {
+    minHeight: 138,
+    borderRadius: theme.radius.lg,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    ...theme.shadow.card,
+  },
+  photoImage: { borderRadius: theme.radius.lg },
+  photoOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    gap: 4,
+    padding: theme.space.md,
+    backgroundColor: 'rgba(5, 10, 26, 0.42)',
+  },
+  photoKicker: { color: '#E6F1FF', fontSize: 11, fontWeight: '800', letterSpacing: 0.3 },
+  photoTitle: { color: '#FFFFFF', fontSize: 16, fontWeight: '900', letterSpacing: -0.2 },
+  photoSub: { color: '#E6EAF2', fontSize: 12, lineHeight: 17 },
   quickGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',

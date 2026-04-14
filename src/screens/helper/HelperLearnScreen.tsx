@@ -100,6 +100,12 @@ export function HelperLearnScreen({ navigation }: Props) {
       <Segmented options={options} value={tab} onChange={(v) => setTab(v as 'materials' | 'assessments')} />
 
       <ScrollView contentContainerStyle={styles.scroll}>
+        <View style={styles.infoCard}>
+          <Text style={styles.infoText}>
+            {t('learn.helper_intro')}
+          </Text>
+        </View>
+
         {tab === 'materials' ? (
           <View style={styles.card}>
             <View style={styles.sectionTop}>
@@ -197,4 +203,12 @@ const styles = StyleSheet.create({
   rowButtons: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 6 },
   btnSmall: { minWidth: 80 },
   btnMini: { minWidth: 56 },
+  infoCard: {
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radius.md,
+    backgroundColor: theme.colors.surfaceRaised,
+    padding: theme.space.md,
+  },
+  infoText: { color: theme.colors.muted, fontSize: 12.5, lineHeight: 18 },
 });
