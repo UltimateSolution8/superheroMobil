@@ -1,10 +1,12 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { FlatList, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import * as Location from 'expo-location';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { BottomTabBarHeightContext } from '@react-navigation/bottom-tabs';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { HelperProfile, TaskOfferedEvent, TaskStatus } from '../../api/types';
 import * as api from '../../api/client';
@@ -107,6 +109,8 @@ export function HelperHomeScreen({ navigation }: Props) {
   const online = useIsOnline();
   const { isOnline, setOnline, setLastCoords } = useHelperPresence();
   const { activeTaskId, setActiveTaskId } = useActiveTask();
+  const insets = useSafeAreaInsets();
+  const tabBarHeight = useContext(BottomTabBarHeightContext) ?? 0;
 
   const [profile, setProfile] = useState<HelperProfile | null>(null);
   const [offers, setOffers] = useState<TaskOfferedEvent[]>([]);
@@ -532,8 +536,14 @@ export function HelperHomeScreen({ navigation }: Props) {
       <View style={styles.topBar}>
         <Text style={styles.h1}>{t('tabs.tasks')}</Text>
         <View style={styles.topLinks}>
-          <Text onPress={() => navigation.navigate('SupportTickets')} style={styles.link}>{t('buyer.support')}</Text>
-          <Text onPress={() => navigation.navigate('Profile')} style={styles.link}>{t('menu.profile')}</Text>
+          <Pressable onPress={() => navigation.navigate('SupportTickets')} style={styles.linkPill}>
+            <MaterialCommunityIcons name="lifebuoy" size={14} color={theme.colors.primary} />
+            <Text style={styles.linkPillText}>{t('buyer.support')}</Text>
+          </Pressable>
+          <Pressable onPress={() => navigation.navigate('Profile')} style={styles.linkPill}>
+            <MaterialCommunityIcons name="account-circle-outline" size={14} color={theme.colors.primary} />
+            <Text style={styles.linkPillText}>{t('menu.profile')}</Text>
+          </Pressable>
         </View>
       </View>
 
@@ -597,7 +607,10 @@ export function HelperHomeScreen({ navigation }: Props) {
               disabled={Boolean(acceptingTaskId && acceptingTaskId !== item.taskId)}
             />
           )}
-          contentContainerStyle={styles.offerList}
+          contentContainerStyle={[
+            styles.offerList,
+            { paddingBottom: Math.max(theme.space.lg, insets.bottom) + tabBarHeight },
+          ]}
           initialNumToRender={6}
           windowSize={6}
           ListEmptyComponent={
@@ -637,14 +650,36 @@ export function HelperHomeScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   screen: { paddingBottom: theme.space.xl },
-  topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  topLinks: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.radius.lg,
+    backgroundColor: theme.colors.surfaceRaised,
+    paddingHorizontal: theme.space.sm,
+    paddingVertical: 10,
+    ...theme.shadow.card,
+  },
+  topLinks: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   h1: { color: theme.colors.text, fontSize: 24, fontWeight: '900', letterSpacing: -0.3 },
-  link: { color: theme.colors.primary, fontWeight: '800' },
+  linkPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: theme.colors.card,
+  },
+  linkPillText: { color: theme.colors.primary, fontWeight: '800', fontSize: 12 },
   card: {
     borderWidth: 1,
     borderColor: theme.colors.border,
-    backgroundColor: theme.colors.card,
+    backgroundColor: theme.colors.surfaceRaised,
     borderRadius: theme.radius.lg,
     padding: theme.space.md + 2,
     gap: theme.space.sm,
