@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import * as api from '../../api/client';
 import { useAuth } from '../../auth/AuthContext';
@@ -68,6 +69,7 @@ export function ProfileScreen({ navigation }: Props) {
   }, [displayName, t, withAuth]);
 
   const roleLabel = role === 'HELPER' ? t('role.superherooo') : role === 'BUYER' ? t('role.citizen') : role || '-';
+  const walletLabel = role === 'HELPER' ? t('menu.wallet_partner') : t('menu.wallet_citizen');
 
   return (
     <Screen>
@@ -93,13 +95,35 @@ export function ProfileScreen({ navigation }: Props) {
 
         <TextField label={t('profile.display_name')} value={displayName} onChangeText={setDisplayName} placeholder={t('profile.display_name_placeholder')} />
         <PrimaryButton label={t('common.save')} onPress={save} loading={busy} />
-        <View style={styles.quickRow}>
-          <PrimaryButton label={t('tabs.tasks')} variant="ghost" onPress={() => navigation.navigate('History')} style={styles.quickBtn} />
-          <PrimaryButton label={t('payments.title')} variant="ghost" onPress={() => navigation.navigate('Payments')} style={styles.quickBtn} />
-        </View>
-        <View style={styles.quickRow}>
-          <PrimaryButton label={t('settings.title')} variant="ghost" onPress={() => navigation.navigate('Settings')} style={styles.quickBtn} />
-          <PrimaryButton label={t('buyer.support')} variant="ghost" onPress={() => navigation.navigate('SupportTickets')} style={styles.quickBtn} />
+        <View style={styles.quickGrid}>
+          <PrimaryButton
+            label={t('tabs.tasks')}
+            variant="ghost"
+            onPress={() => navigation.navigate('History')}
+            style={styles.quickBtn}
+            leftIcon={<MaterialCommunityIcons name="clipboard-list-outline" size={16} color={theme.colors.primary} />}
+          />
+          <PrimaryButton
+            label={walletLabel}
+            variant="ghost"
+            onPress={() => navigation.navigate('Payments')}
+            style={styles.quickBtn}
+            leftIcon={<MaterialCommunityIcons name="wallet-outline" size={16} color={theme.colors.primary} />}
+          />
+          <PrimaryButton
+            label={t('settings.title')}
+            variant="ghost"
+            onPress={() => navigation.navigate('Settings')}
+            style={styles.quickBtn}
+            leftIcon={<MaterialCommunityIcons name="cog-outline" size={16} color={theme.colors.primary} />}
+          />
+          <PrimaryButton
+            label={t('buyer.support')}
+            variant="ghost"
+            onPress={() => navigation.navigate('SupportTickets')}
+            style={styles.quickBtn}
+            leftIcon={<MaterialCommunityIcons name="lifebuoy" size={16} color={theme.colors.primary} />}
+          />
         </View>
       </View>
     </Screen>
@@ -121,6 +145,13 @@ const styles = StyleSheet.create({
   },
   label: { color: theme.colors.muted, fontSize: 12, fontWeight: '800' },
   value: { color: theme.colors.text, fontSize: 14, fontWeight: '600' },
-  quickRow: { flexDirection: 'row', gap: theme.space.sm },
-  quickBtn: { flex: 1 },
+  quickGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: theme.space.sm,
+    marginTop: 2,
+  },
+  quickBtn: {
+    width: '48.4%',
+  },
 });

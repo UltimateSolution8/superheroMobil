@@ -85,10 +85,15 @@ export function HelperLandingScreen() {
   return (
     <Screen style={styles.screen}>
       <ScrollView
-        contentContainerStyle={[styles.scroll, { paddingBottom: tabBarHeight + Math.max(insets.bottom, theme.space.md) + theme.space.lg }]}
+        contentContainerStyle={[
+          styles.scroll,
+          { paddingBottom: tabBarHeight + Math.max(insets.bottom, theme.space.md) + theme.space.xl * 1.4 },
+        ]}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.hero}>
+          <View pointerEvents="none" style={styles.heroGlowOne} />
+          <View pointerEvents="none" style={styles.heroGlowTwo} />
           <View style={styles.heroHead}>
             <Image source={require('../../../assets/superheroo-logo.png')} style={styles.logo} />
             <View style={styles.heroTextWrap}>
@@ -134,7 +139,7 @@ export function HelperLandingScreen() {
         </View>
 
         <View style={styles.quickGrid}>
-          <Pressable style={styles.quickCard} onPress={() => nav.navigate('HelperHome')}>
+          <Pressable style={[styles.quickCard, styles.quickCardPrimary]} onPress={() => nav.navigate('HelperHome')}>
             <MaterialCommunityIcons name="briefcase-outline" size={24} color={theme.colors.primary} />
             <Text style={styles.quickTitle}>{t('tabs.tasks')}</Text>
             <Text style={styles.quickSub}>{t('home.quick_task_feed')}</Text>
@@ -180,13 +185,34 @@ const styles = StyleSheet.create({
   screen: { paddingHorizontal: 0, paddingTop: 0 },
   scroll: { padding: theme.space.lg, gap: theme.space.md, paddingBottom: theme.space.xl * 2 },
   hero: {
+    overflow: 'hidden',
     borderWidth: 1,
     borderColor: theme.colors.border,
     borderRadius: theme.radius.xl,
-    backgroundColor: theme.colors.card,
+    backgroundColor: theme.colors.surfaceRaised,
     padding: theme.space.md,
     gap: 10,
     ...theme.shadow.lifted,
+  },
+  heroGlowOne: {
+    position: 'absolute',
+    width: 180,
+    height: 180,
+    borderRadius: 999,
+    right: -58,
+    top: -72,
+    backgroundColor: theme.colors.glow,
+    opacity: 0.9,
+  },
+  heroGlowTwo: {
+    position: 'absolute',
+    width: 140,
+    height: 140,
+    borderRadius: 999,
+    left: -42,
+    bottom: -52,
+    backgroundColor: theme.colors.accent,
+    opacity: 0.16,
   },
   heroHead: { flexDirection: 'row', gap: 12, alignItems: 'center' },
   logo: { width: 58, height: 58, borderRadius: 16 },
@@ -240,6 +266,10 @@ const styles = StyleSheet.create({
     padding: theme.space.md,
     gap: 6,
     ...theme.shadow.card,
+  },
+  quickCardPrimary: {
+    borderColor: theme.colors.glow,
+    backgroundColor: theme.colors.surfaceRaised,
   },
   quickTitle: { color: theme.colors.text, fontSize: 13, fontWeight: '900' },
   quickSub: { color: theme.colors.muted, fontSize: 11.5, lineHeight: 16 },

@@ -53,7 +53,7 @@ export const PrimaryButton = memo(function PrimaryButton({
       ) : (
         <View style={styles.content} pointerEvents="none">
           {leftIcon ? <View style={styles.iconWrap}>{leftIcon}</View> : null}
-          <Text style={[styles.label, { color: colors.text }]}>{label}</Text>
+          <Text numberOfLines={2} style={[styles.label, { color: colors.text }]}>{label}</Text>
         </View>
       )}
     </Pressable>
@@ -86,11 +86,15 @@ const styles = StyleSheet.create({
     fontSize: 15.5,
     fontWeight: '800',
     letterSpacing: 0.2,
+    textAlign: 'center',
+    flexShrink: 1,
+    lineHeight: 20,
   },
   content: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    maxWidth: '100%',
   },
   iconWrap: {
     marginRight: 8,
