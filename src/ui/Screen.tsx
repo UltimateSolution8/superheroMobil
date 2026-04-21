@@ -1,6 +1,5 @@
 import React from 'react';
 import { StyleSheet, View, type ViewStyle } from 'react-native';
-import { BottomTabBarHeightContext } from '@react-navigation/bottom-tabs';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { theme } from './theme';
@@ -14,15 +13,13 @@ export function Screen({
   style?: ViewStyle;
 }) {
   const insets = useSafeAreaInsets();
-  const tabBarHeight = React.useContext(BottomTabBarHeightContext) ?? 0;
-  const tabBarCompensation = Math.max(0, tabBarHeight - insets.bottom);
   return (
     <SafeAreaView style={styles.safe}>
       <View pointerEvents="none" style={styles.bgLayer}>
         <View style={styles.bgOrbTop} />
         <View style={styles.bgOrbBottom} />
       </View>
-      <View style={[styles.inner, style, { paddingBottom: theme.space.lg + insets.bottom + tabBarCompensation }]}>
+      <View style={[styles.inner, style, { paddingBottom: theme.space.lg + insets.bottom }]}>
         {children}
         <ActiveTaskBubble />
       </View>

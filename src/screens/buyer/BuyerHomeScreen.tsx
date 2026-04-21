@@ -1,10 +1,9 @@
-import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Voice from '@react-native-voice/voice';
 import * as Location from 'expo-location';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
-import { BottomTabBarHeightContext } from '@react-navigation/bottom-tabs';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
@@ -106,7 +105,6 @@ export function BuyerHomeScreen({ navigation }: Props) {
   const { setActiveTaskId } = useActiveTask();
   const online = useIsOnline();
   const insets = useSafeAreaInsets();
-  const tabBarHeight = useContext(BottomTabBarHeightContext) ?? 0;
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -182,6 +180,21 @@ export function BuyerHomeScreen({ navigation }: Props) {
   const detailsCache = useRef<Map<string, { at: number; lat: number; lng: number; address?: string }>>(new Map());
   const geocodeCache = useRef<Map<string, { at: number; lat: number; lng: number; address?: string }>>(new Map());
   const placesSessionToken = useRef<string>('');
+  const autoPrefilledAddressRef = useRef<string>('');
+
+  const setResolvedAddress = useCallback((nextAddress: string) => {
+    const normalized = nextAddress.trim();
+    if (!normalized) return;
+    setAddressText(normalized);
+    setSearchQuery((prev) => {
+      const prevTrimmed = prev.trim();
+      if (!prevTrimmed || prevTrimmed === autoPrefilledAddressRef.current) {
+        autoPrefilledAddressRef.current = normalized;
+        return normalized;
+      }
+      return prev;
+    });
+  }, []);
 
   const resolveAddress = useCallback(async (latitude: number, longitude: number) => {
     try {
@@ -190,13 +203,13 @@ export function BuyerHomeScreen({ navigation }: Props) {
         const first = rev[0];
         const parts = [first.name, first.street, first.city, first.region].filter(Boolean);
         if (parts.length > 0) {
-          setAddressText(parts.join(', '));
+          setResolvedAddress(parts.join(', '));
         }
       }
     } catch {
       // Best-effort only.
     }
-  }, []);
+  }, [setResolvedAddress]);
 
   const applySelectedLocation = useCallback(
     (latitude: number, longitude: number, nextAddress?: string) => {
@@ -208,11 +221,11 @@ export function BuyerHomeScreen({ navigation }: Props) {
       setLat(latitude);
       setLng(longitude);
       if (nextAddress && nextAddress.trim()) {
-        setAddressText(nextAddress.trim());
+        setResolvedAddress(nextAddress.trim());
       }
       return true;
     },
-    [t],
+    [setResolvedAddress, t],
   );
 
   const onMapPress = useCallback(
@@ -269,12 +282,14 @@ export function BuyerHomeScreen({ navigation }: Props) {
       if (last?.coords) {
         setLat(last.coords.latitude);
         setLng(last.coords.longitude);
+        resolveAddress(last.coords.latitude, last.coords.longitude);
         return;
       }
 
       const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
       setLat(pos.coords.latitude);
       setLng(pos.coords.longitude);
+      resolveAddress(pos.coords.latitude, pos.coords.longitude);
     } catch (e: unknown) {
       const msg =
         e && typeof e === 'object' && 'message' in e && typeof (e as any).message === 'string'
@@ -288,7 +303,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
       }
       setLocError(msg ? `${t('error.location_failed')}: ${msg}` : t('error.network'));
     }
-  }, [t]);
+  }, [resolveAddress, t]);
 
   useEffect(() => {
     refreshLocation();
@@ -803,7 +818,7 @@ export function BuyerHomeScreen({ navigation }: Props) {
         <ScrollView
           contentContainerStyle={[
             styles.scrollContent,
-            { paddingBottom: theme.space.xl * 2.6 + Math.max(insets.bottom, theme.space.lg) + tabBarHeight },
+            { paddingBottom: theme.space.xl * 3 + Math.max(insets.bottom, theme.space.lg) },
           ]}
           keyboardShouldPersistTaps="handled"
         >
@@ -815,14 +830,8 @@ export function BuyerHomeScreen({ navigation }: Props) {
             </View>
             <Text style={styles.h1}>{t('buyer.create_task')}</Text>
             <View style={styles.topLinks}>
-              <Pressable onPress={() => navigation.navigate('SupportTickets')} style={styles.linkPill}>
-                <MaterialCommunityIcons name="lifebuoy" size={14} color={theme.colors.primary} />
-                <Text style={styles.linkPillText}>{t('buyer.support')}</Text>
-              </Pressable>
-              <Pressable onPress={() => navigation.navigate('Profile')} style={styles.linkPill}>
-                <MaterialCommunityIcons name="account-circle-outline" size={14} color={theme.colors.primary} />
-                <Text style={styles.linkPillText}>{t('menu.profile')}</Text>
-              </Pressable>
+              <Text onPress={() => navigation.navigate('SupportTickets')} style={styles.link}>{t('buyer.support')}</Text>
+              <Text onPress={() => navigation.navigate('Profile')} style={styles.link}>{t('menu.profile')}</Text>
             </View>
           </View>
 
@@ -842,13 +851,15 @@ export function BuyerHomeScreen({ navigation }: Props) {
                 placeholder={t('buyer.search_location')}
               />
             </View>
-            <PrimaryButton
-              label={t('buyer.search')}
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('buyer.search')}
               onPress={searchLocation}
-              loading={searchBusy}
-              style={styles.searchBtn}
-              leftIcon={<MaterialCommunityIcons name="magnify" size={18} color={theme.colors.primaryText} />}
-            />
+              disabled={searchBusy}
+              style={({ pressed }) => [styles.searchIconBtn, searchBusy ? styles.searchIconBtnDisabled : null, pressed ? styles.searchIconBtnPressed : null]}
+            >
+              <MaterialCommunityIcons name="magnify" size={20} color={theme.colors.primaryText} />
+            </Pressable>
           </View>
           {autoSearchBusy ? <Text style={styles.muted}>{t('buyer.searching_suggestions')}</Text> : null}
           {suggestions.length > 0 ? (
@@ -1014,18 +1025,7 @@ const styles = StyleSheet.create({
   kav: { flex: 1 },
   screen: { padding: 0, gap: 0 },
   scrollContent: { padding: theme.space.lg, gap: theme.space.md, paddingBottom: theme.space.xl * 2 },
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.radius.lg,
-    backgroundColor: theme.colors.surfaceRaised,
-    paddingHorizontal: theme.space.sm,
-    paddingVertical: 10,
-    ...theme.shadow.card,
-  },
+  topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   topLeft: { flexDirection: 'row', alignItems: 'center', gap: theme.space.xs },
   backBtn: {
     width: 38,
@@ -1037,25 +1037,14 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.border,
     backgroundColor: theme.colors.card,
   },
-  topLinks: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  topLinks: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   h1: { color: theme.colors.text, fontSize: 24, fontWeight: '900', letterSpacing: -0.3 },
   muted: { color: theme.colors.muted, fontSize: 12.5 },
-  linkPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    backgroundColor: theme.colors.card,
-  },
-  linkPillText: { color: theme.colors.primary, fontWeight: '800', fontSize: 12 },
+  link: { color: theme.colors.primary, fontWeight: '800' },
   card: {
     borderWidth: 1,
     borderColor: theme.colors.border,
-    backgroundColor: theme.colors.surfaceRaised,
+    backgroundColor: theme.colors.card,
     borderRadius: theme.radius.lg,
     padding: theme.space.md + 2,
     gap: theme.space.sm,
@@ -1065,7 +1054,18 @@ const styles = StyleSheet.create({
   voiceBtn: { alignSelf: 'flex-start' },
   searchRow: { flexDirection: 'row', alignItems: 'flex-end', gap: theme.space.sm },
   searchField: { flex: 1 },
-  searchBtn: { alignSelf: 'flex-end' },
+  searchIconBtn: {
+    alignSelf: 'flex-end',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.primary,
+    ...theme.shadow.card,
+  },
+  searchIconBtnPressed: { opacity: 0.88 },
+  searchIconBtnDisabled: { opacity: 0.6 },
   mapWrap: { height: 220, borderRadius: theme.radius.lg, overflow: 'hidden', borderWidth: 1, borderColor: theme.colors.border },
   map: { flex: 1 },
   section: { color: theme.colors.muted, fontSize: 12, fontWeight: '800', letterSpacing: 0.25 },
