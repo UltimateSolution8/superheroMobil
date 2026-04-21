@@ -20,10 +20,14 @@ export function BuyerLandingScreen() {
 
   return (
     <Screen style={styles.screen}>
+      <View pointerEvents="none" style={styles.bgLayer}>
+        <View style={styles.bgTopShade} />
+        <View style={styles.bgBottomShade} />
+      </View>
       <ScrollView
         contentContainerStyle={[
           styles.scroll,
-          { paddingBottom: tabBarHeight + Math.max(insets.bottom, theme.space.md) + theme.space.xl * 1.6 },
+          { paddingBottom: tabBarHeight + Math.max(insets.bottom, theme.space.md) + theme.space.xl * 0.9 },
         ]}
         showsVerticalScrollIndicator={false}
       >
@@ -31,7 +35,6 @@ export function BuyerLandingScreen() {
           <View style={styles.heroHead}>
             <Image source={require('../../../assets/superheroo-logo.png')} style={styles.logo} />
             <View style={styles.heroTextWrap}>
-              <Text style={styles.heroKicker}>{t('home.trusted_line')}</Text>
               <Text style={styles.heroTitle}>
                 {t('home.welcome')}, {user?.displayName?.trim() || t('role.citizen')}
               </Text>
@@ -72,8 +75,27 @@ export function BuyerLandingScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { paddingHorizontal: 0, paddingTop: 0, backgroundColor: '#EAF2FF' },
-  scroll: { padding: theme.space.lg, gap: theme.space.md, paddingBottom: theme.space.xl * 2 },
+  screen: { paddingHorizontal: 0, paddingTop: 0, backgroundColor: '#E2ECFF' },
+  bgLayer: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  bgTopShade: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 220,
+    backgroundColor: 'rgba(30,58,138,0.15)',
+  },
+  bgBottomShade: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 220,
+    backgroundColor: 'rgba(30,58,138,0.13)',
+  },
+  scroll: { padding: theme.space.lg, gap: theme.space.md, paddingBottom: theme.space.xl * 1.2 },
   hero: {
     borderWidth: 1,
     borderColor: theme.colors.border,
@@ -86,7 +108,6 @@ const styles = StyleSheet.create({
   heroHead: { flexDirection: 'row', gap: 12, alignItems: 'center' },
   logo: { width: 58, height: 58, borderRadius: 16 },
   heroTextWrap: { flex: 1, gap: 4 },
-  heroKicker: { color: theme.colors.primary, fontWeight: '900', fontSize: 12, letterSpacing: 0.2 },
   heroTitle: { color: theme.colors.text, fontSize: 22, fontWeight: '900', letterSpacing: -0.3 },
   heroSub: { color: theme.colors.muted, fontSize: 13, lineHeight: 19, fontWeight: '700' },
   quickGrid: {
@@ -108,10 +129,10 @@ const styles = StyleSheet.create({
   quickSub: { color: theme.colors.muted, fontSize: 11.5, lineHeight: 16 },
   loveText: {
     marginTop: theme.space.sm,
-    marginBottom: theme.space.md,
+    marginBottom: 0,
     color: theme.colors.primary,
-    fontSize: 34,
-    lineHeight: 40,
+    fontSize: 32,
+    lineHeight: 38,
     fontWeight: '900',
     textAlign: 'center',
     letterSpacing: -0.5,

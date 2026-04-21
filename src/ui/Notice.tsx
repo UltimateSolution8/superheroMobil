@@ -12,13 +12,6 @@ export const Notice = memo(function Notice({
   text: string;
   onClose?: () => void;
 }) {
-  const accent = useMemo(() => {
-    if (kind === 'danger') return '#ef4444';
-    if (kind === 'success') return '#10b981';
-    if (kind === 'warning') return '#f59e0b';
-    return '#2563eb';
-  }, [kind]);
-
   const bg = useMemo(() => {
     if (kind === 'danger') return 'rgba(239,68,68,0.12)';
     if (kind === 'success') return 'rgba(16,185,129,0.12)';
@@ -28,7 +21,6 @@ export const Notice = memo(function Notice({
 
   return (
     <View style={[styles.wrap, { backgroundColor: bg }]}>
-      <View style={[styles.accentRail, { backgroundColor: `${accent}33` }]} />
       <Text style={[styles.text, { flex: 1 }]}>{text}</Text>
       {onClose ? (
         <Text
@@ -51,19 +43,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    overflow: 'hidden',
     shadowColor: '#000',
     shadowOpacity: 0.04,
     shadowOffset: { width: 0, height: 3 },
     shadowRadius: 8,
     elevation: 1,
-  },
-  accentRail: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: 3,
   },
   text: {
     color: theme.colors.text,

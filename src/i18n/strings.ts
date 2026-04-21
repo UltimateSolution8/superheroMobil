@@ -191,7 +191,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'helper.sort.budget': 'Money',
 
     // Helper - KYC Notices
-    'helper.kyc.pending': 'KYC pending review. Upload or update docs from Complete KYC.',
+    'helper.kyc.pending': 'KYC review is pending. Upload or update documents in Complete KYC.',
     'helper.kyc.approved': 'KYC approved. You can go online now.',
     'helper.kyc.rejected': 'KYC rejected. Please re-submit.',
 
@@ -735,7 +735,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'tabs.tasks': 'Tasks',
     'tabs.learn': 'Learn',
     'home.trusted_line': "India's most trusted short term gig platform",
-    'home.most_loved': "India's most loved app",
+    'home.most_loved': "Superherooo India's most loved app",
     'home.welcome': 'Welcome',
     'home.not_available': 'Service availability in your area will update soon.',
     'home.checking_area': 'Checking service availability near you…',
@@ -1012,7 +1012,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'helper.sort.budget': 'पैसा',
 
     // Helper - KYC Notices
-    'helper.kyc.pending': 'KYC समीक्षा लंबित। Complete KYC से दस्तावेज़ अपलोड करें।',
+    'helper.kyc.pending': 'KYC समीक्षा जारी है। Complete KYC में दस्तावेज़ अपलोड या अपडेट करें।',
     'helper.kyc.approved': 'KYC स्वीकृत। आप अभी ऑनलाइन हो सकते हैं।',
     'helper.kyc.rejected': 'KYC अस्वीकृत। कृपया पुनः सबमिट करें।',
 
@@ -1556,7 +1556,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'tabs.tasks': 'टास्क',
     'tabs.learn': 'लर्न',
     'home.trusted_line': 'भारत का सबसे विश्वसनीय शॉर्ट टर्म गिग प्लेटफ़ॉर्म',
-    'home.most_loved': 'भारत का सबसे पसंदीदा ऐप',
+    'home.most_loved': 'Superherooo भारत का सबसे पसंदीदा ऐप',
     'home.welcome': 'स्वागत है',
     'home.not_available': 'आपके क्षेत्र की सेवा उपलब्धता जल्द अपडेट होगी।',
     'home.checking_area': 'आपके आसपास सेवा उपलब्धता जांच रहे हैं…',
@@ -1823,7 +1823,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'helper.sort.time': 'Time',
     'helper.sort.budget': 'Money',
     // Helper - KYC Notices
-    'helper.kyc.pending': 'KYC pending review.',
+    'helper.kyc.pending': 'KYC సమీక్ష పెండింగ్‌లో ఉంది. Complete KYCలో డాక్యుమెంట్లు అప్‌లోడ్ చేయండి లేదా అప్‌డేట్ చేయండి.',
     'helper.kyc.approved': 'KYC approved. Go online.',
     'helper.kyc.rejected': 'KYC rejected. Re-submit.',
     // Helper - Task
@@ -2355,7 +2355,7 @@ export const strings: Record<LanguageCode, Dictionary> = {
     'tabs.tasks': 'టాస్క్స్',
     'tabs.learn': 'లెర్న్',
     'home.trusted_line': 'భారతదేశంలో అత్యంత విశ్వసనీయ షార్ట్ టర్మ్ గిగ్ ప్లాట్‌ఫారమ్',
-    'home.most_loved': 'భారతదేశంలో అత్యంత ప్రియమైన యాప్',
+    'home.most_loved': 'Superherooo భారతదేశంలో అత్యంత ప్రియమైన యాప్',
     'home.welcome': 'స్వాగతం',
     'home.not_available': 'మీ ప్రాంతంలో సేవ లభ్యత త్వరలో అప్డేట్ అవుతుంది.',
     'home.checking_area': 'మీ ప్రాంతంలో సేవ అందుబాటు చూస్తున్నాం…',
