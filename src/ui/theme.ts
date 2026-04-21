@@ -2,15 +2,15 @@ import { APP_VARIANT } from '../config';
 
 export type ResolvedThemeMode = 'light' | 'dark';
 
-const primaryColor = APP_VARIANT === 'helper' ? '#0E7C74' : '#1E4ED8';
-const accentColor = APP_VARIANT === 'helper' ? '#3CD6B1' : '#7AB5FF';
+const primaryColor = APP_VARIANT === 'helper' ? '#0F766E' : '#1E3A8A';
+const accentColor = APP_VARIANT === 'helper' ? '#34D399' : '#60A5FA';
 
 function buildTheme(mode: ResolvedThemeMode) {
   const dark = mode === 'dark';
   return {
     colors: {
       bg: dark ? '#090F1D' : '#F2F6FC',
-      card: dark ? '#111A2D' : '#FBFDFF',
+      card: dark ? '#111A2D' : '#FFFFFF',
       text: dark ? '#ECF3FF' : '#111827',
       muted: dark ? '#A9BAD5' : '#5B6B85',
       border: dark ? '#2F4368' : '#D6E0EE',
@@ -20,9 +20,9 @@ function buildTheme(mode: ResolvedThemeMode) {
       danger: '#EF4444',
       success: '#10B981',
       warning: '#F59E0B',
-      inputBg: dark ? '#0E1A30' : '#F7FAFF',
-      surfaceSoft: dark ? '#172540' : '#EAF2FF',
-      surfaceRaised: dark ? '#1A2A47' : '#EEF5FF',
+      inputBg: dark ? '#0E1A30' : '#F8FAFF',
+      surfaceSoft: dark ? '#172540' : '#EAF1FF',
+      surfaceRaised: dark ? '#1A2A47' : '#F3F8FF',
       dangerSoft: dark ? '#4A1D1F' : '#FEE2E2',
       dangerBorder: dark ? '#7F1D1D' : '#FECACA',
       overlay: dark ? 'rgba(2, 6, 23, 0.78)' : 'rgba(15, 23, 42, 0.35)',

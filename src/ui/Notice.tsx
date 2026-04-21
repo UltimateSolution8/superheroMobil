@@ -26,19 +26,9 @@ export const Notice = memo(function Notice({
     return 'rgba(37,99,235,0.10)';
   }, [kind]);
 
-  const glyph = useMemo(() => {
-    if (kind === 'danger') return '!';
-    if (kind === 'success') return 'OK';
-    if (kind === 'warning') return '!';
-    return 'i';
-  }, [kind]);
-
   return (
     <View style={[styles.wrap, { backgroundColor: bg }]}>
-      <View style={[styles.accentRail, { backgroundColor: `${accent}55` }]} />
-      <View style={[styles.badge, { backgroundColor: `${accent}22` }]}>
-        <Text style={[styles.badgeText, { color: accent }]}>{glyph}</Text>
-      </View>
+      <View style={[styles.accentRail, { backgroundColor: `${accent}33` }]} />
       <Text style={[styles.text, { flex: 1 }]}>{text}</Text>
       {onClose ? (
         <Text
@@ -60,7 +50,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOpacity: 0.04,
@@ -73,20 +63,7 @@ const styles = StyleSheet.create({
     left: 0,
     top: 0,
     bottom: 0,
-    width: 4,
-  },
-  badge: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 1,
-  },
-  badgeText: {
-    fontSize: 10,
-    fontWeight: '900',
-    includeFontPadding: false,
+    width: 3,
   },
   text: {
     color: theme.colors.text,
