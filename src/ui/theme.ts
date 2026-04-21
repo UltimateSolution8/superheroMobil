@@ -7,9 +7,13 @@ const accentColor = APP_VARIANT === 'helper' ? '#34D399' : '#60A5FA';
 
 function buildTheme(mode: ResolvedThemeMode) {
   const dark = mode === 'dark';
+  const isHelper = APP_VARIANT === 'helper';
+  const lightBg = isHelper ? '#EAF7F3' : '#EEF4FF';
+  const lightSurfaceSoft = isHelper ? '#DEF4EC' : '#E5EEFF';
+  const lightSurfaceRaised = isHelper ? '#E5F8F1' : '#ECF3FF';
   return {
     colors: {
-      bg: dark ? '#090F1D' : '#F2F6FC',
+      bg: dark ? '#090F1D' : lightBg,
       card: dark ? '#111A2D' : '#FFFFFF',
       text: dark ? '#ECF3FF' : '#111827',
       muted: dark ? '#A9BAD5' : '#5B6B85',
@@ -21,8 +25,8 @@ function buildTheme(mode: ResolvedThemeMode) {
       success: '#10B981',
       warning: '#F59E0B',
       inputBg: dark ? '#0E1A30' : '#F8FAFF',
-      surfaceSoft: dark ? '#172540' : '#EAF1FF',
-      surfaceRaised: dark ? '#1A2A47' : '#F3F8FF',
+      surfaceSoft: dark ? '#172540' : lightSurfaceSoft,
+      surfaceRaised: dark ? '#1A2A47' : lightSurfaceRaised,
       dangerSoft: dark ? '#4A1D1F' : '#FEE2E2',
       dangerBorder: dark ? '#7F1D1D' : '#FECACA',
       overlay: dark ? 'rgba(2, 6, 23, 0.78)' : 'rgba(15, 23, 42, 0.35)',
